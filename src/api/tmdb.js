@@ -1,14 +1,46 @@
 const BASE_URL = 'https://api.themoviedb.org/3';
 const IMAGE_BASE = 'https://image.tmdb.org/t/p';
 
-// TMDB key can come from a .env file (VITE_TMDB_API_KEY) or be entered
-// by the user at runtime and stored in localStorage as a fallback.
+// TMDB key can come from a user-saved localStorage value (takes precedence)
+// or from a .env file (VITE_TMDB_API_KEY).
+const PLACEHOLDER_KEYS = new Set(['', 'your_tmdb_api_key_here']);
+
+function sanitizeKey(key) {
+  if (typeof key !== 'string') return '';
+  const clean = key.trim().replace(/^["']|["']$/g, '');
+  if (!clean) return '';
+  // TMDB tokens only contain alphanumeric characters, underscores, hyphens, or dots
+  if (!/^[A-Za-z0-9._-]+$/.test(clean) || clean.length > 512) {
+    return '';
+  }
+  return clean;
+}
+
 function getApiKey() {
-  return import.meta.env.VITE_TMDB_API_KEY || localStorage.getItem('tmdb_api_key') || '';
+  const localKey = sanitizeKey(localStorage.getItem('tmdb_api_key'));
+  if (localKey && !PLACEHOLDER_KEYS.has(localKey)) {
+    return localKey;
+  }
+
+  const envKey = sanitizeKey(import.meta.env.VITE_TMDB_API_KEY);
+  if (envKey && !PLACEHOLDER_KEYS.has(envKey)) {
+    return envKey;
+  }
+
+  return '';
 }
 
 function setApiKey(key) {
-  localStorage.setItem('tmdb_api_key', key);
+  const clean = sanitizeKey(key);
+  if (clean) {
+    localStorage.setItem('tmdb_api_key', clean);
+  } else {
+    localStorage.removeItem('tmdb_api_key');
+  }
+}
+
+function clearApiKey() {
+  localStorage.removeItem('tmdb_api_key');
 }
 
 async function tmdbFetch(path, params = {}) {
@@ -19,13 +51,25 @@ async function tmdbFetch(path, params = {}) {
     throw err;
   }
 
+  const isBearerToken = key.startsWith('eyJ') || key.length > 60;
   const url = new URL(`${BASE_URL}${path}`);
-  url.searchParams.set('api_key', key);
+
+  if (!isBearerToken) {
+    url.searchParams.set('api_key', key);
+  }
+
   Object.entries(params).forEach(([k, v]) => {
     if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v);
   });
 
-  const res = await fetch(url.toString());
+  const headers = {
+    Accept: 'application/json',
+  };
+  if (isBearerToken) {
+    headers.Authorization = `Bearer ${key}`;
+  }
+
+  const res = await fetch(url.toString(), { headers });
   if (!res.ok) {
     if (res.status === 401) {
       const err = new Error('INVALID_API_KEY');
@@ -50,6 +94,7 @@ export function backdropUrl(path, size = 'w1280') {
 export const tmdb = {
   getApiKey,
   setApiKey,
+  clearApiKey,
   trending: (window = 'week') => tmdbFetch(`/trending/movie/${window}`),
   search: (query, page = 1) => tmdbFetch('/search/movie', { query, page, include_adult: false }),
   details: (id) => tmdbFetch(`/movie/${id}`, { append_to_response: 'credits' }),

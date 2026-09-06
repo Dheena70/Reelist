@@ -15,9 +15,13 @@ export default function SearchBar({ value, onChange, onSubmit }) {
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') onChange('');
+        }}
         placeholder="Search a title — Dune, Parasite, Nope…"
         aria-label="Search movies by title"
         autoComplete="off"
+        maxLength={100}
       />
       <button type="submit">Search</button>
     </form>

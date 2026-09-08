@@ -91,12 +91,17 @@ export function backdropUrl(path, size = 'w1280') {
   return `${IMAGE_BASE}/${size}${path}`;
 }
 
+export function providerLogoUrl(path, size = 'w92') {
+  if (!path) return null;
+  return `${IMAGE_BASE}/${size}${path}`;
+}
+
 export const tmdb = {
   getApiKey,
   setApiKey,
   clearApiKey,
   trending: (window = 'week') => tmdbFetch(`/trending/movie/${window}`),
   search: (query, page = 1) => tmdbFetch('/search/movie', { query, page, include_adult: false }),
-  details: (id) => tmdbFetch(`/movie/${id}`, { append_to_response: 'credits' }),
+  details: (id) => tmdbFetch(`/movie/${id}`, { append_to_response: 'credits,videos,watch/providers,translations' }),
   genres: () => tmdbFetch('/genre/movie/list'),
 };

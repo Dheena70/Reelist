@@ -842,6 +842,433 @@ body {
   position: static;
 }
 
+/* Ratings & 5-Star Presentation */
+.movie-modal__ratings-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.movie-modal__ratings-row .rating-badge {
+  position: static;
+}
+
+.five-star-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 199, 89, 0.08);
+  border: 1px solid rgba(255, 199, 89, 0.25);
+  padding: 0.28rem 0.65rem;
+  border-radius: 8px;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+}
+
+.five-star-rating__stars {
+  display: flex;
+  gap: 2px;
+  color: #ffc759;
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.star-icon--full {
+  color: #ffc759;
+  text-shadow: 0 0 6px rgba(255, 199, 89, 0.5);
+}
+
+.star-icon--half {
+  color: #ffc759;
+  opacity: 0.8;
+}
+
+.star-icon--empty {
+  color: #4a4a58;
+}
+
+.five-star-rating__score {
+  color: var(--paper);
+}
+
+.five-star-rating__score strong {
+  color: #ffc759;
+  font-size: 0.88rem;
+}
+
+.five-star-rating__count {
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+
+/* Action Bar with Cinema Buttons */
+.movie-modal__action-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0.9rem 0 1.1rem;
+}
+
+.btn-cinema-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.9rem;
+  border-radius: 8px;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid transparent;
+}
+
+.btn-cinema-action--trailer {
+  background: linear-gradient(135deg, #e63946 0%, #b81424 100%);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(230, 57, 70, 0.35);
+}
+
+.btn-cinema-action--trailer:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(230, 57, 70, 0.55);
+  background: linear-gradient(135deg, #ff4757 0%, #c41424 100%);
+}
+
+.btn-cinema-action--trailer.is-playing {
+  background: #23232c;
+  border-color: #e63946;
+  color: #ff8b94;
+}
+
+.btn-cinema-action--website {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid #3d3d4a;
+  color: var(--paper);
+}
+
+.btn-cinema-action--website:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: #6a6a7c;
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.btn-cinema-action--imdb {
+  background: rgba(245, 197, 24, 0.12);
+  border: 1px solid rgba(245, 197, 24, 0.4);
+  color: #f5c518;
+}
+
+.btn-cinema-action--imdb:hover {
+  background: rgba(245, 197, 24, 0.22);
+  border-color: #f5c518;
+  transform: translateY(-1px);
+}
+
+/* Embedded Trailer Box */
+.movie-modal__trailer-box {
+  margin: 1.1rem 0 1.3rem;
+  background: #0d0d12;
+  border: 1px solid rgba(230, 57, 70, 0.4);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7), 0 0 20px rgba(230, 57, 70, 0.15);
+  animation: trailerSlideDown 0.25s ease-out;
+}
+
+@keyframes trailerSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.trailer-box__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 0.9rem;
+  background: rgba(20, 20, 26, 0.95);
+  border-bottom: 1px solid #282834;
+}
+
+.trailer-box__title {
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  color: #ffc759;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 0.5rem;
+}
+
+.trailer-box__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.trailer-box__yt-link {
+  background: rgba(230, 57, 70, 0.15);
+  border: 1px solid rgba(230, 57, 70, 0.4);
+  color: #ff8b94;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  padding: 0.22rem 0.6rem;
+  border-radius: 6px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.trailer-box__yt-link:hover {
+  background: #e63946;
+  color: #fff;
+}
+
+.trailer-box__close-btn {
+  background: transparent;
+  border: 1px solid #3d3d4a;
+  color: #aaa;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.trailer-box__close-btn:hover {
+  background: #e63946;
+  border-color: #e63946;
+  color: #fff;
+}
+
+.trailer-box__video-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000;
+}
+
+.trailer-box__video-frame iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+/* Release Info & Companion Meta Rows (Languages & OTT) */
+.movie-modal__meta-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin: 0.85rem 0;
+  flex-wrap: wrap;
+}
+
+.meta-row-label {
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--gold);
+  line-height: 2;
+  letter-spacing: 0.04em;
+  min-width: 140px;
+  flex-shrink: 0;
+}
+
+.meta-chips-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+  flex: 1;
+}
+
+.meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--mono);
+  font-size: 0.73rem;
+  padding: 0.28rem 0.65rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid #32323e;
+  color: #e2e3ea;
+  transition: all 0.15s ease;
+}
+
+.meta-chip:hover {
+  transform: translateY(-1px);
+  border-color: #555566;
+}
+
+.meta-chip--original {
+  background: rgba(232, 181, 77, 0.12);
+  border-color: rgba(232, 181, 77, 0.45);
+  color: #ffd679;
+  font-weight: 600;
+  box-shadow: 0 0 10px rgba(232, 181, 77, 0.15);
+}
+
+.meta-chip--dub {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: #2e2e3a;
+  color: #c5c6d0;
+}
+
+.meta-chip--dub:hover {
+  border-color: var(--gold-dim);
+  color: #fff;
+}
+
+.meta-chip__badge {
+  font-size: 0.62rem;
+  background: var(--gold);
+  color: #0b0b0f;
+  padding: 0.05rem 0.35rem;
+  border-radius: 4px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  margin-left: 0.2rem;
+}
+
+.meta-chip--muted {
+  color: var(--muted);
+  font-style: italic;
+  border-style: dashed;
+}
+
+/* OTT Platform Chips */
+.ott-chip {
+  padding: 0.24rem 0.65rem 0.24rem 0.45rem;
+  border-radius: 8px;
+  font-family: var(--body);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: default;
+}
+
+.ott-chip__logo {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.ott-chip__icon {
+  font-size: 0.65rem;
+  color: var(--gold);
+}
+
+.ott-chip__name {
+  color: #fff;
+  font-weight: 600;
+}
+
+.ott-chip__badge {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #aaa;
+  margin-left: 0.25rem;
+}
+
+/* Brand specific styling for OTT pills */
+.ott-chip--netflix {
+  background: rgba(229, 9, 20, 0.12);
+  border-color: rgba(229, 9, 20, 0.35);
+}
+.ott-chip--netflix:hover {
+  border-color: #e50914;
+  box-shadow: 0 0 12px rgba(229, 9, 20, 0.3);
+}
+.ott-chip--netflix .ott-chip__icon {
+  color: #e50914;
+}
+
+.ott-chip--prime {
+  background: rgba(0, 168, 225, 0.12);
+  border-color: rgba(0, 168, 225, 0.35);
+}
+.ott-chip--prime:hover {
+  border-color: #00a8e1;
+  box-shadow: 0 0 12px rgba(0, 168, 225, 0.3);
+}
+.ott-chip--prime .ott-chip__icon {
+  color: #00a8e1;
+}
+
+.ott-chip--hotstar {
+  background: rgba(18, 102, 241, 0.12);
+  border-color: rgba(18, 102, 241, 0.35);
+}
+.ott-chip--hotstar:hover {
+  border-color: #1266f1;
+  box-shadow: 0 0 12px rgba(18, 102, 241, 0.3);
+}
+.ott-chip--hotstar .ott-chip__icon {
+  color: #1266f1;
+}
+
+.ott-chip--jio {
+  background: rgba(235, 18, 131, 0.12);
+  border-color: rgba(235, 18, 131, 0.35);
+}
+.ott-chip--jio:hover {
+  border-color: #eb1283;
+  box-shadow: 0 0 12px rgba(235, 18, 131, 0.3);
+}
+.ott-chip--jio .ott-chip__icon {
+  color: #eb1283;
+}
+
+.ott-chip--apple {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+.ott-chip--apple:hover {
+  border-color: #fff;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.2);
+}
+.ott-chip--apple .ott-chip__icon {
+  color: #fff;
+}
+
+.ott-chip--sonyliv {
+  background: rgba(240, 120, 20, 0.12);
+  border-color: rgba(240, 120, 20, 0.35);
+}
+.ott-chip--sonyliv:hover {
+  border-color: #f07814;
+}
+
+.ott-chip--zee {
+  background: rgba(142, 68, 173, 0.12);
+  border-color: rgba(142, 68, 173, 0.35);
+}
+.ott-chip--zee:hover {
+  border-color: #8e44ad;
+}
+
 .movie-modal__genres {
   display: flex;
   flex-wrap: wrap;

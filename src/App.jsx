@@ -13,6 +13,8 @@ import { analytics } from './api/analytics.js';
 import SearchBar from './components/SearchBar.jsx';
 import MovieGrid from './components/MovieGrid.jsx';
 import MovieModal from './components/MovieModal.jsx';
+import InTheatersSection from './components/InTheatersSection.jsx';
+import ShowtimesModal from './components/ShowtimesModal.jsx';
 import ApiKeyGate from './components/ApiKeyGate.jsx';
 import MonsterAuth from './components/MonsterAuth.jsx';
 import AdminDashboard from './components/AdminDashboard.jsx';
@@ -62,6 +64,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedId, setSelectedId] = useState(null);
+  const [showtimesMovie, setShowtimesMovie] = useState(null);
 
   const syncAdminState = () => {
     const user = analytics.getCurrentUser();
@@ -340,12 +343,36 @@ export default function App() {
               }}
               onRetry={handleRetry}
             />
+
+            {/* Dedicated Theatrical Showcase Section matching user screenshots */}
+            <InTheatersSection
+              onSelectMovie={(movie) => {
+                analytics.recordMovieView();
+                setSelectedId(movie.id);
+              }}
+              onOpenShowtimes={(movie) => setShowtimesMovie(movie)}
+            />
           </main>
         </>
       )}
 
       {selectedId && (
-        <MovieModal movieId={selectedId} onClose={() => setSelectedId(null)} />
+        <MovieModal
+          movieId={selectedId}
+          onClose={() => setSelectedId(null)}
+          onSelectMovie={(movie) => setSelectedId(movie.id)}
+        />
+      )}
+
+      {showtimesMovie && (
+        <ShowtimesModal
+          movie={showtimesMovie}
+          onClose={() => setShowtimesMovie(null)}
+          onWatchTrailer={(movie) => {
+            setShowtimesMovie(null);
+            setSelectedId(movie.id);
+          }}
+        />
       )}
     </div>
   );

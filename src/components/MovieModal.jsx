@@ -15,8 +15,19 @@ import {
   VolumeX,
   Maximize2,
   Minimize2,
+  Clapperboard,
+  Calendar,
+  ChevronRight,
 } from 'lucide-react';
-import { backdropUrl, posterUrl, profileUrl, providerLogoUrl, tmdb } from '../api/tmdb.js';
+import {
+  backdropUrl,
+  posterUrl,
+  profileUrl,
+  providerLogoUrl,
+  tmdb,
+  FRANCHISE_COLLECTIONS,
+  THEATRICAL_NOW_PLAYING,
+} from '../api/tmdb.js';
 import RatingBadge from './RatingBadge.jsx';
 
 function determineRoleBadge(member, index, allCast = []) {
@@ -89,8 +100,10 @@ function getPlatformColorClass(name = '') {
   return 'ott-chip--default';
 }
 
-export default function MovieModal({ movieId, onClose }) {
+export default function MovieModal({ movieId, onClose, onSelectMovie }) {
+  const [activeId, setActiveId] = useState(movieId);
   const [details, setDetails] = useState(null);
+  const [collectionInfo, setCollectionInfo] = useState(null);
   const [error, setError] = useState(null);
   const [imgError, setImgError] = useState(false);
   const [showTrailer, setShowTrailer] = useState(true);
@@ -107,6 +120,11 @@ export default function MovieModal({ movieId, onClose }) {
   const modalRef = useRef(null);
   const closeBtnRef = useRef(null);
 
+  // Sync activeId if parent movieId prop changes
+  useEffect(() => {
+    setActiveId(movieId);
+  }, [movieId]);
+
   // Lock body scroll while modal is active
   useEffect(() => {
     const prevOverflow = document.body.style.overflow;
@@ -116,7 +134,7 @@ export default function MovieModal({ movieId, onClose }) {
     };
   }, []);
 
-  // Fetch movie details
+  // Fetch movie details & collection info
   useEffect(() => {
     let cancelled = false;
     setDetails(null);
@@ -125,20 +143,84 @@ export default function MovieModal({ movieId, onClose }) {
     setShowTrailer(true);
     setIsMuted(true);
     setIsMiniPlayer(false);
+    setCollectionInfo(null);
+
+    const curatedMatch = THEATRICAL_NOW_PLAYING.find((m) => m.id === activeId);
 
     tmdb
-      .details(movieId)
+      .details(activeId)
       .then((data) => {
-        if (!cancelled) setDetails(data);
+        if (cancelled) return;
+        setDetails(data);
+        if (data.belongs_to_collection?.id) {
+          tmdb
+            .collection(data.belongs_to_collection.id)
+            .then((colData) => {
+              if (!cancelled && colData?.parts) {
+                setCollectionInfo({
+                  name: colData.name,
+                  parts: [...colData.parts].sort((a, b) =>
+                    (a.release_date || '').localeCompare(b.release_date || '')
+                  ),
+                });
+              }
+            })
+            .catch(() => {});
+        }
       })
       .catch(() => {
-        if (!cancelled) setError('Could not load details for this title.');
+        if (cancelled) return;
+        if (curatedMatch) {
+          setDetails({
+            id: curatedMatch.id,
+            title: curatedMatch.title,
+            tagline: 'Now Screening in Cinemas Worldwide',
+            overview: curatedMatch.overview,
+            release_date: curatedMatch.release_date,
+            vote_average: curatedMatch.vote_average,
+            vote_count: curatedMatch.vote_count,
+            poster_path: curatedMatch.poster_path,
+            backdrop_path: curatedMatch.backdrop_path,
+            genres: [{ id: 28, name: 'Action' }, { id: 53, name: 'Thriller' }],
+            original_language: 'ta',
+            videos: {
+              results: [
+                {
+                  site: 'YouTube',
+                  type: 'Trailer',
+                  official: true,
+                  key: curatedMatch.trailerKey || 'd9MyW72ELq0',
+                  name: `${curatedMatch.title} Official Trailer`,
+                },
+              ],
+            },
+            credits: {
+              cast: [
+                { id: 1, name: 'Lead Protagonist', character: 'Hero', gender: 2, order: 0 },
+                { id: 2, name: 'Lead Protagonist Female', character: 'Heroine', gender: 1, order: 1 },
+                { id: 3, name: 'Main Rival', character: 'Antagonist', gender: 2, order: 2 },
+              ],
+            },
+            'watch/providers': { results: {} },
+          });
+        } else {
+          setError('Could not load details for this title.');
+        }
       });
 
     return () => {
       cancelled = true;
     };
-  }, [movieId]);
+  }, [activeId]);
+
+  const handleSwitchMovie = (newId) => {
+    setActiveId(newId);
+    setShowTrailer(true);
+    setIsMuted(true);
+    if (modalRef.current) {
+      modalRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
   // Keyboard accessibility: Escape to close and Tab focus trapping
   useEffect(() => {
@@ -390,6 +472,46 @@ export default function MovieModal({ movieId, onClose }) {
     }
     return stars;
   };
+
+  // Resolve Franchise Continuation & Sequels
+  const franchiseSaga = useMemo(() => {
+    if (collectionInfo?.parts?.length > 0) {
+      return {
+        name: collectionInfo.name,
+        parts: collectionInfo.parts,
+      };
+    }
+    if (!details) return null;
+    const titleLower = (details.title || '').toLowerCase();
+    for (const key of Object.keys(FRANCHISE_COLLECTIONS)) {
+      if (titleLower.includes(key) || String(activeId).includes(key)) {
+        return {
+          name: FRANCHISE_COLLECTIONS[key].collectionName,
+          parts: FRANCHISE_COLLECTIONS[key].parts,
+        };
+      }
+    }
+    return null;
+  }, [collectionInfo, details, activeId]);
+
+  // Resolve More Like This / Related Movies
+  const relatedMovies = useMemo(() => {
+    if (!details) return [];
+    const recs = details.recommendations?.results || [];
+    const sims = details.similar?.results || [];
+    const combined = [...recs, ...sims].filter((m) => m.id !== activeId && m.poster_path);
+    const seen = new Set();
+    const unique = [];
+    for (const m of combined) {
+      if (!seen.has(m.id)) {
+        seen.add(m.id);
+        unique.push(m);
+      }
+      if (unique.length >= 8) break;
+    }
+    if (unique.length > 0) return unique;
+    return THEATRICAL_NOW_PLAYING.filter((m) => m.id !== activeId).slice(0, 6);
+  }, [details, activeId]);
 
   const releaseYear =
     details?.release_date && details.release_date.length >= 4
@@ -734,6 +856,144 @@ export default function MovieModal({ movieId, onClose }) {
                     )}
                   </div>
                 </div>
+
+                {/* Franchise Continuation & Saga / Sequels */}
+                {franchiseSaga && franchiseSaga.parts?.length > 1 && (
+                  <div className="movie-modal__continuation-section">
+                    <div className="continuation-header">
+                      <div className="continuation-title-row">
+                        <Clapperboard size={15} className="continuation-icon" />
+                        <h3 className="continuation-title">Franchise Continuation & Sequels</h3>
+                        <span className="continuation-saga-name">• {franchiseSaga.name}</span>
+                      </div>
+                      <span className="continuation-count-pill">
+                        {franchiseSaga.parts.length} Chapters
+                      </span>
+                    </div>
+
+                    <div className="continuation-carousel">
+                      {franchiseSaga.parts.map((part, pIdx) => {
+                        const isCurrent = part.id === activeId;
+                        const partPoster = posterUrl(part.poster_path, 'w185');
+                        const partYear = part.release_date ? part.release_date.slice(0, 4) : '';
+
+                        return (
+                          <div
+                            key={part.id || pIdx}
+                            className={`continuation-card ${isCurrent ? 'is-active-part' : ''}`}
+                            onClick={() => !isCurrent && handleSwitchMovie(part.id)}
+                            role="button"
+                            tabIndex={0}
+                            title={isCurrent ? 'Currently Playing' : `Switch to ${part.title}`}
+                            onKeyDown={(e) => {
+                              if ((e.key === 'Enter' || e.key === ' ') && !isCurrent) {
+                                handleSwitchMovie(part.id);
+                              }
+                            }}
+                          >
+                            <div className="continuation-card__poster-box">
+                              {partPoster ? (
+                                <img
+                                  src={partPoster}
+                                  alt={part.title}
+                                  className="continuation-card__img"
+                                  loading="lazy"
+                                />
+                              ) : (
+                                <div className="continuation-card__placeholder">
+                                  <Film size={20} />
+                                </div>
+                              )}
+                              <span className="continuation-card__part-badge">
+                                {isCurrent ? '★ Current' : `Part ${part.partNumber || pIdx + 1}`}
+                              </span>
+                              {part.vote_average && (
+                                <span className="continuation-card__rating">
+                                  ★ {Number(part.vote_average).toFixed(1)}
+                                </span>
+                              )}
+                            </div>
+                            <div className="continuation-card__meta">
+                              <span className="continuation-card__title" title={part.title}>
+                                {part.title}
+                              </span>
+                              {partYear && (
+                                <span className="continuation-card__year">{partYear}</span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* More Like This / Related Movies */}
+                {relatedMovies.length > 0 && (
+                  <div className="movie-modal__related-section">
+                    <div className="continuation-header">
+                      <div className="continuation-title-row">
+                        <Film size={15} className="continuation-icon" />
+                        <h3 className="continuation-title">More Like This</h3>
+                      </div>
+                      <span className="continuation-count-pill">Recommended</span>
+                    </div>
+
+                    <div className="related-movies-carousel">
+                      {relatedMovies.map((rel) => {
+                        const relPoster = posterUrl(rel.poster_path, 'w185');
+                        const relYear = rel.release_date ? rel.release_date.slice(0, 4) : '';
+
+                        return (
+                          <div
+                            key={rel.id}
+                            className="related-movie-card"
+                            onClick={() => handleSwitchMovie(rel.id)}
+                            role="button"
+                            tabIndex={0}
+                            title={`Watch ${rel.title}`}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                handleSwitchMovie(rel.id);
+                              }
+                            }}
+                          >
+                            <div className="related-movie-card__poster-box">
+                              {relPoster ? (
+                                <img
+                                  src={relPoster}
+                                  alt={rel.title}
+                                  className="related-movie-card__img"
+                                  loading="lazy"
+                                />
+                              ) : (
+                                <div className="related-movie-card__placeholder">
+                                  <Film size={20} />
+                                </div>
+                              )}
+                              {rel.vote_average && (
+                                <span className="related-movie-card__rating">
+                                  ★ {Number(rel.vote_average).toFixed(1)}
+                                </span>
+                              )}
+                              <div className="related-movie-card__play-overlay">
+                                <Play size={14} fill="currentColor" />
+                              </div>
+                            </div>
+                            <div className="related-movie-card__meta">
+                              <span className="related-movie-card__title" title={rel.title}>
+                                {rel.title}
+                              </span>
+                              {relYear && (
+                                <span className="related-movie-card__year">{relYear}</span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 
               </div>
             </div>

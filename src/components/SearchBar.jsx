@@ -1,3 +1,5 @@
+import { Search } from 'lucide-react';
+
 export default function SearchBar({ value, onChange, onSubmit }) {
   return (
     <form
@@ -9,7 +11,7 @@ export default function SearchBar({ value, onChange, onSubmit }) {
       role="search"
     >
       <span className="marquee-search__icon" aria-hidden="true">
-        ★
+        <Search size={16} />
       </span>
       <input
         type="text"

@@ -1,4 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
+import {
+  Clapperboard,
+  BarChart3,
+  Crown,
+  LogOut,
+  Eye,
+  Calendar,
+  Search,
+} from 'lucide-react';
 import { tmdb } from './api/tmdb.js';
 import { analytics } from './api/analytics.js';
 import SearchBar from './components/SearchBar.jsx';
@@ -204,14 +213,28 @@ export default function App() {
               onClick={() => setShowAdmin((prev) => !prev)}
               title={showAdmin ? 'Switch to Movie Marquee' : 'Switch to Admin Dashboard'}
             >
-              {showAdmin ? '🎬 Movie Marquee' : `📊 Admin Dashboard (${visitorCount})`}
+              {showAdmin ? (
+                <>
+                  <Clapperboard size={15} />
+                  <span>Movie Marquee</span>
+                </>
+              ) : (
+                <>
+                  <BarChart3 size={15} />
+                  <span>Admin Dashboard ({visitorCount})</span>
+                </>
+              )}
             </button>
           )}
           <div
             className={`top-nav__user-avatar ${isAdmin ? 'top-nav__user-avatar--admin' : ''}`}
-            title={currentUser.email ? `${isAdmin ? '👑 Admin: ' : '👤 '}${currentUser.email}` : 'User Profile'}
+            title={currentUser.email ? `${isAdmin ? 'Admin: ' : 'User: '}${currentUser.email}` : 'User Profile'}
           >
-            {isAdmin && <span className="top-nav__avatar-crown">👑</span>}
+            {isAdmin && (
+              <span className="top-nav__avatar-crown">
+                <Crown size={12} />
+              </span>
+            )}
             <span className="top-nav__avatar-text">{getUserInitials(currentUser)}</span>
           </div>
           <button
@@ -220,7 +243,8 @@ export default function App() {
             onClick={handleLogout}
             title="Log out and return to login screen"
           >
-            🚪 Log Out
+            <LogOut size={15} />
+            <span>Log Out</span>
           </button>
         </div>
       </nav>
@@ -235,13 +259,16 @@ export default function App() {
                 ADMIN PROJECTION MODE
               </span>
               <span className="admin-status-strip__stat">
-                👁️ Live Visitors: <strong>{visitorCount.toLocaleString()}</strong>
+                <Eye size={14} className="stat-strip-icon" />
+                <span>Live Visitors:</span> <strong>{visitorCount.toLocaleString()}</strong>
               </span>
               <span className="admin-status-strip__stat">
-                📅 Today: <strong>{stats.todayVisitors.toLocaleString()}</strong>
+                <Calendar size={14} className="stat-strip-icon" />
+                <span>Today:</span> <strong>{stats.todayVisitors.toLocaleString()}</strong>
               </span>
               <span className="admin-status-strip__stat">
-                🔍 Searches: <strong>{stats.totalSearches.toLocaleString()}</strong>
+                <Search size={14} className="stat-strip-icon" />
+                <span>Searches:</span> <strong>{stats.totalSearches.toLocaleString()}</strong>
               </span>
             </div>
           </div>
@@ -287,7 +314,8 @@ export default function App() {
                     onClick={() => setShowAdmin(true)}
                     title="Admin Account — Click to view visitor dashboard"
                   >
-                    👁️ {visitorCount.toLocaleString()} Visitors (Admin Dashboard)
+                    <Eye size={14} />
+                    <span>{visitorCount.toLocaleString()} Visitors (Admin Dashboard)</span>
                   </button>
                 )}
               </div>

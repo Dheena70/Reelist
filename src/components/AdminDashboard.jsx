@@ -1,4 +1,17 @@
 import { useState, useEffect } from 'react';
+import {
+  Shield,
+  Crown,
+  Clock,
+  Clapperboard,
+  RotateCw,
+  Trash2,
+  Users,
+  Calendar,
+  Search,
+  Film,
+  Settings,
+} from 'lucide-react';
 import { analytics } from '../api/analytics.js';
 
 export default function AdminDashboard({ onSwitchToMovies }) {
@@ -52,7 +65,8 @@ export default function AdminDashboard({ onSwitchToMovies }) {
           <div className="admin-page__header-left">
             <div className="admin-badge">
               <span className="admin-badge__pulse" />
-              <span>🛡️ PROJECTION BOOTH • SECURITY CORE</span>
+              <Shield size={13} />
+              <span>PROJECTION BOOTH • SECURITY CORE</span>
             </div>
             <h1 className="admin-page__title">Admin Intelligence Dashboard</h1>
             <p className="admin-page__subtitle">
@@ -60,10 +74,12 @@ export default function AdminDashboard({ onSwitchToMovies }) {
             </p>
             <div className="admin-page__user-meta">
               <span className="admin-pill admin-pill--gold">
-                👑 Super Admin: <strong>{adminUser?.email || 'rdheena0509@gmail.com'}</strong>
+                <Crown size={13} />
+                <span>Super Admin:</span> <strong>{adminUser?.email || 'rdheena0509@gmail.com'}</strong>
               </span>
               <span className="admin-pill admin-pill--muted">
-                ↻ Last synced: {lastRefreshed}
+                <Clock size={13} />
+                <span>Last synced:</span> {lastRefreshed}
               </span>
             </div>
           </div>
@@ -76,7 +92,8 @@ export default function AdminDashboard({ onSwitchToMovies }) {
                 onClick={onSwitchToMovies}
                 title="Exit to Movie Marquee view"
               >
-                🎬 Switch to Movie Marquee
+                <Clapperboard size={15} />
+                <span>Switch to Movie Marquee</span>
               </button>
             )}
             <button
@@ -85,7 +102,8 @@ export default function AdminDashboard({ onSwitchToMovies }) {
               onClick={handleRefresh}
               title="Refresh real-time analytics"
             >
-              ↻ Refresh
+              <RotateCw size={15} />
+              <span>Refresh</span>
             </button>
             <button
               type="button"
@@ -93,7 +111,8 @@ export default function AdminDashboard({ onSwitchToMovies }) {
               onClick={handleReset}
               title="Reset all stats to zero"
             >
-              🗑️ Reset Stats
+              <Trash2 size={15} />
+              <span>Reset Stats</span>
             </button>
           </div>
         </header>
@@ -111,7 +130,7 @@ export default function AdminDashboard({ onSwitchToMovies }) {
                 </div>
               </div>
               <div className="admin-metric-card__icon" aria-hidden="true">
-                👥
+                <Users size={22} />
               </div>
             </div>
             <p className="admin-metric-card__desc">
@@ -134,7 +153,7 @@ export default function AdminDashboard({ onSwitchToMovies }) {
                 </div>
               </div>
               <div className="admin-metric-card__icon" aria-hidden="true">
-                📅
+                <Calendar size={22} />
               </div>
             </div>
             <p className="admin-metric-card__desc">
@@ -157,7 +176,7 @@ export default function AdminDashboard({ onSwitchToMovies }) {
                 </div>
               </div>
               <div className="admin-metric-card__icon" aria-hidden="true">
-                🔍
+                <Search size={22} />
               </div>
             </div>
             <p className="admin-metric-card__desc">
@@ -180,7 +199,7 @@ export default function AdminDashboard({ onSwitchToMovies }) {
                 </div>
               </div>
               <div className="admin-metric-card__icon" aria-hidden="true">
-                🎬
+                <Film size={22} />
               </div>
             </div>
             <p className="admin-metric-card__desc">
@@ -199,7 +218,7 @@ export default function AdminDashboard({ onSwitchToMovies }) {
           <section className="admin-panel">
             <div className="admin-panel__header">
               <div className="admin-panel__title-row">
-                <span className="admin-panel__icon">🔎</span>
+                <span className="admin-panel__icon"><Search size={18} /></span>
                 <h2 className="admin-panel__title">Audience Recent Search Terms</h2>
               </div>
               <span className="admin-pill admin-pill--cyan">
@@ -231,7 +250,7 @@ export default function AdminDashboard({ onSwitchToMovies }) {
           <section className="admin-panel">
             <div className="admin-panel__header">
               <div className="admin-panel__title-row">
-                <span className="admin-panel__icon">⚙️</span>
+                <span className="admin-panel__icon"><Settings size={18} /></span>
                 <h2 className="admin-panel__title">Telemetry & System Audit</h2>
               </div>
               <span className="admin-pill admin-pill--green">
@@ -245,7 +264,8 @@ export default function AdminDashboard({ onSwitchToMovies }) {
               <li className="admin-audit-item">
                 <span className="admin-audit-item__label">Security Level</span>
                 <span className="admin-audit-item__value admin-audit-item__value--highlight">
-                  👑 Super Admin (Full Control)
+                  <Crown size={13} style={{ verticalAlign: 'middle', marginRight: '4px' }} />
+                  Super Admin (Full Control)
                 </span>
               </li>
               <li className="admin-audit-item">
@@ -290,7 +310,8 @@ export default function AdminDashboard({ onSwitchToMovies }) {
               className="admin-btn admin-btn--primary"
               onClick={onSwitchToMovies}
             >
-              🎬 Open Movie Marquee
+              <Clapperboard size={15} />
+              <span>Open Movie Marquee</span>
             </button>
           )}
         </div>

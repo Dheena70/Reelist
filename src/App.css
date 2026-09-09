@@ -945,31 +945,6 @@ body {
   color: #ff8b94;
 }
 
-.btn-cinema-action--website {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid #3d3d4a;
-  color: var(--paper);
-}
-
-.btn-cinema-action--website:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: #6a6a7c;
-  color: #fff;
-  transform: translateY(-1px);
-}
-
-.btn-cinema-action--imdb {
-  background: rgba(245, 197, 24, 0.12);
-  border: 1px solid rgba(245, 197, 24, 0.4);
-  color: #f5c518;
-}
-
-.btn-cinema-action--imdb:hover {
-  background: rgba(245, 197, 24, 0.22);
-  border-color: #f5c518;
-  transform: translateY(-1px);
-}
-
 /* Embedded Trailer Box */
 .movie-modal__trailer-box {
   margin: 1.1rem 0 1.3rem;
@@ -1002,6 +977,9 @@ body {
 }
 
 .trailer-box__title {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
   font-family: var(--mono);
   font-size: 0.76rem;
   color: #ffc759;
@@ -1012,6 +990,11 @@ body {
   padding-right: 0.5rem;
 }
 
+.trailer-box__title-icon {
+  flex-shrink: 0;
+  color: #ffc759;
+}
+
 .trailer-box__header-actions {
   display: flex;
   align-items: center;
@@ -1020,6 +1003,9 @@ body {
 }
 
 .trailer-box__yt-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   background: rgba(230, 57, 70, 0.15);
   border: 1px solid rgba(230, 57, 70, 0.4);
   color: #ff8b94;
@@ -1038,6 +1024,9 @@ body {
 }
 
 .trailer-box__close-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
   background: transparent;
   border: 1px solid #3d3d4a;
   color: #aaa;
@@ -1079,15 +1068,23 @@ body {
 }
 
 .meta-row-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   font-family: var(--mono);
   font-size: 0.74rem;
   font-weight: 700;
   text-transform: uppercase;
   color: var(--gold);
-  line-height: 2;
+  line-height: 1.8;
   letter-spacing: 0.04em;
-  min-width: 140px;
+  min-width: 145px;
   flex-shrink: 0;
+}
+
+.meta-row-icon {
+  flex-shrink: 0;
+  color: var(--gold);
 }
 
 .meta-chips-wrap {
@@ -1290,17 +1287,183 @@ body {
   margin: 0 0 1rem;
 }
 
-.movie-modal__cast {
-  font-size: 0.85rem;
+/* Prominent Cast & Key Characters Section */
+.movie-modal__cast-section {
+  margin: 1.1rem 0 1rem;
+  padding-top: 0.95rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.cast-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.cast-section__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--gold);
+  letter-spacing: 0.04em;
+}
+
+.cast-section__icon {
+  color: var(--gold);
+}
+
+.cast-section__count {
+  font-family: var(--mono);
+  font-size: 0.7rem;
   color: var(--muted);
 }
 
-.movie-modal__cast span {
-  color: var(--gold-dim);
+.cast-carousel {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding-bottom: 0.65rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--gold-dim) transparent;
+}
+
+.cast-carousel::-webkit-scrollbar {
+  height: 5px;
+}
+
+.cast-carousel::-webkit-scrollbar-thumb {
+  background: var(--gold-dim);
+  border-radius: 999px;
+}
+
+.cast-card {
+  flex: 0 0 135px;
+  background: #15151c;
+  border: 1px solid #282834;
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cast-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--gold);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5), 0 0 14px rgba(232, 181, 77, 0.2);
+}
+
+.cast-card__avatar {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1.18;
+  background: #101015;
+  overflow: hidden;
+}
+
+.cast-card__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.25s ease;
+}
+
+.cast-card:hover .cast-card__avatar img {
+  transform: scale(1.05);
+}
+
+.cast-card__fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #191922;
+  color: #6a6a7c;
+}
+
+.cast-card__role-tag {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
   font-family: var(--mono);
+  font-size: 0.58rem;
+  font-weight: 700;
   text-transform: uppercase;
-  font-size: 0.7rem;
-  margin-right: 0.4rem;
+  letter-spacing: 0.02em;
+  padding: 0.2rem 0.35rem;
+  text-align: center;
+  backdrop-filter: blur(8px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.cast-card__role-tag--hero {
+  background: rgba(232, 181, 77, 0.92);
+  color: #0b0b0f;
+}
+
+.cast-card__role-tag--heroine {
+  background: rgba(235, 94, 153, 0.92);
+  color: #fff;
+}
+
+.cast-card__role-tag--villain {
+  background: rgba(229, 57, 53, 0.92);
+  color: #fff;
+}
+
+.cast-card__role-tag--comic {
+  background: rgba(0, 188, 212, 0.92);
+  color: #0b0b0f;
+}
+
+.cast-card__role-tag--lead {
+  background: rgba(99, 102, 241, 0.92);
+  color: #fff;
+}
+
+.cast-card__role-tag--supporting {
+  background: rgba(35, 35, 45, 0.92);
+  color: #c5c6d0;
+}
+
+.cast-card__info {
+  padding: 0.5rem 0.55rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  flex: 1;
+}
+
+.cast-card__name {
+  font-family: var(--body);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cast-card__character {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--muted);
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 @media (max-width: 560px) {

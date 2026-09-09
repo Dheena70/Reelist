@@ -1,6 +1,77 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { backdropUrl, posterUrl, providerLogoUrl, tmdb } from '../api/tmdb.js';
+import {
+  Play,
+  Square,
+  X,
+  Languages,
+  Tv,
+  Film,
+  Users,
+  User,
+  ExternalLink,
+  Star,
+  Sparkles,
+} from 'lucide-react';
+import { backdropUrl, posterUrl, profileUrl, providerLogoUrl, tmdb } from '../api/tmdb.js';
 import RatingBadge from './RatingBadge.jsx';
+
+function determineRoleBadge(member, index, allCast = []) {
+  const char = (member.character || '').toLowerCase();
+  const order = member.order ?? index;
+  const isFemale = member.gender === 1;
+  const isMale = member.gender === 2;
+
+  // 1. Check villain / antagonist patterns in character name
+  const villainTerms = [
+    'villain', 'antagonist', 'nemesis', 'rival', 'joker', 'thanos',
+    'goblin', 'enemy', 'voldemort', 'bane', 'strauss', 'dracula',
+    'gangster', 'killer', 'monster', 'carnage', 'venom', 'magneto',
+    'riddler', 'penguin', 'loco', 'bad guy', 'opponent', 'lord', 'dark',
+    'witch', 'demon'
+  ];
+  if (villainTerms.some((t) => char.includes(t))) {
+    return { label: 'Antagonist / Key Rival', type: 'villain' };
+  }
+
+  // 2. Check comic / humor / sidekick patterns
+  const comicTerms = [
+    'comic', 'comedian', 'friend', 'buddy', 'sidekick', 'funny',
+    'clown', 'fool', 'servant', 'driver', 'uncle', 'aunt', 'pal'
+  ];
+  if (comicTerms.some((t) => char.includes(t))) {
+    return { label: 'Comic / Sidekick', type: 'comic' };
+  }
+
+  // 3. Main lead (order 0)
+  if (order === 0) {
+    return isFemale
+      ? { label: 'Heroine / Main Lead', type: 'heroine' }
+      : { label: 'Hero / Main Lead', type: 'hero' };
+  }
+
+  // 4. Second lead (order 1)
+  const first = allCast[0];
+  if (order === 1) {
+    if (first?.gender === 2 && isFemale) {
+      return { label: 'Heroine / Female Lead', type: 'heroine' };
+    }
+    if (first?.gender === 1 && isMale) {
+      return { label: 'Hero / Male Lead', type: 'hero' };
+    }
+    return { label: 'Co-Lead / Key Character', type: 'lead' };
+  }
+
+  // 5. If 3rd or 4th billed and female, and heroine wasn't assigned in earlier leads
+  if (order <= 3 && isFemale && !allCast.slice(0, order).some((c) => c.gender === 1)) {
+    return { label: 'Heroine / Female Lead', type: 'heroine' };
+  }
+
+  if (order <= 2) {
+    return { label: 'Key Lead Character', type: 'lead' };
+  }
+
+  return { label: 'Crucial Supporting Role', type: 'supporting' };
+}
 
 function getPlatformColorClass(name = '') {
   const n = name.toLowerCase();
@@ -248,6 +319,12 @@ export default function MovieModal({ movieId, onClose }) {
     return list.slice(0, 6);
   }, [details]);
 
+  // Extract key prominent cast (Top 8 main actors/characters)
+  const keyCast = useMemo(() => {
+    if (!details?.credits?.cast) return [];
+    return details.credits.cast.slice(0, 8);
+  }, [details]);
+
   // Convert 10-point scale to 5-star scale
   const fiveStarRating = details?.vote_average ? (details.vote_average / 2).toFixed(1) : null;
   const renderStars = (rating) => {
@@ -260,14 +337,31 @@ export default function MovieModal({ movieId, onClose }) {
     const stars = [];
 
     for (let i = 1; i <= 5; i++) {
-      if (i <= fullStars) {
-        stars.push(<span key={i} className="star-icon star-icon--full">★</span>);
-      } else if (i === fullStars + 1 && hasExtraFull) {
-        stars.push(<span key={i} className="star-icon star-icon--full">★</span>);
+      if (i <= fullStars || (i === fullStars + 1 && hasExtraFull)) {
+        stars.push(
+          <Star key={i} size={14} className="star-icon star-icon--full" fill="#ffc759" color="#ffc759" />
+        );
       } else if (i === fullStars + 1 && hasHalf) {
-        stars.push(<span key={i} className="star-icon star-icon--half">★</span>);
+        stars.push(
+          <svg key={i} width="14" height="14" viewBox="0 0 24 24" className="star-icon star-icon--half">
+            <defs>
+              <linearGradient id={`halfStar-${movieId}-${i}`}>
+                <stop offset="50%" stopColor="#ffc759" />
+                <stop offset="50%" stopColor="#3d3d4c" />
+              </linearGradient>
+            </defs>
+            <path
+              fill={`url(#halfStar-${movieId}-${i})`}
+              stroke="#ffc759"
+              strokeWidth="1.2"
+              d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+            />
+          </svg>
+        );
       } else {
-        stars.push(<span key={i} className="star-icon star-icon--empty">☆</span>);
+        stars.push(
+          <Star key={i} size={14} className="star-icon star-icon--empty" color="#4a4a58" />
+        );
       }
     }
     return stars;
@@ -297,7 +391,7 @@ export default function MovieModal({ movieId, onClose }) {
           onClick={onClose}
           aria-label="Close details"
         >
-          ✕
+          <X size={20} />
         </button>
 
         {!details && !error && (
@@ -377,7 +471,7 @@ export default function MovieModal({ movieId, onClose }) {
                   ))}
                 </div>
 
-                {/* Interactive Action Hub (Trailer & IMDb) */}
+                {/* Cinema Action Bar (Trailer Only - IMDb removed per user feedback) */}
                 <div className="movie-modal__action-bar">
                   {trailer && (
                     <button
@@ -386,21 +480,11 @@ export default function MovieModal({ movieId, onClose }) {
                       onClick={() => setShowTrailer((prev) => !prev)}
                       title={showTrailer ? 'Close Cinema Trailer' : 'Watch Official Trailer in Cinema Player'}
                     >
-                      <span className="action-icon">{showTrailer ? '⏹' : '▶'}</span>
+                      <span className="action-icon">
+                        {showTrailer ? <Square size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" />}
+                      </span>
                       <span>{showTrailer ? 'Hide Trailer' : 'Watch Trailer'}</span>
                     </button>
-                  )}
-                  {details.imdb_id && (
-                    <a
-                      href={`https://www.imdb.com/title/${details.imdb_id}/`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn-cinema-action btn-cinema-action--imdb"
-                      title="View on IMDb"
-                    >
-                      <span className="action-icon">⭐</span>
-                      <span>IMDb</span>
-                    </a>
                   )}
                 </div>
 
@@ -409,7 +493,8 @@ export default function MovieModal({ movieId, onClose }) {
                   <div className="movie-modal__trailer-box">
                     <div className="trailer-box__header">
                       <span className="trailer-box__title">
-                        🎬 {trailer.name || `${details.title} Official Trailer`}
+                        <Film size={15} className="trailer-box__title-icon" />
+                        <span>{trailer.name || `${details.title} Official Trailer`}</span>
                       </span>
                       <div className="trailer-box__header-actions">
                         <a
@@ -419,14 +504,16 @@ export default function MovieModal({ movieId, onClose }) {
                           className="trailer-box__yt-link"
                           title="Open directly on YouTube"
                         >
-                          YouTube ↗
+                          <span>YouTube</span>
+                          <ExternalLink size={12} />
                         </a>
                         <button
                           type="button"
                           className="trailer-box__close-btn"
                           onClick={() => setShowTrailer(false)}
                         >
-                          ✕ Close
+                          <X size={13} />
+                          <span>Close</span>
                         </button>
                       </div>
                     </div>
@@ -444,20 +531,65 @@ export default function MovieModal({ movieId, onClose }) {
                 {/* Synopsis Overview */}
                 <p className="movie-modal__overview">{details.overview || 'No synopsis available.'}</p>
 
-                {/* Cast */}
-                {details.credits?.cast?.length > 0 && (
-                  <p className="movie-modal__cast">
-                    <span>Starring </span>
-                    {details.credits.cast
-                      .slice(0, 5)
-                      .map((c) => c.name)
-                      .join(', ')}
-                  </p>
+                {/* Key Cast & Prominent Characters with Photos & Role Badges */}
+                {keyCast.length > 0 && (
+                  <div className="movie-modal__cast-section">
+                    <div className="cast-section__header">
+                      <span className="cast-section__title">
+                        <Users size={15} className="cast-section__icon" />
+                        <span>Prominent Cast & Characters</span>
+                      </span>
+                      <span className="cast-section__count">({keyCast.length} Main Roles)</span>
+                    </div>
+                    <div className="cast-carousel">
+                      {keyCast.map((actor, idx) => {
+                        const role = determineRoleBadge(actor, idx, keyCast);
+                        return (
+                          <div key={actor.id || idx} className="cast-card">
+                            <div className="cast-card__avatar">
+                              {actor.profile_path ? (
+                                <img
+                                  src={profileUrl(actor.profile_path, 'w185')}
+                                  alt={actor.name}
+                                  loading="lazy"
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = 'none';
+                                    const fallback = e.currentTarget.parentElement?.querySelector('.cast-card__fallback');
+                                    if (fallback) fallback.style.display = 'flex';
+                                  }}
+                                />
+                              ) : null}
+                              <div
+                                className="cast-card__fallback"
+                                style={{ display: actor.profile_path ? 'none' : 'flex' }}
+                              >
+                                <User size={22} className="cast-card__fallback-icon" />
+                              </div>
+                              <span className={`cast-card__role-tag cast-card__role-tag--${role.type}`}>
+                                {role.label}
+                              </span>
+                            </div>
+                            <div className="cast-card__info">
+                              <span className="cast-card__name" title={actor.name}>
+                                {actor.name}
+                              </span>
+                              <span className="cast-card__character" title={actor.character}>
+                                {actor.character ? `as ${actor.character}` : 'Lead Role'}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
                 )}
 
                 {/* Theatrical & Dubbed Release Languages */}
                 <div className="movie-modal__meta-row">
-                  <span className="meta-row-label">🗣️ Released In:</span>
+                  <span className="meta-row-label">
+                    <Languages size={15} className="meta-row-icon" />
+                    <span>Released In:</span>
+                  </span>
                   <div className="meta-chips-wrap">
                     {releaseLanguages.map((lang, idx) => (
                       <span
@@ -466,7 +598,12 @@ export default function MovieModal({ movieId, onClose }) {
                         title={lang.isOriginal ? 'Original Audio Track' : 'Theatrical / Dubbed Release'}
                       >
                         {lang.name}
-                        {lang.isOriginal && <span className="meta-chip__badge">★ Original</span>}
+                        {lang.isOriginal && (
+                          <span className="meta-chip__badge">
+                            <Sparkles size={10} />
+                            <span>Original</span>
+                          </span>
+                        )}
                       </span>
                     ))}
                   </div>
@@ -474,7 +611,10 @@ export default function MovieModal({ movieId, onClose }) {
 
                 {/* Available on OTT Platforms */}
                 <div className="movie-modal__meta-row">
-                  <span className="meta-row-label">📺 Available on OTT:</span>
+                  <span className="meta-row-label">
+                    <Tv size={15} className="meta-row-icon" />
+                    <span>Available on OTT:</span>
+                  </span>
                   <div className="meta-chips-wrap">
                     {ottPlatforms.length > 0 ? (
                       ottPlatforms.map((p, idx) => (
@@ -490,7 +630,9 @@ export default function MovieModal({ movieId, onClose }) {
                               className="ott-chip__logo"
                             />
                           ) : (
-                            <span className="ott-chip__icon">▶</span>
+                            <span className="ott-chip__icon">
+                              <Play size={10} fill="currentColor" />
+                            </span>
                           )}
                           <span className="ott-chip__name">{p.name}</span>
                           {p.badge && <span className="ott-chip__badge">{p.badge}</span>}

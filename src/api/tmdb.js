@@ -96,6 +96,11 @@ export function providerLogoUrl(path, size = 'w92') {
   return `${IMAGE_BASE}/${size}${path}`;
 }
 
+export function profileUrl(path, size = 'w185') {
+  if (!path) return null;
+  return `${IMAGE_BASE}/${size}${path}`;
+}
+
 export const tmdb = {
   getApiKey,
   setApiKey,

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import {
   Film,
   Ticket,
@@ -9,6 +9,7 @@ import {
   Sparkles,
   Clapperboard,
   Clock,
+  Globe2,
 } from 'lucide-react';
 import {
   tmdb,
@@ -17,8 +18,31 @@ import {
   THEATRICAL_COMING_SOON,
 } from '../api/tmdb.js';
 
+const LANGUAGE_FILTERS = [
+  { id: 'all', label: 'All Releases' },
+  { id: 'ta', label: 'Tamil (தமிழ்)' },
+  { id: 'te', label: 'Telugu (తెలుగు)' },
+  { id: 'hi', label: 'Hindi (हिंदी)' },
+  { id: 'ml', label: 'Malayalam (മലയാളം)' },
+  { id: 'kn', label: 'Kannada (ಕನ್ನಡ)' },
+  { id: 'en', label: 'English / Global' },
+];
+
+function getLanguageLabel(code) {
+  const map = {
+    ta: 'Tamil',
+    te: 'Telugu',
+    hi: 'Hindi',
+    ml: 'Malayalam',
+    kn: 'Kannada',
+    en: 'English',
+  };
+  return map[code] || (code ? code.toUpperCase() : 'Cinema');
+}
+
 export default function InTheatersSection({ onSelectMovie, onOpenShowtimes }) {
   const [activeTab, setActiveTab] = useState('now_playing'); // 'now_playing' | 'upcoming'
+  const [selectedLang, setSelectedLang] = useState('all');
   const [nowPlayingMovies, setNowPlayingMovies] = useState(THEATRICAL_NOW_PLAYING);
   const [upcomingMovies, setUpcomingMovies] = useState(THEATRICAL_COMING_SOON);
   const [loading, setLoading] = useState(false);
@@ -41,7 +65,12 @@ export default function InTheatersSection({ onSelectMovie, onOpenShowtimes }) {
               release_label: m.release_date ? `IN THEATERS • ${m.release_date.slice(5)}` : 'IN THEATERS',
             }));
           if (apiMovies.length > 0) {
-            setNowPlayingMovies(apiMovies);
+            // Keep regional Indian movies while merging live additions
+            const existingIds = new Set(THEATRICAL_NOW_PLAYING.map((c) => c.id));
+            setNowPlayingMovies([
+              ...THEATRICAL_NOW_PLAYING,
+              ...apiMovies.filter((m) => !existingIds.has(m.id)),
+            ]);
           }
         }
 
@@ -53,7 +82,11 @@ export default function InTheatersSection({ onSelectMovie, onOpenShowtimes }) {
               release_label: m.release_date ? m.release_date.slice(5) : 'COMING SOON',
             }));
           if (apiUpcoming.length > 0) {
-            setUpcomingMovies(apiUpcoming);
+            const existingUpIds = new Set(THEATRICAL_COMING_SOON.map((c) => c.id));
+            setUpcomingMovies([
+              ...THEATRICAL_COMING_SOON,
+              ...apiUpcoming.filter((m) => !existingUpIds.has(m.id)),
+            ]);
           }
         }
       })
@@ -66,7 +99,11 @@ export default function InTheatersSection({ onSelectMovie, onOpenShowtimes }) {
     };
   }, []);
 
-  const currentList = activeTab === 'now_playing' ? nowPlayingMovies : upcomingMovies;
+  const currentList = useMemo(() => {
+    const base = activeTab === 'now_playing' ? nowPlayingMovies : upcomingMovies;
+    if (selectedLang === 'all') return base;
+    return base.filter((m) => (m.original_language || 'en').toLowerCase() === selectedLang);
+  }, [activeTab, nowPlayingMovies, upcomingMovies, selectedLang]);
 
   const handleScroll = (direction) => {
     if (!scrollRef.current) return;
@@ -86,7 +123,7 @@ export default function InTheatersSection({ onSelectMovie, onOpenShowtimes }) {
             </h2>
           </div>
           <p className="in-theaters-section__subtitle">
-            Showtimes & Current Theatrical Releases Near You
+            Tamil, Telugu, Hindi, Malayalam, Kannada & Global Theatrical Releases
           </p>
         </div>
 
@@ -136,15 +173,37 @@ export default function InTheatersSection({ onSelectMovie, onOpenShowtimes }) {
         </div>
       </div>
 
+      {/* Regional Cinema Language Filter Bar */}
+      <div className="theaters-lang-bar">
+        <div className="theaters-lang-bar__title">
+          <Globe2 size={13} />
+          <span>Filter by Language:</span>
+        </div>
+        <div className="theaters-lang-chips">
+          {LANGUAGE_FILTERS.map((lang) => (
+            <button
+              key={lang.id}
+              type="button"
+              className={`lang-filter-chip ${selectedLang === lang.id ? 'is-active' : ''}`}
+              onClick={() => setSelectedLang(lang.id)}
+            >
+              <span>{lang.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Horizontal Scrolling Theatrical Showcase */}
       <div className="in-theaters-carousel" ref={scrollRef}>
         {currentList.map((movie) => {
           const poster = posterUrl(movie.poster_path, 'w342');
           const releaseText = movie.release_label || (movie.release_date ? movie.release_date : 'IN THEATERS');
+          const langCode = (movie.original_language || 'en').toLowerCase();
+          const langLabel = getLanguageLabel(langCode);
 
           return (
             <div key={movie.id} className="theater-card">
-              {/* Card Poster with Date Chip and Rating */}
+              {/* Card Poster with Date Chip, Language Pill and Rating */}
               <div
                 className="theater-card__poster-box"
                 onClick={() => onSelectMovie(movie)}
@@ -181,6 +240,11 @@ export default function InTheatersSection({ onSelectMovie, onOpenShowtimes }) {
                     ★ {Number(movie.vote_average).toFixed(1)}
                   </div>
                 )}
+
+                {/* Language Pill Badge (Bottom Left) */}
+                <div className={`theater-card__lang-badge theater-card__lang-badge--${langCode}`}>
+                  {langLabel}
+                </div>
 
                 {/* Duration Badge for Upcoming (Screenshot 5) */}
                 {movie.duration && (
@@ -235,3 +299,5 @@ export default function InTheatersSection({ onSelectMovie, onOpenShowtimes }) {
     </section>
   );
 }
+
+

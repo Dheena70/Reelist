@@ -2622,6 +2622,70 @@ body {
   color: #0b0c10;
 }
 
+/* Regional Cinema Language Filter Bar */
+.theaters-lang-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin: 0.2rem 0 0.9rem;
+  padding: 0.45rem 0.85rem;
+  background: #14151f;
+  border: 1px solid #232433;
+  border-radius: 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.theaters-lang-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.theaters-lang-bar__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #9aa0a6;
+  white-space: nowrap;
+}
+
+.theaters-lang-chips {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: nowrap;
+}
+
+.lang-filter-chip {
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #d1d5db;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.lang-filter-chip:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.lang-filter-chip.is-active {
+  background: #f5c518;
+  color: #0b0c10;
+  font-weight: 700;
+  border-color: #f5c518;
+  box-shadow: 0 2px 10px rgba(245, 197, 24, 0.35);
+}
+
 /* Horizontal Theaters Carousel */
 .in-theaters-carousel {
   display: flex;
@@ -2743,6 +2807,62 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
+}
+
+.theater-card__lang-badge {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  z-index: 2;
+  background: rgba(12, 13, 18, 0.92);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 0.16rem 0.45rem;
+  border-radius: 5px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.theater-card__lang-badge--ta {
+  border-color: rgba(245, 197, 24, 0.8);
+  color: #f5c518;
+  background: rgba(245, 197, 24, 0.2);
+}
+
+.theater-card__lang-badge--te {
+  border-color: rgba(56, 189, 248, 0.8);
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.2);
+}
+
+.theater-card__lang-badge--hi {
+  border-color: rgba(251, 146, 60, 0.8);
+  color: #fb923c;
+  background: rgba(251, 146, 60, 0.2);
+}
+
+.theater-card__lang-badge--ml {
+  border-color: rgba(52, 211, 153, 0.8);
+  color: #34d399;
+  background: rgba(52, 211, 153, 0.2);
+}
+
+.theater-card__lang-badge--kn {
+  border-color: rgba(192, 132, 252, 0.8);
+  color: #c084fc;
+  background: rgba(192, 132, 252, 0.2);
+}
+
+.theater-card__lang-badge--en {
+  border-color: rgba(148, 163, 184, 0.6);
+  color: #cbd5e1;
+  background: rgba(148, 163, 184, 0.15);
 }
 
 .theater-card__body {

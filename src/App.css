@@ -945,15 +945,19 @@ body {
   color: #ff8b94;
 }
 
-/* Embedded Trailer Box */
-.movie-modal__trailer-box {
+/* ==========================================================================
+   IMDb-Style Autoplay Cinema Spotlight Player
+   ========================================================================== */
+.movie-modal__trailer-spotlight {
   margin: 1.1rem 0 1.3rem;
   background: #0d0d12;
-  border: 1px solid rgba(230, 57, 70, 0.4);
+  border: 1px solid rgba(245, 197, 24, 0.4);
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7), 0 0 20px rgba(230, 57, 70, 0.15);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.75), 0 0 24px rgba(245, 197, 24, 0.12);
   animation: trailerSlideDown 0.25s ease-out;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 @keyframes trailerSlideDown {
@@ -967,95 +971,267 @@ body {
   }
 }
 
-.trailer-box__header {
+/* Picture-in-Picture Docked Mini Player Mode */
+.movie-modal__trailer-spotlight.is-mini {
+  position: fixed;
+  bottom: 24px;
+  right: 28px;
+  width: 360px;
+  max-width: calc(100vw - 40px);
+  z-index: 1200;
+  margin: 0;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.85), 0 0 30px rgba(245, 197, 24, 0.35);
+  border-color: #f5c518;
+  animation: pipSlideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes pipSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.trailer-spotlight__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.55rem 0.9rem;
-  background: rgba(20, 20, 26, 0.95);
-  border-bottom: 1px solid #282834;
+  gap: 0.65rem;
+  padding: 0.55rem 0.85rem;
+  background: linear-gradient(180deg, #181922 0%, #101117 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.trailer-box__title {
+.trailer-spotlight__title-row {
   display: flex;
   align-items: center;
   gap: 0.45rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.trailer-spotlight__icon {
+  flex-shrink: 0;
+  color: #f5c518;
+}
+
+.trailer-spotlight__title {
   font-family: var(--mono);
   font-size: 0.76rem;
-  color: #ffc759;
+  color: #f5c518;
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding-right: 0.5rem;
 }
 
-.trailer-box__title-icon {
-  flex-shrink: 0;
-  color: #ffc759;
-}
-
-.trailer-box__header-actions {
+.trailer-spotlight__controls {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.45rem;
   flex-shrink: 0;
 }
 
-.trailer-box__yt-link {
+/* Audio Mute / Unmute Button */
+.trailer-spotlight__audio-btn {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  background: rgba(230, 57, 70, 0.15);
-  border: 1px solid rgba(230, 57, 70, 0.4);
-  color: #ff8b94;
-  font-family: var(--mono);
-  font-size: 0.7rem;
   padding: 0.22rem 0.6rem;
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.trailer-spotlight__audio-btn.is-muted {
+  background: rgba(245, 197, 24, 0.15);
+  border: 1px solid rgba(245, 197, 24, 0.5);
+  color: #f5c518;
+}
+
+.trailer-spotlight__audio-btn.is-muted:hover {
+  background: #f5c518;
+  color: #0b0c10;
+}
+
+.trailer-spotlight__audio-btn.is-unmuted {
+  background: rgba(46, 204, 113, 0.15);
+  border: 1px solid rgba(46, 204, 113, 0.5);
+  color: #2ecc71;
+}
+
+.trailer-spotlight__audio-btn.is-unmuted:hover {
+  background: #2ecc71;
+  color: #0b0c10;
+}
+
+/* Autoplay Switch Toggle */
+.trailer-spotlight__autoplay-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+  user-select: none;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: #9aa0a6;
+}
+
+.trailer-spotlight__autoplay-toggle input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.trailer-spotlight__autoplay-toggle .autoplay-slider {
+  position: relative;
+  display: inline-block;
+  width: 26px;
+  height: 14px;
+  background-color: #333542;
+  border-radius: 999px;
+  transition: background-color 0.2s ease;
+}
+
+.trailer-spotlight__autoplay-toggle .autoplay-slider::before {
+  content: "";
+  position: absolute;
+  height: 10px;
+  width: 10px;
+  left: 2px;
+  bottom: 2px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.trailer-spotlight__autoplay-toggle input:checked + .autoplay-slider {
+  background-color: #f5c518;
+}
+
+.trailer-spotlight__autoplay-toggle input:checked + .autoplay-slider::before {
+  transform: translateX(12px);
+  background-color: #0b0c10;
+}
+
+.trailer-spotlight__autoplay-toggle .autoplay-label {
+  font-weight: 500;
+}
+
+/* Action buttons (PIP toggle & close) */
+.trailer-spotlight__action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #b0b3b8;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.trailer-spotlight__action-btn:hover {
+  background: #f5c518;
+  border-color: #f5c518;
+  color: #0b0c10;
+}
+
+/* External YouTube badge */
+.trailer-spotlight__yt-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: rgba(255, 0, 0, 0.15);
+  border: 1px solid rgba(255, 0, 0, 0.4);
+  color: #ff8585;
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  padding: 0.2rem 0.45rem;
   border-radius: 6px;
   text-decoration: none;
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
-.trailer-box__yt-link:hover {
-  background: #e63946;
-  color: #fff;
-}
-
-.trailer-box__close-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  background: transparent;
-  border: 1px solid #3d3d4a;
-  color: #aaa;
-  font-family: var(--mono);
-  font-size: 0.7rem;
-  padding: 0.25rem 0.6rem;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.trailer-box__close-btn:hover {
+.trailer-spotlight__yt-link:hover {
   background: #e63946;
   border-color: #e63946;
   color: #fff;
 }
 
-.trailer-box__video-frame {
+/* 16:9 Cinema Video Container */
+.trailer-spotlight__video-frame {
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 9;
   background: #000;
 }
 
-.trailer-box__video-frame iframe {
+.trailer-spotlight__video-frame iframe {
   width: 100%;
   height: 100%;
   border: none;
   display: block;
+}
+
+/* Signature IMDb Floating "Tap to unmute" Badge Overlay */
+.trailer-spotlight__unmute-overlay {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(12, 13, 18, 0.88);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1.5px solid rgba(245, 197, 24, 0.8);
+  color: #ffffff;
+  padding: 0.45rem 0.95rem;
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.75), 0 0 16px rgba(245, 197, 24, 0.4);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  animation: pulseUnmuteBadge 2.2s infinite ease-in-out;
+}
+
+@keyframes pulseUnmuteBadge {
+  0% {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.75), 0 0 14px rgba(245, 197, 24, 0.35);
+    border-color: rgba(245, 197, 24, 0.7);
+  }
+  50% {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.85), 0 0 24px rgba(245, 197, 24, 0.7);
+    border-color: #f5c518;
+  }
+  100% {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.75), 0 0 14px rgba(245, 197, 24, 0.35);
+    border-color: rgba(245, 197, 24, 0.7);
+  }
+}
+
+.trailer-spotlight__unmute-overlay:hover {
+  transform: scale(1.05);
+  background: #f5c518;
+  color: #0b0c10;
+  border-color: #f5c518;
+  box-shadow: 0 8px 24px rgba(245, 197, 24, 0.6);
 }
 
 /* Release Info & Companion Meta Rows (Languages & OTT) */

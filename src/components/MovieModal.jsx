@@ -11,6 +11,10 @@ import {
   ExternalLink,
   Star,
   Sparkles,
+  Volume2,
+  VolumeX,
+  Maximize2,
+  Minimize2,
 } from 'lucide-react';
 import { backdropUrl, posterUrl, profileUrl, providerLogoUrl, tmdb } from '../api/tmdb.js';
 import RatingBadge from './RatingBadge.jsx';
@@ -89,7 +93,17 @@ export default function MovieModal({ movieId, onClose }) {
   const [details, setDetails] = useState(null);
   const [error, setError] = useState(null);
   const [imgError, setImgError] = useState(false);
-  const [showTrailer, setShowTrailer] = useState(false);
+  const [showTrailer, setShowTrailer] = useState(true);
+  const [isMuted, setIsMuted] = useState(true);
+  const [autoPlayEnabled, setAutoPlayEnabled] = useState(() => {
+    try {
+      const saved = localStorage.getItem('reelist_autoplay');
+      return saved !== null ? saved === 'true' : true;
+    } catch {
+      return true;
+    }
+  });
+  const [isMiniPlayer, setIsMiniPlayer] = useState(false);
   const modalRef = useRef(null);
   const closeBtnRef = useRef(null);
 
@@ -108,7 +122,9 @@ export default function MovieModal({ movieId, onClose }) {
     setDetails(null);
     setError(null);
     setImgError(false);
-    setShowTrailer(false);
+    setShowTrailer(true);
+    setIsMuted(true);
+    setIsMiniPlayer(false);
 
     tmdb
       .details(movieId)
@@ -180,6 +196,14 @@ export default function MovieModal({ movieId, onClose }) {
     // 4. Any YouTube Video
     return vids.find((v) => v.site === 'YouTube') || null;
   }, [details]);
+
+  // Formatted Embed URL with Autoplay, Mute, and Inline flags
+  const trailerEmbedUrl = useMemo(() => {
+    if (!trailer?.key) return null;
+    const auto = autoPlayEnabled ? '1' : '0';
+    const mute = isMuted ? '1' : '0';
+    return `https://www.youtube.com/embed/${trailer.key}?autoplay=${auto}&mute=${mute}&enablejsapi=1&rel=0&playsinline=1`;
+  }, [trailer, autoPlayEnabled, isMuted]);
 
   // Comprehensive Theatrical & Regional Dub Release Languages resolver
   const releaseLanguages = useMemo(() => {
@@ -471,60 +495,127 @@ export default function MovieModal({ movieId, onClose }) {
                   ))}
                 </div>
 
-                {/* Cinema Action Bar (Trailer Only - IMDb removed per user feedback) */}
-                <div className="movie-modal__action-bar">
-                  {trailer && (
-                    <button
-                      type="button"
-                      className={`btn-cinema-action btn-cinema-action--trailer ${showTrailer ? 'is-playing' : ''}`}
-                      onClick={() => setShowTrailer((prev) => !prev)}
-                      title={showTrailer ? 'Close Cinema Trailer' : 'Watch Official Trailer in Cinema Player'}
-                    >
-                      <span className="action-icon">
-                        {showTrailer ? <Square size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" />}
-                      </span>
-                      <span>{showTrailer ? 'Hide Trailer' : 'Watch Trailer'}</span>
-                    </button>
-                  )}
-                </div>
+                {/* IMDb-Style Autoplay Cinema Spotlight Player */}
+                {trailer && showTrailer && (
+                  <div className={`movie-modal__trailer-spotlight ${isMiniPlayer ? 'is-mini' : ''}`}>
+                    <div className="trailer-spotlight__header">
+                      <div className="trailer-spotlight__title-row">
+                        <Film size={15} className="trailer-spotlight__icon" />
+                        <span className="trailer-spotlight__title">
+                          {trailer.name || `${details.title} Official Trailer`}
+                        </span>
+                      </div>
 
-                {/* Embedded Cinema Trailer Player */}
-                {showTrailer && trailer && (
-                  <div className="movie-modal__trailer-box">
-                    <div className="trailer-box__header">
-                      <span className="trailer-box__title">
-                        <Film size={15} className="trailer-box__title-icon" />
-                        <span>{trailer.name || `${details.title} Official Trailer`}</span>
-                      </span>
-                      <div className="trailer-box__header-actions">
+                      <div className="trailer-spotlight__controls">
+                        {/* Audio Mute/Unmute Toggle (IMDb Signature) */}
+                        <button
+                          type="button"
+                          className={`trailer-spotlight__audio-btn ${isMuted ? 'is-muted' : 'is-unmuted'}`}
+                          onClick={() => setIsMuted((prev) => !prev)}
+                          title={isMuted ? 'Turn Sound ON' : 'Mute Sound'}
+                        >
+                          {isMuted ? <VolumeX size={13} /> : <Volume2 size={13} />}
+                          <span>{isMuted ? 'Tap to unmute' : 'Sound ON'}</span>
+                        </button>
+
+                        {/* Autoplay setting toggle (IMDb-style) */}
+                        <label
+                          className="trailer-spotlight__autoplay-toggle"
+                          title="Play muted trailer automatically when opening title"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={autoPlayEnabled}
+                            onChange={(e) => {
+                              const val = e.target.checked;
+                              setAutoPlayEnabled(val);
+                              try {
+                                localStorage.setItem('reelist_autoplay', String(val));
+                              } catch {
+                                // ignore
+                              }
+                            }}
+                          />
+                          <span className="autoplay-slider" />
+                          <span className="autoplay-label">Autoplay</span>
+                        </label>
+
+                        {/* Picture-in-Picture Mini Player toggle */}
+                        <button
+                          type="button"
+                          className="trailer-spotlight__action-btn"
+                          onClick={() => setIsMiniPlayer((prev) => !prev)}
+                          title={isMiniPlayer ? 'Expand Cinema Player' : 'Picture-in-Picture Mini Mode'}
+                        >
+                          {isMiniPlayer ? <Maximize2 size={13} /> : <Minimize2 size={13} />}
+                        </button>
+
+                        {/* YouTube external */}
                         <a
                           href={`https://www.youtube.com/watch?v=${trailer.key}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="trailer-box__yt-link"
+                          className="trailer-spotlight__yt-link"
                           title="Open directly on YouTube"
                         >
                           <span>YouTube</span>
-                          <ExternalLink size={12} />
+                          <ExternalLink size={11} />
                         </a>
+
+                        {/* Close / Hide toggle */}
                         <button
                           type="button"
-                          className="trailer-box__close-btn"
+                          className="trailer-spotlight__action-btn"
                           onClick={() => setShowTrailer(false)}
+                          title="Hide Trailer"
                         >
                           <X size={13} />
-                          <span>Close</span>
                         </button>
                       </div>
                     </div>
-                    <div className="trailer-box__video-frame">
+
+                    <div className="trailer-spotlight__video-frame">
                       <iframe
-                        src={`https://www.youtube.com/embed/${trailer.key}?autoplay=1&rel=0`}
-                        title={`${details.title} Trailer`}
+                        key={`${trailer.key}-${isMuted}-${autoPlayEnabled}`}
+                        src={trailerEmbedUrl}
+                        title={`${details.title} Official Trailer`}
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                         allowFullScreen
                       />
+
+                      {/* Floating "Tap to unmute" overlay button on video */}
+                      {isMuted && autoPlayEnabled && (
+                        <button
+                          type="button"
+                          className="trailer-spotlight__unmute-overlay"
+                          onClick={() => setIsMuted(false)}
+                          title="Click to turn on sound"
+                        >
+                          <VolumeX size={15} />
+                          <span>Tap to unmute</span>
+                        </button>
+                      )}
                     </div>
+                  </div>
+                )}
+
+                {/* Cinema Action Bar (Visible when trailer is closed or minimized) */}
+                {trailer && !showTrailer && (
+                  <div className="movie-modal__action-bar">
+                    <button
+                      type="button"
+                      className="btn-cinema-action btn-cinema-action--trailer"
+                      onClick={() => {
+                        setShowTrailer(true);
+                        setIsMuted(true);
+                      }}
+                      title="Play Official Cinema Trailer"
+                    >
+                      <span className="action-icon">
+                        <Play size={14} fill="currentColor" />
+                      </span>
+                      <span>Watch Trailer</span>
+                    </button>
                   </div>
                 )}
 

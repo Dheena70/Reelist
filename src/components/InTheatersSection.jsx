@@ -34,30 +34,27 @@ export default function InTheatersSection({ onSelectMovie, onOpenShowtimes }) {
         if (cancelled) return;
 
         if (nowRes.status === 'fulfilled' && nowRes.value?.results?.length > 0) {
-          // Merge API results while preserving curated regional showcase
-          const apiMovies = nowRes.value.results.map((m) => ({
-            ...m,
-            release_label: m.release_date ? `IN THEATERS • ${m.release_date.slice(5)}` : 'IN THEATERS',
-          }));
-          const existingIds = new Set(THEATRICAL_NOW_PLAYING.map((c) => c.id));
-          const combined = [
-            ...THEATRICAL_NOW_PLAYING,
-            ...apiMovies.filter((m) => !existingIds.has(m.id)),
-          ];
-          setNowPlayingMovies(combined);
+          const apiMovies = nowRes.value.results
+            .filter((m) => m.poster_path && m.title)
+            .map((m) => ({
+              ...m,
+              release_label: m.release_date ? `IN THEATERS • ${m.release_date.slice(5)}` : 'IN THEATERS',
+            }));
+          if (apiMovies.length > 0) {
+            setNowPlayingMovies(apiMovies);
+          }
         }
 
         if (upRes.status === 'fulfilled' && upRes.value?.results?.length > 0) {
-          const apiUpcoming = upRes.value.results.map((m) => ({
-            ...m,
-            release_label: m.release_date ? m.release_date.slice(5) : 'COMING SOON',
-          }));
-          const existingUpIds = new Set(THEATRICAL_COMING_SOON.map((c) => c.id));
-          const combinedUp = [
-            ...THEATRICAL_COMING_SOON,
-            ...apiUpcoming.filter((m) => !existingUpIds.has(m.id)),
-          ];
-          setUpcomingMovies(combinedUp);
+          const apiUpcoming = upRes.value.results
+            .filter((m) => m.poster_path && m.title)
+            .map((m) => ({
+              ...m,
+              release_label: m.release_date ? m.release_date.slice(5) : 'COMING SOON',
+            }));
+          if (apiUpcoming.length > 0) {
+            setUpcomingMovies(apiUpcoming);
+          }
         }
       })
       .finally(() => {

@@ -40,6 +40,23 @@ function getLanguageLabel(code) {
   return map[code] || (code ? code.toUpperCase() : 'Cinema');
 }
 
+function formatDateBadge(dateStr, label) {
+  if (label && /^[A-Z]{3}\s+\d{1,2}$/.test(label.trim())) {
+    return label.trim();
+  }
+  if (!dateStr) return label || 'IN THEATERS';
+  const parts = String(dateStr).split('-');
+  if (parts.length === 3) {
+    const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+    const m = parseInt(parts[1], 10) - 1;
+    const d = parseInt(parts[2], 10);
+    if (m >= 0 && m < 12 && !isNaN(d)) {
+      return `${months[m]} ${String(d).padStart(2, '0')}`;
+    }
+  }
+  return label || dateStr;
+}
+
 export default function InTheatersSection({ onSelectMovie, onOpenShowtimes }) {
   const [activeTab, setActiveTab] = useState('now_playing'); // 'now_playing' | 'upcoming'
   const [selectedLang, setSelectedLang] = useState('all');
@@ -197,7 +214,7 @@ export default function InTheatersSection({ onSelectMovie, onOpenShowtimes }) {
       <div className="in-theaters-carousel" ref={scrollRef}>
         {currentList.map((movie) => {
           const poster = posterUrl(movie.poster_path, 'w342');
-          const releaseText = movie.release_label || (movie.release_date ? movie.release_date : 'IN THEATERS');
+          const releaseText = formatDateBadge(movie.release_date, movie.release_label);
           const langCode = (movie.original_language || 'en').toLowerCase();
           const langLabel = getLanguageLabel(langCode);
 

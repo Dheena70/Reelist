@@ -154,7 +154,7 @@ function Monsters({ mouse, passwordFocused, emailTyping }) {
   return (
     <div className="monsters-wrapper">
       <div className="stage-banner">
-        <span className="stage-badge">🍿 CONCESSION SQUAD 🥤</span>
+        <span className="stage-badge">🍿 Concession Squad 🥤</span>
         <p className="stage-tagline">We keep watch while you pick your movie!</p>
       </div>
       <div className="monsters">
@@ -282,6 +282,10 @@ export default function MonsterAuth({ onClose, onLoginSuccess }) {
           --popcorn-cream: #fff2d6;
           --popcorn-red: #e63946;
           --soda-can: #4ecdc4;
+          --radius-full: 999px;
+          --radius-lg: 20px;
+          --radius-md: 10px;
+          --radius-sm: 4px;
           font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
           position: relative;
           max-width: 960px;
@@ -296,7 +300,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess }) {
           background: rgba(0, 0, 0, 0.45);
           border: 1px solid rgba(255, 255, 255, 0.25);
           color: #fff;
-          border-radius: 999px;
+          border-radius: var(--radius-full);
           width: 36px;
           height: 36px;
           cursor: pointer;
@@ -313,7 +317,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess }) {
         .auth-card {
           position: relative;
           background: #ffffff;
-          border-radius: 24px;
+          border-radius: var(--radius-lg);
           overflow: hidden;
           min-height: 590px;
           box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.15);
@@ -365,13 +369,14 @@ export default function MonsterAuth({ onClose, onLoginSuccess }) {
         }
         .stage-badge {
           display: inline-block;
-          font-family: 'Bebas Neue', sans-serif;
-          font-size: 22px;
-          letter-spacing: 0.12em;
+          font-family: 'Inter', system-ui, -apple-system, sans-serif;
+          font-size: 14px;
+          font-weight: 700;
+          letter-spacing: 0.03em;
           color: #7a4a35;
           background: rgba(122, 74, 53, 0.1);
-          padding: 4px 16px;
-          border-radius: 999px;
+          padding: 5px 16px;
+          border-radius: var(--radius-full);
           border: 1px solid rgba(122, 74, 53, 0.2);
         }
         .stage-tagline {
@@ -498,12 +503,12 @@ export default function MonsterAuth({ onClose, onLoginSuccess }) {
           80% { transform: translateY(-3px) rotate(3deg); }
         }
         .mon-soda { width: 74px; animation: sodaFizz 2.6s ease-in-out infinite; transform-origin: bottom center; }
-        .soda-tab { width: 18px; height: 9px; border-radius: 5px; background: linear-gradient(180deg, #e8e8e8, #a8a8a8); border: 2px solid #3d2b1a; margin: 0 auto -2px; position: relative; z-index: 3; }
+        .soda-tab { width: 18px; height: 9px; border-radius: var(--radius-sm); background: linear-gradient(180deg, #e8e8e8, #a8a8a8); border: 2px solid #3d2b1a; margin: 0 auto -2px; position: relative; z-index: 3; }
         .soda-can {
           width: 74px; height: 124px;
           background: linear-gradient(180deg, #e6314a 0%, #c8102e 100%);
           border: 2.5px solid #3d2b1a;
-          border-radius: 14px;
+          border-radius: var(--radius-md);
           display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
           position: relative;
           overflow: hidden;
@@ -524,46 +529,145 @@ export default function MonsterAuth({ onClose, onLoginSuccess }) {
           z-index: 1;
         }
         .soda-label { position: absolute; top: 42%; left: -25%; right: -25%; height: 26%; background: #fff; opacity: 0.92; transform: rotate(-9deg); z-index: 1; }
-        .soda-mouth { width: 18px; height: 7px; background: #1c1c1c; border-radius: 4px; z-index: 2; position: relative; transition: height .15s ease, width .15s ease; }
+        .soda-mouth { width: 18px; height: 7px; background: #1c1c1c; border-radius: var(--radius-sm); z-index: 2; position: relative; transition: height .15s ease, width .15s ease; }
         .soda-mouth.open { height: 16px; width: 16px; border-radius: 50%; }
         
-        .logo { display: flex; justify-content: center; margin-bottom: 8px; }
-        .brand-name { font-family: 'Bebas Neue', sans-serif; font-size: 38px; font-weight: 900; letter-spacing: 0.1em; color: #1a1a1a; }
-        .right-panel h1 { text-align: center; font-size: 28px; font-weight: 800; margin: 0 0 6px; color: #1a1a1a; }
-        .right-panel .sub { text-align: center; font-size: 15px; color: #707070; margin: 0 0 24px; line-height: 1.4; }
-        .field { margin-bottom: 18px; }
-        .field label { display: block; font-size: 14px; font-weight: 700; color: #1a1a1a; margin-bottom: 8px; }
-        .field-input { display: flex; align-items: center; border-bottom: 2px solid #ddd; padding-bottom: 6px; transition: border-color 0.2s ease; }
-        .field-input:focus-within { border-color: #ff8a3d; }
-        .field-input input { flex: 1; border: none; outline: none; font-size: 16px; color: #1a1a1a; background: transparent; padding: 2px 0; }
-        .field-input input::placeholder { color: #aaa; font-size: 14.5px; }
+        .logo { display: flex; justify-content: flex-start; align-items: center; margin-bottom: 12px; }
+        .brand-name {
+          font-family: 'Bebas Neue', sans-serif;
+          font-size: 20px;
+          font-weight: 700;
+          letter-spacing: 0.14em;
+          color: #7a4a35;
+          background: rgba(122, 74, 53, 0.08);
+          padding: 3px 10px;
+          border-radius: var(--radius-sm);
+          border: 1px solid rgba(122, 74, 53, 0.16);
+          display: inline-block;
+        }
+        .right-panel h1 {
+          text-align: left;
+          font-size: 24px;
+          font-weight: 800;
+          margin: 0 0 6px;
+          color: #0f172a;
+          letter-spacing: -0.02em;
+        }
+        .right-panel .sub {
+          text-align: left;
+          font-size: 14.5px;
+          color: #64748b;
+          margin: 0 0 22px;
+          line-height: 1.4;
+        }
+        .field { margin-bottom: 15px; }
+        .field label { display: block; font-size: 13.5px; font-weight: 700; color: #1e293b; margin-bottom: 6px; }
+        .field-input {
+          display: flex;
+          align-items: center;
+          background: #f8fafc;
+          border: 1.5px solid #cbd5e1;
+          border-radius: var(--radius-md);
+          padding: 8px 12px;
+          min-height: 44px;
+          box-sizing: border-box;
+          transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+        .field-input:hover {
+          border-color: #94a3b8;
+          background: #f1f5f9;
+        }
+        .field-input:focus-within {
+          border-color: #ff8a3d;
+          background: #ffffff;
+          box-shadow: 0 0 0 3px rgba(255, 138, 61, 0.22);
+        }
+        .field-input input {
+          flex: 1;
+          border: none;
+          outline: none;
+          font-size: 15px;
+          color: #0f172a;
+          background: transparent;
+          padding: 2px 0;
+          font-family: inherit;
+        }
+        .field-input input::placeholder { color: #94a3b8; font-size: 14px; }
         .field-input input:-webkit-autofill,
         .field-input input:-webkit-autofill:hover, 
         .field-input input:-webkit-autofill:focus, 
         .field-input input:-webkit-autofill:active {
           -webkit-box-shadow: 0 0 0 30px #ffffff inset !important;
-          -webkit-text-fill-color: #1a1a1a !important;
+          -webkit-text-fill-color: #0f172a !important;
           box-shadow: 0 0 0 30px #ffffff inset !important;
           transition: background-color 5000s ease-in-out 0s;
         }
-        .field-input button { border: none; background: transparent; cursor: pointer; color: #888; display: flex; padding: 4px; }
-        .row-between { display: flex; align-items: center; justify-content: space-between; margin: 18px 0 22px; font-size: 14px; color: #555; }
+        .field-input button {
+          border: none;
+          background: transparent;
+          cursor: pointer;
+          color: #64748b;
+          display: flex;
+          padding: 4px;
+          border-radius: var(--radius-sm);
+          transition: color 0.15s ease;
+        }
+        .field-input button:hover {
+          color: #0f172a;
+        }
+        .row-between {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin: 8px 0 20px;
+          font-size: 14px;
+          color: #475569;
+        }
         .row-between a { color: #7a4a35; text-decoration: none; font-weight: 600; }
         .row-between a:hover { text-decoration: underline; }
-        .remember { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; font-weight: 500; }
-        .btn-primary { width: 100%; padding: 14px 0; border-radius: 12px; border: none; background: #1a1a1a; color: #fff; font-size: 16px; font-weight: 700; cursor: pointer; margin-bottom: 4px; transition: background 0.15s ease, transform 0.1s ease; }
-        .btn-primary:hover { background: #333; transform: translateY(-1px); }
-        .footer-text { text-align: center; font-size: 14px; color: #777; margin-top: 22px; }
-        .footer-text button { border: none; background: transparent; color: #1a1a1a; font-weight: 700; cursor: pointer; font-size: 14px; text-decoration: underline; margin-left: 4px; }
+        .remember {
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          cursor: pointer;
+          font-size: 14px;
+          font-weight: 500;
+          user-select: none;
+        }
+        .remember input[type="checkbox"] {
+          width: 18px;
+          height: 18px;
+          cursor: pointer;
+          accent-color: #ff8a3d;
+          border-radius: var(--radius-sm);
+          margin: 0;
+          flex-shrink: 0;
+        }
+        .btn-primary {
+          width: 100%;
+          padding: 13px 0;
+          border-radius: var(--radius-md);
+          border: none;
+          background: #0f172a;
+          color: #fff;
+          font-size: 15.5px;
+          font-weight: 700;
+          cursor: pointer;
+          margin-bottom: 4px;
+          transition: background 0.15s ease, transform 0.1s ease;
+        }
+        .btn-primary:hover { background: #1e293b; transform: translateY(-1px); }
+        .footer-text { text-align: left; font-size: 14px; color: #64748b; margin-top: 20px; }
+        .footer-text button { border: none; background: transparent; color: #0f172a; font-weight: 700; cursor: pointer; font-size: 14px; text-decoration: underline; margin-left: 4px; }
         .auth-error-box {
           background: #fee2e2;
           border: 1px solid #ef4444;
           color: #b91c1c;
           padding: 10px 14px;
-          border-radius: 10px;
+          border-radius: var(--radius-md);
           font-size: 13.5px;
-          margin-bottom: 18px;
-          text-align: center;
+          margin-bottom: 16px;
+          text-align: left;
           font-weight: 500;
         }
 
@@ -574,7 +678,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess }) {
           gap: 6px 8px;
           background: #f8fafc;
           border: 1px solid #e2e8f0;
-          border-radius: 10px;
+          border-radius: var(--radius-md);
           padding: 8px 12px;
           font-size: 11.5px;
           text-align: left;
@@ -601,25 +705,25 @@ export default function MonsterAuth({ onClose, onLoginSuccess }) {
           .auth-app { max-width: 1060px; }
           .auth-card { min-height: 640px; }
           .monsters { transform: scale(1.2); gap: 20px; }
-          .brand-name { font-size: 44px; }
-          .right-panel h1 { font-size: 32px; }
+          .brand-name { font-size: 24px; }
+          .right-panel h1 { font-size: 28px; }
         }
 
         @media (max-width: 860px) {
           .auth-app { width: 94%; max-width: 520px; }
-          .auth-card { flex-direction: column; min-height: auto; border-radius: 20px; }
+          .auth-card { flex-direction: column; min-height: auto; border-radius: var(--radius-lg); }
           .left-panel, .right-panel { position: relative !important; width: 100% !important; left: 0 !important; }
           .left-panel { min-height: 230px; padding: 22px 16px 14px; }
           .stage-banner { padding-top: 0; }
-          .stage-badge { font-size: 18px; padding: 3px 12px; }
+          .stage-badge { font-size: 13px; padding: 4px 12px; }
           .stage-tagline { font-size: 12.5px; margin-top: 4px; }
           .monsters { transform: scale(0.74); transform-origin: center bottom; margin-bottom: 0; gap: 10px; }
           .stage-ground { width: 260px; height: 10px; margin-top: -4px; }
           .right-panel { padding: 28px 24px 34px; }
-          .brand-name { font-size: 32px; }
-          .right-panel h1 { font-size: 24px; }
-          .right-panel .sub { font-size: 14px; margin-bottom: 18px; }
-          .field { margin-bottom: 14px; }
+          .brand-name { font-size: 18px; }
+          .right-panel h1 { font-size: 22px; }
+          .right-panel .sub { font-size: 13.5px; margin-bottom: 16px; }
+          .field { margin-bottom: 13px; }
           .btn-primary { padding: 13px 0; font-size: 15px; }
         }
 
@@ -627,7 +731,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess }) {
           .auth-app { width: 96%; }
           .monsters { transform: scale(0.64); gap: 6px; }
           .right-panel { padding: 22px 18px 28px; }
-          .field-input input { font-size: 16px; }
+          .field-input input { font-size: 15px; }
           .pw-checklist { grid-template-columns: 1fr; gap: 4px; }
         }
       `}</style>
@@ -653,7 +757,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess }) {
             <span className="brand-name">REELIST</span>
           </div>
           <div className="form-fade" style={{ opacity: fieldsVisible ? 1 : 0 }}>
-            <h1>{mode === "login" ? "Welcome to Reelist" : "Create account"}</h1>
+            <h1>{mode === "login" ? "Sign in to your account" : "Create your account"}</h1>
             <p className="sub">
               {mode === "login"
                 ? "Sign in to access your cinema marquee"

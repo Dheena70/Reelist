@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Play } from 'lucide-react';
 import { posterUrl } from '../api/tmdb.js';
 import RatingBadge from './RatingBadge.jsx';
 
@@ -14,7 +15,7 @@ export default function MovieCard({ movie, onSelect, index }) {
       className="movie-card"
       style={{ '--i': index }}
       onClick={() => onSelect(movie)}
-      aria-label={`View details for ${title}`}
+      aria-label={`View details and trailer for ${title}`}
     >
       <div className="movie-card__poster">
         {poster && !imgError ? (
@@ -28,6 +29,10 @@ export default function MovieCard({ movie, onSelect, index }) {
           <div className="movie-card__noposter">No Artwork</div>
         )}
         <RatingBadge value={movie.vote_average} />
+        <div className="movie-card__action-hint">
+          <Play size={11} fill="currentColor" />
+          <span>Trailer</span>
+        </div>
       </div>
       <div className="movie-card__meta">
         <span className="movie-card__title">{title}</span>

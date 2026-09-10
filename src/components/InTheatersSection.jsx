@@ -144,7 +144,7 @@ export default function InTheatersSection({ onSelectMovie, onOpenShowtimes }) {
           </p>
         </div>
 
-        {/* Action Controls: Tabs & Horizontal Carousel Arrows */}
+        {/* Action Controls: Tabs */}
         <div className="in-theaters-section__controls">
           <div className="in-theaters-tabs">
             <button
@@ -164,27 +164,6 @@ export default function InTheatersSection({ onSelectMovie, onOpenShowtimes }) {
               <Calendar size={13} />
               <span>Coming Soon</span>
               <span className="tab-count">{upcomingMovies.length}</span>
-            </button>
-          </div>
-
-          <div className="carousel-nav-btns">
-            <button
-              type="button"
-              className="carousel-arrow-btn"
-              onClick={() => handleScroll('left')}
-              title="Scroll left"
-              aria-label="Scroll left"
-            >
-              <ChevronLeft size={16} />
-            </button>
-            <button
-              type="button"
-              className="carousel-arrow-btn"
-              onClick={() => handleScroll('right')}
-              title="Scroll right"
-              aria-label="Scroll right"
-            >
-              <ChevronRight size={16} />
             </button>
           </div>
         </div>
@@ -210,8 +189,19 @@ export default function InTheatersSection({ onSelectMovie, onOpenShowtimes }) {
         </div>
       </div>
 
-      {/* Horizontal Scrolling Theatrical Showcase */}
-      <div className="in-theaters-carousel" ref={scrollRef}>
+      {/* Horizontal Scrolling Theatrical Showcase with side navigation arrows */}
+      <div className="in-theaters-carousel-wrapper">
+        <button
+          type="button"
+          className="carousel-arrow-btn carousel-arrow-btn--left"
+          onClick={() => handleScroll('left')}
+          title="Scroll left"
+          aria-label="Scroll left"
+        >
+          <ChevronLeft size={20} />
+        </button>
+
+        <div className="in-theaters-carousel" ref={scrollRef}>
         {currentList.map((movie) => {
           const poster = posterUrl(movie.poster_path, 'w342');
           const releaseText = formatDateBadge(movie.release_date, movie.release_label);
@@ -312,6 +302,17 @@ export default function InTheatersSection({ onSelectMovie, onOpenShowtimes }) {
             </div>
           );
         })}
+      </div>
+
+        <button
+          type="button"
+          className="carousel-arrow-btn carousel-arrow-btn--right"
+          onClick={() => handleScroll('right')}
+          title="Scroll right"
+          aria-label="Scroll right"
+        >
+          <ChevronRight size={20} />
+        </button>
       </div>
     </section>
   );

@@ -296,31 +296,18 @@ export default function App() {
               onChange={setQuery}
               onSubmit={handleSearchSubmit}
             />
-            {(activeQuery || isAdmin) && (
+            {activeQuery && (
               <div className="hero__actions">
-                {activeQuery && (
-                  <button
-                    type="button"
-                    className="hero__action-btn"
-                    onClick={() => {
-                      setQuery('');
-                      setActiveQuery('');
-                    }}
-                  >
-                    ← Back to trending
-                  </button>
-                )}
-                {isAdmin && (
-                  <button
-                    type="button"
-                    className="hero__action-btn hero__action-btn--admin"
-                    onClick={() => setShowAdmin(true)}
-                    title="Admin Account — Click to view visitor dashboard"
-                  >
-                    <Eye size={14} />
-                    <span>{visitorCount.toLocaleString()} Visitors (Admin Dashboard)</span>
-                  </button>
-                )}
+                <button
+                  type="button"
+                  className="hero__action-btn"
+                  onClick={() => {
+                    setQuery('');
+                    setActiveQuery('');
+                  }}
+                >
+                  ← Back to trending
+                </button>
               </div>
             )}
             <div className="hero__sprockets hero__sprockets--bottom" aria-hidden="true">

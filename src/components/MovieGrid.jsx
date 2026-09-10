@@ -1,10 +1,13 @@
+import { useState } from 'react';
 import MovieCard from './MovieCard.jsx';
 
 export default function MovieGrid({ movies, loading, error, emptyLabel, onSelect, onRetry }) {
+  const [showAll, setShowAll] = useState(false);
+
   if (loading) {
     return (
       <div className="movie-grid" role="status" aria-busy="true" aria-label="Loading movies">
-        {Array.from({ length: 10 }).map((_, i) => (
+        {Array.from({ length: 12 }).map((_, i) => (
           <div className="movie-card movie-card--skeleton" key={i} />
         ))}
       </div>
@@ -34,11 +37,29 @@ export default function MovieGrid({ movies, loading, error, emptyLabel, onSelect
     );
   }
 
+  // Display initial 12 items (2 complete 6-column rows) to eliminate incomplete row whitespace (Heuristic 9 Fix)
+  const displayedMovies = showAll || movies.length <= 12 ? movies : movies.slice(0, 12);
+
   return (
-    <div className="movie-grid">
-      {movies.map((movie, i) => (
-        <MovieCard movie={movie} key={movie.id} onSelect={onSelect} index={i} />
-      ))}
+    <div className="movie-grid-container">
+      <div className="movie-grid">
+        {displayedMovies.map((movie, i) => (
+          <MovieCard movie={movie} key={movie.id} onSelect={onSelect} index={i} />
+        ))}
+      </div>
+
+      {movies.length > 12 && (
+        <div className="movie-grid__view-more">
+          <button
+            type="button"
+            className="btn-view-more"
+            onClick={() => setShowAll((prev) => !prev)}
+            aria-expanded={showAll}
+          >
+            {showAll ? 'Show Fewer Titles' : `View More Titles (+${movies.length - 12})`}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

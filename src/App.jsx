@@ -196,16 +196,6 @@ export default function App() {
       <nav className="top-nav">
         <div className="top-nav__brand">
           <span className="top-nav__logo">REELIST</span>
-          {isAdmin && (
-            <div className="top-nav__visitor-capsule" title="Live Audience Visitors (Admin Only)">
-              <span className="live-ping">
-                <span className="live-ping__circle" />
-                <span className="live-ping__dot" />
-              </span>
-              <span className="visitor-capsule__label">Live Visitors:</span>
-              <span className="visitor-capsule__count">{visitorCount.toLocaleString()}</span>
-            </div>
-          )}
         </div>
 
         <div className="top-nav__actions">
@@ -214,7 +204,7 @@ export default function App() {
               type="button"
               className={`top-nav__btn ${showAdmin ? 'top-nav__btn--active-admin' : 'top-nav__btn--admin'}`}
               onClick={() => setShowAdmin((prev) => !prev)}
-              title={showAdmin ? 'Switch to Movie Marquee' : 'Switch to Admin Dashboard'}
+              title={showAdmin ? 'Switch to Movie Marquee' : 'Open Admin Dashboard'}
             >
               {showAdmin ? (
                 <>
@@ -224,7 +214,7 @@ export default function App() {
               ) : (
                 <>
                   <BarChart3 size={15} />
-                  <span>Admin Dashboard ({visitorCount})</span>
+                  <span>Admin Dashboard</span>
                 </>
               )}
             </button>
@@ -251,32 +241,6 @@ export default function App() {
           </button>
         </div>
       </nav>
-
-      {/* Prominent Admin Status Strip for the Administrator on Movie Marquee */}
-      {isAdmin && !showAdmin && (
-        <div className="admin-status-strip">
-          <div className="admin-status-strip__inner">
-            <div className="admin-status-strip__left">
-              <span className="admin-badge">
-                <span className="admin-badge__pulse" />
-                ADMIN PROJECTION MODE
-              </span>
-              <span className="admin-status-strip__stat">
-                <Eye size={14} className="stat-strip-icon" />
-                <span>Live Visitors:</span> <strong>{visitorCount.toLocaleString()}</strong>
-              </span>
-              <span className="admin-status-strip__stat">
-                <Calendar size={14} className="stat-strip-icon" />
-                <span>Today:</span> <strong>{stats.todayVisitors.toLocaleString()}</strong>
-              </span>
-              <span className="admin-status-strip__stat">
-                <Search size={14} className="stat-strip-icon" />
-                <span>Searches:</span> <strong>{stats.totalSearches.toLocaleString()}</strong>
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
 
       {showAdmin && isAdmin ? (
         <AdminDashboard onSwitchToMovies={() => setShowAdmin(false)} />

@@ -66,7 +66,7 @@ export default function AdminDashboard({ onSwitchToMovies }) {
             <div className="admin-badge">
               <span className="admin-badge__pulse" />
               <Shield size={13} />
-              <span>PROJECTION BOOTH • SECURITY CORE</span>
+              <span>Projection Booth • Security Core</span>
             </div>
             <h1 className="admin-page__title">Admin Intelligence Dashboard</h1>
             <p className="admin-page__subtitle">

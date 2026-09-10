@@ -63,7 +63,18 @@ export default function InTheatersSection({ onSelectMovie, onOpenShowtimes }) {
   const [nowPlayingMovies, setNowPlayingMovies] = useState(THEATRICAL_NOW_PLAYING);
   const [upcomingMovies, setUpcomingMovies] = useState(THEATRICAL_COMING_SOON);
   const [loading, setLoading] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
   const scrollRef = useRef(null);
+
+  const handleCarouselScroll = () => {
+    if (!scrollRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+    const maxScroll = scrollWidth - clientWidth;
+    if (maxScroll > 0) {
+      const progress = Math.min(100, Math.max(6, (scrollLeft / maxScroll) * 100));
+      setScrollProgress(progress);
+    }
+  };
 
   // Fetch live now playing and upcoming from TMDB if available, merging with curated movies
   useEffect(() => {
@@ -198,111 +209,116 @@ export default function InTheatersSection({ onSelectMovie, onOpenShowtimes }) {
           title="Scroll left"
           aria-label="Scroll left"
         >
-          <ChevronLeft size={20} />
+          <ChevronLeft size={22} />
         </button>
 
-        <div className="in-theaters-carousel" ref={scrollRef}>
-        {currentList.map((movie) => {
-          const poster = posterUrl(movie.poster_path, 'w342');
-          const releaseText = formatDateBadge(movie.release_date, movie.release_label);
-          const langCode = (movie.original_language || 'en').toLowerCase();
-          const langLabel = getLanguageLabel(langCode);
+        <div
+          className="in-theaters-carousel"
+          ref={scrollRef}
+          onScroll={handleCarouselScroll}
+        >
+          {currentList.map((movie) => {
+            const poster = posterUrl(movie.poster_path, 'w342');
+            const releaseText = formatDateBadge(movie.release_date, movie.release_label);
+            const langCode = (movie.original_language || 'en').toLowerCase();
+            const langLabel = getLanguageLabel(langCode);
 
-          return (
-            <div key={movie.id} className="theater-card">
-              {/* Card Poster with Date Chip, Language Pill and Rating */}
-              <div
-                className="theater-card__poster-box"
-                onClick={() => onSelectMovie(movie)}
-                title={`Open ${movie.title} trailer & details`}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') onSelectMovie(movie);
-                }}
-              >
-                {poster ? (
-                  <img
-                    src={poster}
-                    alt={`${movie.title} poster`}
-                    className="theater-card__img"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="theater-card__placeholder">
-                    <Film size={32} />
-                    <span>No Poster</span>
-                  </div>
-                )}
-
-                {/* Floating Date Badge (Top Left - Matching Screenshot) */}
-                <div className="theater-card__date-badge">
-                  <Calendar size={10} />
-                  <span>{releaseText}</span>
-                </div>
-
-                {/* Star Rating Badge (Top Right) */}
-                {movie.vote_average && (
-                  <div className="theater-card__rating-badge">
-                    ★ {Number(movie.vote_average).toFixed(1)}
-                  </div>
-                )}
-
-                {/* Language Pill Badge (Bottom Left) */}
-                <div className={`theater-card__lang-badge theater-card__lang-badge--${langCode}`}>
-                  {langLabel}
-                </div>
-
-                {/* Duration Badge for Upcoming (Screenshot 5) */}
-                {movie.duration && (
-                  <div className="theater-card__duration-badge">
-                    <Clock size={10} />
-                    <span>{movie.duration}</span>
-                  </div>
-                )}
-
-                <div className="theater-card__overlay-glow" />
-              </div>
-
-              {/* Title & Metadata */}
-              <div className="theater-card__body">
-                <h3
-                  className="theater-card__title"
-                  title={movie.title}
+            return (
+              <div key={movie.id} className="theater-card">
+                {/* Clean Card Poster with Star Rating Badge & Trailer Hint (Standardized with Trending Card) */}
+                <div
+                  className="theater-card__poster-box"
                   onClick={() => onSelectMovie(movie)}
+                  title={`Open ${movie.title} trailer & details`}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') onSelectMovie(movie);
+                  }}
                 >
-                  {movie.title}
-                </h3>
-
-                {/* Dual Action Buttons (Matching IMDb Screenshot 3) */}
-                <div className="theater-card__actions">
-                  {activeTab === 'now_playing' && onOpenShowtimes && (
-                    <button
-                      type="button"
-                      className="theater-action-btn theater-action-btn--showtimes"
-                      onClick={() => onOpenShowtimes(movie)}
-                      title={`View theater showtimes for ${movie.title}`}
-                    >
-                      <Ticket size={13} />
-                      <span>Showtimes</span>
-                    </button>
+                  {poster ? (
+                    <img
+                      src={poster}
+                      alt={`${movie.title} poster`}
+                      className="theater-card__img"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="theater-card__placeholder">
+                      <Film size={32} />
+                      <span>No Poster</span>
+                    </div>
                   )}
 
-                  <button
-                    type="button"
-                    className="theater-action-btn theater-action-btn--trailer"
-                    onClick={() => onSelectMovie(movie)}
-                    title={`Play official trailer for ${movie.title}`}
-                  >
-                    <Play size={12} fill="currentColor" />
+                  {/* Star Rating Badge (Top Right) */}
+                  {movie.vote_average && (
+                    <div className="theater-card__rating-badge">
+                      ★ {Number(movie.vote_average).toFixed(1)}
+                    </div>
+                  )}
+
+                  {/* Standardized Trailer Hint */}
+                  <div className="theater-card__action-hint">
+                    <Play size={11} fill="currentColor" />
                     <span>Trailer</span>
-                  </button>
+                  </div>
+
+                  <div className="theater-card__overlay-glow" />
+                </div>
+
+                {/* Title & Decluttered Metadata Area (Heuristic 7 Fix) */}
+                <div className="theater-card__body">
+                  <h3
+                    className="theater-card__title"
+                    title={movie.title}
+                    onClick={() => onSelectMovie(movie)}
+                  >
+                    {movie.title}
+                  </h3>
+
+                  <div className="theater-card__meta-line">
+                    <span className="theater-card__meta-date">{releaseText}</span>
+                    <span className="theater-card__meta-sep">•</span>
+                    <span className={`theater-card__meta-lang theater-card__meta-lang--${langCode}`}>
+                      {langLabel}
+                    </span>
+                    {movie.duration && (
+                      <>
+                        <span className="theater-card__meta-sep">•</span>
+                        <span className="theater-card__meta-duration">{movie.duration}</span>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Consistent Action Row */}
+                  <div className="theater-card__actions">
+                    {activeTab === 'now_playing' && onOpenShowtimes && (
+                      <button
+                        type="button"
+                        className="theater-action-btn theater-action-btn--showtimes"
+                        onClick={() => onOpenShowtimes(movie)}
+                        title={`View theater showtimes for ${movie.title}`}
+                      >
+                        <Ticket size={13} />
+                        <span>Showtimes</span>
+                      </button>
+                    )}
+
+                    <button
+                      type="button"
+                      className="theater-action-btn theater-action-btn--trailer"
+                      onClick={() => onSelectMovie(movie)}
+                      title={`Play official trailer for ${movie.title}`}
+                    >
+                      <Play size={12} fill="currentColor" />
+                      <span>Watch Trailer</span>
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
 
         <button
           type="button"
@@ -311,8 +327,18 @@ export default function InTheatersSection({ onSelectMovie, onOpenShowtimes }) {
           title="Scroll right"
           aria-label="Scroll right"
         >
-          <ChevronRight size={20} />
+          <ChevronRight size={22} />
         </button>
+      </div>
+
+      {/* Visual Carousel Scroll Progress Feedback (Heuristic 10 Fix) */}
+      <div className="carousel-progress-wrapper" aria-hidden="true">
+        <div className="carousel-progress-track">
+          <div className="carousel-progress-fill" style={{ width: `${scrollProgress}%` }} />
+        </div>
+        <span className="carousel-progress-label">
+          {currentList.length} movies available • Scroll to explore
+        </span>
       </div>
     </section>
   );

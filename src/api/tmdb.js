@@ -111,6 +111,1277 @@ export function profileUrl(path, size = 'w185') {
 
 export const THEATRICAL_NOW_PLAYING = [
   {
+    "id": 1538457,
+    "title": "Meesaya Murukku 2",
+    "original_title": "மீசைய முறுக்கு 2",
+    "original_language": "ta",
+    "release_date": "2026-09-25",
+    "release_label": "SEP 25",
+    "full_release_date": "2026-09-25 (Theatrical)",
+    "duration": "2h 20m",
+    "runtime": 140,
+    "director": "HipHop Tamizha Adhi",
+    "production_companies": "KVN Productions",
+    "vote_average": 7.2,
+    "vote_count": 120,
+    "poster_path": "/qD1QwmInB9ezd2peVb5EbhaM4Mo.jpg",
+    "backdrop_path": "/8iG6naruSFn4CuSWB01F0JuImCc.jpg",
+    "overview": "After facing rejection in love and getting into a fight, Jeeva learns about his father Siva's struggles and sacrifices. Inspired by his grandfather's legacy and father's dedication, Jeeva changes his outlook and works hard toward his musical dream. Through determination and perseverance, Jeeva earns recognition in the music industry and brings pride to his family.",
+    "genre_ids": [
+      35,
+      10749,
+      18
+    ],
+    "trailerKey": "",
+    "ratings": {
+      "imdb": "7.2/10",
+      "prime": "7.5/10",
+      "rottenTomatoes": "80%",
+      "tmdb": "7.2/10"
+    },
+    "cast": [
+      {
+        "id": 1414019,
+        "name": "HipHop Tamizha Adhi",
+        "character": "Jeeva/Tiger Shiva",
+        "gender": 2,
+        "profile_path": "/k2oEkE6Du42QpDn8Ss6dphr5nll.jpg"
+      },
+      {
+        "id": 2994489,
+        "name": "Ketika Sharma",
+        "character": "Laila",
+        "gender": 1,
+        "profile_path": "/jvElVKGhzwMUFNNxijYCK8pubdW.jpg"
+      },
+      {
+        "id": 2488387,
+        "name": "Chaithra J Achar",
+        "character": "Latchumi",
+        "gender": 1,
+        "profile_path": "/mCpqijk7HhguNYcffPhprGVHts5.jpg"
+      },
+      {
+        "id": 4446230,
+        "name": "Ramya Ranganathan",
+        "character": "Vaani",
+        "gender": 1,
+        "profile_path": "/8yRztudKzhaigLfiIgPcSHTZFvg.jpg"
+      },
+      {
+        "id": 4492069,
+        "name": "Harshath Khan",
+        "character": "",
+        "gender": 0,
+        "profile_path": "/kE3DLC2XkpRAnuHOZq6YnaJrU9g.jpg"
+      }
+    ]
+  },
+  {
+    "id": 1376856,
+    "title": "The Paradise",
+    "original_title": "ది ప్యారడైస్",
+    "original_language": "te",
+    "release_date": "2026-09-23",
+    "release_label": "SEP 23",
+    "full_release_date": "2026-09-23 (Theatrical)",
+    "duration": "2h 45m",
+    "runtime": 165,
+    "director": "Srikanth Odela",
+    "production_companies": "Major Studio",
+    "vote_average": 7.1,
+    "vote_count": 120,
+    "poster_path": "/9k5F5Lk2bUP7ODifk1KP5Vw8yGm.jpg",
+    "backdrop_path": "/7AcH5TFppoMusNkCBLaQP6UOODp.jpg",
+    "overview": "In 1980s Secunderabad, a marginalized tribe battles discrimination and fights for citizenship under an unexpected leader's guidance, challenging systemic oppression.",
+    "genre_ids": [
+      28,
+      53,
+      18
+    ],
+    "trailerKey": "Y3xewv1ZnHc",
+    "ratings": {
+      "imdb": "7.1/10",
+      "prime": "7.4/10",
+      "rottenTomatoes": "79%",
+      "tmdb": "7.1/10"
+    },
+    "cast": [
+      {
+        "id": 225387,
+        "name": "Nani",
+        "character": "Jadal Zamana",
+        "gender": 2,
+        "profile_path": "/jfOH4sUWs3VXuGUlo0VLMYNRBQ4.jpg"
+      },
+      {
+        "id": 2578168,
+        "name": "Kayadu Lohar",
+        "character": "Subbu",
+        "gender": 1,
+        "profile_path": "/pHaMPnrfnWvTPZA4IOmZk8BHY0U.jpg"
+      },
+      {
+        "id": 585268,
+        "name": "Mohan Babu",
+        "character": "Shikanja Maalik",
+        "gender": 2,
+        "profile_path": "/zwqcXtnk0ju0nhuhvZXSLL2nLIy.jpg"
+      },
+      {
+        "id": 1374676,
+        "name": "Raghav Juyal",
+        "character": "Vikram Maalik",
+        "gender": 2,
+        "profile_path": "/ncJa8IBYfDknQLpjeciaQy6dXkH.jpg"
+      },
+      {
+        "id": 78920,
+        "name": "Sonali Kulkarni",
+        "character": "",
+        "gender": 1,
+        "profile_path": "/aQeM6N2JgGFbI5VoltWhkxw6OQC.jpg"
+      }
+    ]
+  },
+  {
+    "id": 1423191,
+    "title": "Resident Evil",
+    "original_title": "Resident Evil",
+    "original_language": "en",
+    "release_date": "2026-09-16",
+    "release_label": "SEP 16",
+    "full_release_date": "2026-09-16 (Theatrical)",
+    "duration": "1h 34m",
+    "runtime": 94,
+    "director": "Zach Cregger",
+    "production_companies": "Major Studio",
+    "vote_average": 8.1,
+    "vote_count": 57,
+    "poster_path": "/i7UyjfPio0VFHB9rBUZSFyhOoM8.jpg",
+    "backdrop_path": "/1CIaRYKf3zg2Xyce1CSfCMg2Vfw.jpg",
+    "overview": "A hapless medical courier fights for his life amid an outbreak of a deadly mutagenic virus in an isolated mountain town.",
+    "genre_ids": [
+      27,
+      878,
+      12
+    ],
+    "trailerKey": "mNd1gb19A-c",
+    "ratings": {
+      "imdb": "8.1/10",
+      "prime": "8.4/10",
+      "rottenTomatoes": "89%",
+      "tmdb": "8.1/10"
+    },
+    "cast": [
+      {
+        "id": 148992,
+        "name": "Austin Abrams",
+        "character": "Bryan",
+        "gender": 2,
+        "profile_path": "/5S7ahFPQk4NUh8GTwp8zZlUQNFs.jpg"
+      },
+      {
+        "id": 1838225,
+        "name": "Zach Cherry",
+        "character": "Dave",
+        "gender": 2,
+        "profile_path": "/fT3Wv8ef0Vn0daHWAObCp2Bd4Y.jpg"
+      },
+      {
+        "id": 3119545,
+        "name": "Kali Reis",
+        "character": "Pauline",
+        "gender": 1,
+        "profile_path": "/ruLDXHnKA4aHEQCcFGDAJ7bLTdt.jpg"
+      },
+      {
+        "id": 1294982,
+        "name": "Paul Walter Hauser",
+        "character": "Carl",
+        "gender": 2,
+        "profile_path": "/hXjjbYg1Ah8mFf5ZcaakyXzDKMx.jpg"
+      },
+      {
+        "id": 1169291,
+        "name": "Johnno Wilson",
+        "character": "Max",
+        "gender": 2,
+        "profile_path": "/eZtBoBE0F7Qb9ZyNpacMOQtmWnM.jpg"
+      }
+    ]
+  },
+  {
+    "id": 1250502,
+    "title": "I'm Game",
+    "original_title": "ഐ ആം ഗെയിം",
+    "original_language": "ml",
+    "release_date": "2026-09-03",
+    "release_label": "SEP 03",
+    "full_release_date": "2026-09-03 (Theatrical)",
+    "duration": "2h 53m",
+    "runtime": 173,
+    "director": "Nahas Hidayath",
+    "production_companies": "Major Studio",
+    "vote_average": 8.1,
+    "vote_count": 1,
+    "poster_path": "/h1ezPKcMYv5FHbHDuHcZfTbWTY5.jpg",
+    "backdrop_path": "/z8PMsnvYs2t3fmKpK1ZYPMz4QQ9.jpg",
+    "overview": "A fearless gambler who trusts luck more than life gets caught in a series of crazy and unexpected events that turn his world upside down.",
+    "genre_ids": [
+      28,
+      53,
+      18
+    ],
+    "trailerKey": "",
+    "ratings": {
+      "imdb": "8.1/10",
+      "prime": "8.4/10",
+      "rottenTomatoes": "89%",
+      "tmdb": "8.1/10"
+    },
+    "cast": [
+      {
+        "id": 1115225,
+        "name": "Dulquer Salmaan",
+        "character": "Dan John",
+        "gender": 2,
+        "profile_path": "/cKngC3leAnZRXTzg0N8N2DYn4HY.jpg"
+      },
+      {
+        "id": 2578168,
+        "name": "Kayadu Lohar",
+        "character": "Isha",
+        "gender": 1,
+        "profile_path": "/pHaMPnrfnWvTPZA4IOmZk8BHY0U.jpg"
+      },
+      {
+        "id": 1758913,
+        "name": "Antony Varghese",
+        "character": "Vignesh 'Vicky' Das",
+        "gender": 2,
+        "profile_path": "/dKRa8ghSXw6J1OTcxMziZh3l1jb.jpg"
+      },
+      {
+        "id": 560039,
+        "name": "Mysskin",
+        "character": "David Abraham",
+        "gender": 2,
+        "profile_path": "/2g65eG5FBh9oOMAhxpfk5T6um6A.jpg"
+      },
+      {
+        "id": 1044337,
+        "name": "Kathir",
+        "character": "Jason Antony",
+        "gender": 2,
+        "profile_path": "/cQNlW5ztPIANrUNRos81cxZuZe5.jpg"
+      }
+    ]
+  },
+  {
+    "id": 1378537,
+    "title": "Mirzapur: The Movie",
+    "original_title": "मिर्ज़ापुर - द मूवी",
+    "original_language": "hi",
+    "release_date": "2026-09-03",
+    "release_label": "SEP 03",
+    "full_release_date": "2026-09-03 (Theatrical)",
+    "duration": "3h 17m",
+    "runtime": 197,
+    "director": "Gurmmeet Singh",
+    "production_companies": "Major Studio",
+    "vote_average": 7.6,
+    "vote_count": 18,
+    "poster_path": "/cdDKdCRyq6BYuNblpKUYqRPWvEg.jpg",
+    "backdrop_path": "/nTkQBI8ldvPByIkxsemGxtKlr8E.jpg",
+    "overview": "The battle for Mirzapur’s throne intensifies as old enemies resurface and a new threat emerges in the form of Babban Babua, a ruthless businessman from Jaisalmer with ambitions of his own. As the Tripathis face enemies from both the past and present, loyalties are tested while Guddu and Bablu Pandit fight to establish themselves in the power struggle for Mirzapur.",
+    "genre_ids": [
+      28,
+      80,
+      18,
+      53
+    ],
+    "trailerKey": "",
+    "ratings": {
+      "imdb": "7.6/10",
+      "prime": "7.9/10",
+      "rottenTomatoes": "84%",
+      "tmdb": "7.6/10"
+    },
+    "cast": [
+      {
+        "id": 1179460,
+        "name": "Pankaj Tripathi",
+        "character": "Akhandanand 'Kaleen' Tripathi",
+        "gender": 2,
+        "profile_path": "/f3Vxz0QB7PHeyPcXrfJX14Xkxnu.jpg"
+      },
+      {
+        "id": 492791,
+        "name": "Ali Fazal",
+        "character": "Govind 'Guddu' Pandit",
+        "gender": 2,
+        "profile_path": "/lLDmx3RDuMXObASvdFXeUh1GOgd.jpg"
+      },
+      {
+        "id": 1158934,
+        "name": "Divyendu Sharma",
+        "character": "Phoolchand 'Munna' Tripathi",
+        "gender": 2,
+        "profile_path": "/rGlCCQtOBiNJULfB5w0FXgPPKw0.jpg"
+      },
+      {
+        "id": 1485519,
+        "name": "Jitendra Kumar",
+        "character": "Vinay 'Bablu' Pandit",
+        "gender": 2,
+        "profile_path": "/562Mucw9YaDHUlFBqK5aot3H2lJ.jpg"
+      },
+      {
+        "id": 85882,
+        "name": "Ravi Kishan",
+        "character": "Babban Babua",
+        "gender": 2,
+        "profile_path": "/rkUTRk0tuA98RepP9jhgcCbhHqy.jpg"
+      }
+    ]
+  },
+  {
+    "id": 1355228,
+    "title": "Gandhari",
+    "original_title": "गांधारी",
+    "original_language": "hi",
+    "release_date": "2026-09-03",
+    "release_label": "SEP 03",
+    "full_release_date": "2026-09-03 (Theatrical)",
+    "duration": "1h 57m",
+    "runtime": 117,
+    "director": "Devashish Makhija",
+    "production_companies": "Major Studio",
+    "vote_average": 5.7,
+    "vote_count": 9,
+    "poster_path": "/aF3IhwS1mrVfvM9OMXmTaXAT0l8.jpg",
+    "backdrop_path": "/sT5WVT8LzvDwIbfy9BGXK0fvf3s.jpg",
+    "overview": "When a mother loses her eyesight and her daughter in a kidnapping, she takes matters into her own hands to hunt down those responsible.",
+    "genre_ids": [
+      28,
+      18,
+      53
+    ],
+    "trailerKey": "TRyBiPD1bUc",
+    "ratings": {
+      "imdb": "5.7/10",
+      "prime": "6.0/10",
+      "rottenTomatoes": "75%",
+      "tmdb": "5.7/10"
+    },
+    "cast": [
+      {
+        "id": 550167,
+        "name": "Taapsee Pannu",
+        "character": "Bani",
+        "gender": 1,
+        "profile_path": "/43e24aeOC8AZITo6ShaKKG9aV0Y.jpg"
+      },
+      {
+        "id": 1424750,
+        "name": "Ishwak Singh",
+        "character": "Gokul",
+        "gender": 2,
+        "profile_path": "/iN1QUGzN7c4qBps3xpuWYVzpMag.jpg"
+      },
+      {
+        "id": 1140663,
+        "name": "Mita Vashisht",
+        "character": "",
+        "gender": 1,
+        "profile_path": "/mcnaQTCmuz3lXNotFFdkwCO7FTY.jpg"
+      },
+      {
+        "id": 1144344,
+        "name": "Swastika Mukherjee",
+        "character": "",
+        "gender": 1,
+        "profile_path": "/xjEdXwco3KjWU7zFDhJgMJYmerh.jpg"
+      },
+      {
+        "id": 1550351,
+        "name": "Chhaya Kadam",
+        "character": "",
+        "gender": 1,
+        "profile_path": "/umOPkpPA4JUWLkVziYU5GF6gELD.jpg"
+      }
+    ]
+  },
+  {
+    "id": 1137844,
+    "title": "Mayday",
+    "original_title": "Mayday",
+    "original_language": "en",
+    "release_date": "2026-09-03",
+    "release_label": "SEP 03",
+    "full_release_date": "2026-09-03 (Theatrical)",
+    "duration": "1h 51m",
+    "runtime": 111,
+    "director": "Jonathan Goldstein",
+    "production_companies": "Major Studio",
+    "vote_average": 8.1,
+    "vote_count": 655,
+    "poster_path": "/hVXjX1jLZ1ljFSNGXpjJfbTUOa7.jpg",
+    "backdrop_path": "/g7Ccid5kuD7A8hXWlsQiNfwOxaD.jpg",
+    "overview": "When a U.S. Navy pilot on a top-secret mission during the Cold War gets trapped behind enemy lines, his only chance at survival is to form an alliance with an eccentric ex-KGB agent.",
+    "genre_ids": [
+      28,
+      35
+    ],
+    "trailerKey": "om5Un9X720M",
+    "ratings": {
+      "imdb": "8.1/10",
+      "prime": "8.4/10",
+      "rottenTomatoes": "89%",
+      "tmdb": "8.1/10"
+    },
+    "cast": [
+      {
+        "id": 10859,
+        "name": "Ryan Reynolds",
+        "character": "Troy Kelly",
+        "gender": 2,
+        "profile_path": "/trzgptffGvAlAT6MEu01fz47cLW.jpg"
+      },
+      {
+        "id": 11181,
+        "name": "Kenneth Branagh",
+        "character": "Nikolai Ustinov",
+        "gender": 2,
+        "profile_path": "/AbCqqFxNi5w3nDUFdQt0DGMFh5H.jpg"
+      },
+      {
+        "id": 591295,
+        "name": "Marcin Dorociński",
+        "character": "Alexander Volkov",
+        "gender": 2,
+        "profile_path": "/pyPUnMHxNPKKYxn8PehQJfSbZzO.jpg"
+      },
+      {
+        "id": 2408703,
+        "name": "Maria Bakalova",
+        "character": "Anna Ustinov",
+        "gender": 1,
+        "profile_path": "/vCz0ycZr1PgJVOAeS29fIiZE8pN.jpg"
+      },
+      {
+        "id": 52,
+        "name": "David Morse",
+        "character": "Harold Kelly",
+        "gender": 2,
+        "profile_path": "/A6zGbkFjM3uajIakgsSeNTmSKqY.jpg"
+      }
+    ]
+  },
+  {
+    "id": 1101412,
+    "title": "Fall 2: Deadpoint",
+    "original_title": "Fall 2: Deadpoint",
+    "original_language": "en",
+    "release_date": "2026-09-01",
+    "release_label": "SEP 01",
+    "full_release_date": "2026-09-01 (Theatrical)",
+    "duration": "1h 38m",
+    "runtime": 98,
+    "director": "Michael Spierig",
+    "production_companies": "Major Studio",
+    "vote_average": 7.3,
+    "vote_count": 37,
+    "poster_path": "/fgSm5ylwiXbIHn8UbUXDjk9RRu4.jpg",
+    "backdrop_path": "/yBDxqDB29kpH9VojTytjGWBgmdJ.jpg",
+    "overview": "On a perilous climb across Thailand's Mount Kwan, two climbers become trapped thousands of feet above the ground, where vertigo-inducing heights, sheer exposure, and impossible odds turn every moment into a fight for survival.",
+    "genre_ids": [
+      53
+    ],
+    "trailerKey": "Krs0VDIjhmE",
+    "ratings": {
+      "imdb": "7.3/10",
+      "prime": "7.6/10",
+      "rottenTomatoes": "81%",
+      "tmdb": "7.3/10"
+    },
+    "cast": [
+      {
+        "id": 2480853,
+        "name": "Harriet Slater",
+        "character": "Jax Hunter",
+        "gender": 1,
+        "profile_path": "/9BJxdhi4tuiQdgT8bfDuiPipnsx.jpg"
+      },
+      {
+        "id": 3486664,
+        "name": "Arsema Thomas",
+        "character": "Luce",
+        "gender": 1,
+        "profile_path": "/lvzhZIbkWIVLSRHsOICs9o37g2I.jpg"
+      },
+      {
+        "id": 1626604,
+        "name": "Tom Brittney",
+        "character": "Jon Platt",
+        "gender": 2,
+        "profile_path": "/qSe3SuZHVPR5AMOuOAGxLdD6kYv.jpg"
+      },
+      {
+        "id": 1279279,
+        "name": "Virginia Gardner",
+        "character": "Shiloh Hunter",
+        "gender": 1,
+        "profile_path": "/1DnNysK267b0te48KCkUlTKoTzj.jpg"
+      },
+      {
+        "id": 521673,
+        "name": "Sahajak Boonthanakit",
+        "character": "Thai Barman",
+        "gender": 2,
+        "profile_path": "/a36MI02S0f11bJZjBoxkZTsUDAK.jpg"
+      }
+    ]
+  },
+  {
+    "id": 1213243,
+    "title": "Toxic: A Fairy Tale for Grown-ups",
+    "original_title": "ಟಾಕ್ಸಿಕ್",
+    "original_language": "kn",
+    "release_date": "2026-08-26",
+    "release_label": "AUG 26",
+    "full_release_date": "2026-08-26 (Theatrical)",
+    "duration": "3h 12m",
+    "runtime": 192,
+    "director": "Geetu Mohandas",
+    "production_companies": "Major Studio",
+    "vote_average": 8.1,
+    "vote_count": 73,
+    "poster_path": "/oiIPU4lvnI0Ag2K9cyAi44eCaoE.jpg",
+    "backdrop_path": "/tBRSSfgqOAq7YlG8udcoJIBm2FG.jpg",
+    "overview": "A powerful drug cartel pulls the strings behind a facade of sun-soaked beaches as a gritty, violent underworld power struggle emerges during the crumbling of Portuguese colonial rule.",
+    "genre_ids": [
+      28,
+      80,
+      18
+    ],
+    "trailerKey": "EfluEyQ5QIA",
+    "ratings": {
+      "imdb": "8.1/10",
+      "prime": "8.4/10",
+      "rottenTomatoes": "89%",
+      "tmdb": "8.1/10"
+    },
+    "cast": [
+      {
+        "id": 1293681,
+        "name": "Yash",
+        "character": "Raya / Ticket",
+        "gender": 2,
+        "profile_path": "/ixHvgN8hGh8YgWd3j9RqUATvBiy.jpg"
+      },
+      {
+        "id": 1340978,
+        "name": "Kiara Advani",
+        "character": "Nadia",
+        "gender": 1,
+        "profile_path": "/2xmU03a6kTWUvuTPMdofiFLxdAw.jpg"
+      },
+      {
+        "id": 91548,
+        "name": "Nayanthara",
+        "character": "Ganga",
+        "gender": 1,
+        "profile_path": "/sYUzvjsSsqeOgBblSzda6ZwwbEa.jpg"
+      },
+      {
+        "id": 1108805,
+        "name": "Huma Qureshi",
+        "character": "Elizabeth",
+        "gender": 1,
+        "profile_path": "/nJWauZQdRjMJxwY3UP4SXrqh9CM.jpg"
+      },
+      {
+        "id": 2030881,
+        "name": "Tara Sutaria",
+        "character": "Rebecca",
+        "gender": 1,
+        "profile_path": "/tF2OxFzOaDOMX1Sn4k17qZxhvFL.jpg"
+      }
+    ]
+  },
+  {
+    "id": 1036081,
+    "title": "Khalifa: The Ruler",
+    "original_title": "ഖലീഫ: The Ruler",
+    "original_language": "ml",
+    "release_date": "2026-08-20",
+    "release_label": "AUG 20",
+    "full_release_date": "2026-08-20 (Theatrical)",
+    "duration": "2h 37m",
+    "runtime": 157,
+    "director": "Vysakh",
+    "production_companies": "Major Studio",
+    "vote_average": 7.1,
+    "vote_count": 4,
+    "poster_path": "/cAl7uuRojdxysptYBj9Mg0czGmI.jpg",
+    "backdrop_path": "/6Jz7rnnZrSkgs9ySWUxewpcxr7Q.jpg",
+    "overview": "Aamir Ali, a notorious gold smuggling kingpin who inherited his multi-million dollar criminal enterprise from a lineage of gangsters, is drawn into a web of vengeance, legacy and power.",
+    "genre_ids": [
+      80,
+      28
+    ],
+    "trailerKey": "",
+    "ratings": {
+      "imdb": "7.1/10",
+      "prime": "7.4/10",
+      "rottenTomatoes": "79%",
+      "tmdb": "7.1/10"
+    },
+    "cast": [
+      {
+        "id": 117690,
+        "name": "Prithviraj Sukumaran",
+        "character": "Aamir Ali",
+        "gender": 2,
+        "profile_path": "/1xhG42QU8tMQRTDdP1Ed3y9GRvm.jpg"
+      },
+      {
+        "id": 82732,
+        "name": "Mohanlal",
+        "character": "Mambarakkal Ahmed Ali",
+        "gender": 2,
+        "profile_path": "/wvoBULQimwguAGPOHZ8TDoy7jBJ.jpg"
+      },
+      {
+        "id": 85045,
+        "name": "Neil Nitin Mukesh",
+        "character": "Harris Basheer",
+        "gender": 2,
+        "profile_path": "/7lfd8WfMc2hOXYpCRFwhjiVZ7fl.jpg"
+      },
+      {
+        "id": 1061913,
+        "name": "Indrans",
+        "character": "Hamsa",
+        "gender": 2,
+        "profile_path": "/vs5Acy2hJ4dWoM3xRGdnFKdVXzw.jpg"
+      },
+      {
+        "id": 584910,
+        "name": "Shammi Thilakan",
+        "character": "Raghavan",
+        "gender": 2,
+        "profile_path": "/7lDFgyfGXbQEFFrbnVA24XaYGW.jpg"
+      }
+    ]
+  },
+  {
+    "id": 1441228,
+    "title": "Irumudi",
+    "original_title": "ఇరుముడి",
+    "original_language": "te",
+    "release_date": "2026-08-20",
+    "release_label": "AUG 20",
+    "full_release_date": "2026-08-20 (Theatrical)",
+    "duration": "2h 32m",
+    "runtime": 152,
+    "director": "Shiva Nirvana",
+    "production_companies": "Major Studio",
+    "vote_average": 6.9,
+    "vote_count": 18,
+    "poster_path": "/sPePQmJRKkB14sGjB7zBkLJkaTW.jpg",
+    "backdrop_path": "/578jrGVEN4a5rxJGtkt9sMI2w6c.jpg",
+    "overview": "An alcoholic with a violent past—living peacefully with his daughter beside a waterfall—decides to take Ayyappa Deeksha (a 41-day spiritual vow and period of intense austerity) at her request.",
+    "genre_ids": [
+      18,
+      10751,
+      28
+    ],
+    "trailerKey": "lqlYx4MdsAY",
+    "ratings": {
+      "imdb": "6.9/10",
+      "prime": "7.2/10",
+      "rottenTomatoes": "77%",
+      "tmdb": "6.9/10"
+    },
+    "cast": [
+      {
+        "id": 146935,
+        "name": "Ravi Teja",
+        "character": "Trinadh Rama Kasu",
+        "gender": 2,
+        "profile_path": "/5a9g645O30Qzhe3VFjvkhjnNfm2.jpg"
+      },
+      {
+        "id": 5850342,
+        "name": "Nakshathra C M",
+        "character": "Manikanta / Manamma",
+        "gender": 1,
+        "profile_path": "/1PxA7kkWPLpqDE0UpLaqhMapYA2.jpg"
+      },
+      {
+        "id": 1900674,
+        "name": "Priya Bhavani Shankar",
+        "character": "Kaveri",
+        "gender": 1,
+        "profile_path": "/sX5Ue02f5kzOzVCa0R3dV2yPRmO.jpg"
+      },
+      {
+        "id": 146148,
+        "name": "Sai Kumar",
+        "character": "Guru Swamy / Goparaju",
+        "gender": 2,
+        "profile_path": "/Xq5VNf8rPgQF0tuQLjl5YwHPoc.jpg"
+      },
+      {
+        "id": 1289211,
+        "name": "Ajay Ghosh",
+        "character": "Erraji",
+        "gender": 2,
+        "profile_path": "/bvexSjSRhZM8ke753Sq1oZf5pxY.jpg"
+      }
+    ]
+  },
+  {
+    "id": 1204680,
+    "title": "Coyote vs. Acme",
+    "original_title": "Coyote vs. Acme",
+    "original_language": "en",
+    "release_date": "2026-08-20",
+    "release_label": "AUG 20",
+    "full_release_date": "2026-08-20 (Theatrical)",
+    "duration": "1h 43m",
+    "runtime": 103,
+    "director": "Dave Green",
+    "production_companies": "Major Studio",
+    "vote_average": 7.5,
+    "vote_count": 432,
+    "poster_path": "/kYDCl2y0VPvhT5eYWbMRInPoB03.jpg",
+    "backdrop_path": "/7GOW6jod9lLurW5utokAatxg7ql.jpg",
+    "overview": "After Acme products fail him one too many times in his dogged pursuit of the Roadrunner, Wile E. Coyote decides to hire a billboard lawyer to sue the Acme Corporation.",
+    "genre_ids": [
+      35,
+      12,
+      10751
+    ],
+    "trailerKey": "kMsiD1Nky5I",
+    "ratings": {
+      "imdb": "7.5/10",
+      "prime": "7.8/10",
+      "rottenTomatoes": "83%",
+      "tmdb": "7.5/10"
+    },
+    "cast": [
+      {
+        "id": 62831,
+        "name": "Will Forte",
+        "character": "Kevin Avery",
+        "gender": 2,
+        "profile_path": "/4VEzbkL3HwHTUZAPA5PyypFG2U.jpg"
+      },
+      {
+        "id": 1452046,
+        "name": "Lana Condor",
+        "character": "Paige Avery",
+        "gender": 1,
+        "profile_path": "/vWn27Fk2GLwH7o9fBG9hBWZI6OR.jpg"
+      },
+      {
+        "id": 56446,
+        "name": "John Cena",
+        "character": "Buddy Crane",
+        "gender": 2,
+        "profile_path": "/rgB2eIOt7WyQjdgJCOuESdDlrjg.jpg"
+      },
+      {
+        "id": 1120700,
+        "name": "Tone Bell",
+        "character": "Sal Maltese",
+        "gender": 2,
+        "profile_path": "/fB06Xj5FgwvHcZESsNGMupGBTyY.jpg"
+      },
+      {
+        "id": 1572541,
+        "name": "Martha Kelly",
+        "character": "Dottie Jones",
+        "gender": 1,
+        "profile_path": "/ac7HoARDIHdYNqpzgJBzpmKHXHR.jpg"
+      }
+    ]
+  },
+  {
+    "id": 1288445,
+    "title": "Mutiny",
+    "original_title": "Mutiny",
+    "original_language": "en",
+    "release_date": "2026-08-19",
+    "release_label": "AUG 19",
+    "full_release_date": "2026-08-19 (Theatrical)",
+    "duration": "1h 36m",
+    "runtime": 96,
+    "director": "Jean-François Richet",
+    "production_companies": "Major Studio",
+    "vote_average": 6.6,
+    "vote_count": 411,
+    "poster_path": "/pu2VxGlpGwffOx292w18b1tv96j.jpg",
+    "backdrop_path": "/e2QAGrEmbpmZpMymDRkDisJkvg9.jpg",
+    "overview": "After witnessing his billionaire boss' murder and being framed for the crime, Cole Reed boards a cargo ship on a one-man crusade to avenge his boss' death only to discover an international conspiracy.",
+    "genre_ids": [
+      28,
+      53
+    ],
+    "trailerKey": "2Iqvbe98Gb4",
+    "ratings": {
+      "imdb": "6.6/10",
+      "prime": "6.9/10",
+      "rottenTomatoes": "75%",
+      "tmdb": "6.6/10"
+    },
+    "cast": [
+      {
+        "id": 976,
+        "name": "Jason Statham",
+        "character": "Cole Reed",
+        "gender": 2,
+        "profile_path": "/8l6lmrmKFDvhDjMJPj6tBpJdhaA.jpg"
+      },
+      {
+        "id": 82809,
+        "name": "Annabelle Wallis",
+        "character": "Angie Ellis",
+        "gender": 1,
+        "profile_path": "/2ZmO2Zz9TcR0rmSJHOkivcu0heR.jpg"
+      },
+      {
+        "id": 141876,
+        "name": "Roland Møller",
+        "character": "Captain Marko Madsen",
+        "gender": 2,
+        "profile_path": "/bF7wrJ5mrIhSwyi6ylhyQWj9BoN.jpg"
+      },
+      {
+        "id": 178622,
+        "name": "Ramon Tikaram",
+        "character": "Tibu Campallo",
+        "gender": 2,
+        "profile_path": "/wtBLiI8tzeqPLMB9uswkyFhChva.jpg"
+      },
+      {
+        "id": 1156305,
+        "name": "Arnas Fedaravičius",
+        "character": "Mateo Pineda",
+        "gender": 2,
+        "profile_path": "/7WfcGugvkuPqEzu0cUJBeJPt1lD.jpg"
+      }
+    ]
+  },
+  {
+    "id": 1408162,
+    "title": "Vishwanath & Sons",
+    "original_title": "விஸ்வநாத் & சன்ஸ்",
+    "original_language": "ta",
+    "release_date": "2026-08-14",
+    "release_label": "AUG 14",
+    "full_release_date": "2026-08-14 (Theatrical)",
+    "duration": "2h 41m",
+    "runtime": 161,
+    "director": "Venky Atluri",
+    "production_companies": "KVN Productions",
+    "vote_average": 7.3,
+    "vote_count": 26,
+    "poster_path": "/adDZVEQZnMJ380zPOmVj6vBWHgk.jpg",
+    "backdrop_path": "/nfNaAiiILjYRc2CKkId1ZfPTtlh.jpg",
+    "overview": "A celebrated Olympian shooter travels to America looking for a donor to help his sick child — but unexpected romance complicates his search.",
+    "genre_ids": [
+      18,
+      10749,
+      35
+    ],
+    "trailerKey": "",
+    "ratings": {
+      "imdb": "7.3/10",
+      "prime": "7.6/10",
+      "rottenTomatoes": "81%",
+      "tmdb": "7.3/10"
+    },
+    "cast": [
+      {
+        "id": 85720,
+        "name": "Suriya",
+        "character": "Sanjay 'Sanju' Vishwanath",
+        "gender": 2,
+        "profile_path": "/hIFXv3gIjlNS78gJmaguEOxvfPH.jpg"
+      },
+      {
+        "id": 2191938,
+        "name": "Mamitha Baiju",
+        "character": "Madanakameshwari 'Maddy Jay' Jothilingam",
+        "gender": 1,
+        "profile_path": "/9ySiE3j7ep16fhKi3u5iq5rbOk6.jpg"
+      },
+      {
+        "id": 562177,
+        "name": "Radhika Sarathkumar",
+        "character": "Nirmala Devi",
+        "gender": 1,
+        "profile_path": "/kEKzT8HAJw8lfFUtWWd0SoQ9kC9.jpg"
+      },
+      {
+        "id": 123180,
+        "name": "Raveena Tandon",
+        "character": "Anjali Devi",
+        "gender": 1,
+        "profile_path": "/4z0X9ZMgyNZRHfJG4G2Z10rhLpu.jpg"
+      },
+      {
+        "id": 2261843,
+        "name": "Sunil",
+        "character": "Ramu",
+        "gender": 0,
+        "profile_path": "/w92Vawfw4DcLYSLtUeFTm46KNIe.jpg"
+      }
+    ]
+  },
+  {
+    "id": 1489543,
+    "title": "G.D.N",
+    "original_title": "ஜி.டி.என்",
+    "original_language": "ta",
+    "release_date": "2026-08-07",
+    "release_label": "AUG 07",
+    "full_release_date": "2026-08-07 (Theatrical)",
+    "duration": "2h 27m",
+    "runtime": 147,
+    "director": "Krishnakumar Ramakumar",
+    "production_companies": "KVN Productions",
+    "vote_average": 7.1,
+    "vote_count": 1,
+    "poster_path": "/aAbvbKbNU6YyYDZ5ntSQcOygliw.jpg",
+    "backdrop_path": "/hR0QpzOO2Gx1Lt7KxqKFWZvj5Vl.jpg",
+    "overview": "G.D. Naidu overcomes challenges and defies a repressive colonial regime to become one of India's greatest innovators.",
+    "genre_ids": [
+      18
+    ],
+    "trailerKey": "DC11NRrn9Vc",
+    "ratings": {
+      "imdb": "7.1/10",
+      "prime": "7.4/10",
+      "rottenTomatoes": "79%",
+      "tmdb": "7.1/10"
+    },
+    "cast": [
+      {
+        "id": 85519,
+        "name": "R. Madhavan",
+        "character": "GD Naidu",
+        "gender": 2,
+        "profile_path": "/gaDrAdXxIrbBRCd9cX8YvJDEuLb.jpg"
+      },
+      {
+        "id": 1107197,
+        "name": "Priyamani",
+        "character": "Chellammal",
+        "gender": 1,
+        "profile_path": "/grcW2eMm77Q2Kj1xX0HvZlRpGRR.jpg"
+      },
+      {
+        "id": 581895,
+        "name": "Sathyaraj",
+        "character": "Ramaiah Pillai",
+        "gender": 2,
+        "profile_path": "/lnlBZ7V3K3Z3OIsjCd0zkKx26L3.jpg"
+      },
+      {
+        "id": 141704,
+        "name": "Jayaram",
+        "character": "Ambalapara Krishnan",
+        "gender": 2,
+        "profile_path": "/cc1SfVFctuYH353NgxXNBoAFX2d.jpg"
+      },
+      {
+        "id": 1974753,
+        "name": "Dushara Vijayan",
+        "character": "Ranganayaki",
+        "gender": 1,
+        "profile_path": "/5C5V9qdYil7LVCp8LqctZCEsu1n.jpg"
+      }
+    ]
+  },
+  {
+    "id": 969681,
+    "title": "Spider-Man: Brand New Day",
+    "original_title": "Spider-Man: Brand New Day",
+    "original_language": "en",
+    "release_date": "2026-07-29",
+    "release_label": "JUL 29",
+    "full_release_date": "2026-07-29 (Theatrical)",
+    "duration": "2h 25m",
+    "runtime": 145,
+    "director": "Destin Daniel Cretton",
+    "production_companies": "Major Studio",
+    "vote_average": 7.8,
+    "vote_count": 2746,
+    "poster_path": "/bjiS5ipwxb9JFy3XRRN4OAilSeX.jpg",
+    "backdrop_path": "/qeQJx07rK2xm8SD2sJxFKhE7gs0.jpg",
+    "overview": "Fighting crime full-time as Spider-Man in a world that doesn't remember him—and the pressure of seeing his old friends move on without him—sparks a change in Peter Parker he may not have the power to control. But that transformation might also be the only thing that can stop a shocking new threat to the city and those he loves - a powerful villain no one can even see.",
+    "genre_ids": [
+      878,
+      28,
+      12
+    ],
+    "trailerKey": "P3uI5sLosKU",
+    "ratings": {
+      "imdb": "7.8/10",
+      "prime": "8.1/10",
+      "rottenTomatoes": "86%",
+      "tmdb": "7.8/10"
+    },
+    "cast": [
+      {
+        "id": 1136406,
+        "name": "Tom Holland",
+        "character": "Peter Parker / Spider-Man",
+        "gender": 2,
+        "profile_path": "/5OK84Wn1bIEIThFKcVoaN087mLj.jpg"
+      },
+      {
+        "id": 505710,
+        "name": "Zendaya",
+        "character": "MJ",
+        "gender": 1,
+        "profile_path": "/3WdOloHpjtjL96uVOhFRRCcYSwq.jpg"
+      },
+      {
+        "id": 103,
+        "name": "Mark Ruffalo",
+        "character": "Bruce Banner / Hulk",
+        "gender": 2,
+        "profile_path": "/5GilHMOt5PAQh6rlUKZzGmaKEI7.jpg"
+      },
+      {
+        "id": 19498,
+        "name": "Jon Bernthal",
+        "character": "Frank Castle / Punisher",
+        "gender": 2,
+        "profile_path": "/aSH27tGD4PJoCO54RQnARSSSIQy.jpg"
+      },
+      {
+        "id": 1649152,
+        "name": "Jacob Batalon",
+        "character": "Ned Leeds",
+        "gender": 2,
+        "profile_path": "/53YhaL4xw4Sb1ssoHkeSSBaO29c.jpg"
+      }
+    ]
+  },
+  {
+    "id": 1215812,
+    "title": "Karavali",
+    "original_title": "ಕರಾವಳಿ",
+    "original_language": "kn",
+    "release_date": "2026-07-24",
+    "release_label": "JUL 24",
+    "full_release_date": "2026-07-24 (Theatrical)",
+    "duration": "2h 20m",
+    "runtime": 140,
+    "director": "Gurudatha Ganiga",
+    "production_companies": "Major Studio",
+    "vote_average": 9.5,
+    "vote_count": 1,
+    "poster_path": "/buxVz5LZQY1QLfFIIZnfe6t2F4I.jpg",
+    "backdrop_path": "/tKBoVyOMrL0xp6NtBZEHcxthLfZ.jpg",
+    "overview": "Karavali is a film that explores the struggles between man and nature, set against the raw, untamed beauty of coastal Karnataka. The story revolves around the world of Kambala, a traditional annual buffalo race, showcasing the unique culture and challenges of the region.",
+    "genre_ids": [
+      28,
+      18,
+      12,
+      53
+    ],
+    "trailerKey": "TGYTlowY0zM",
+    "ratings": {
+      "imdb": "9.5/10",
+      "prime": "9.8/10",
+      "rottenTomatoes": "96%",
+      "tmdb": "9.5/10"
+    },
+    "cast": [
+      {
+        "id": 1859636,
+        "name": "Prajwal Devaraj",
+        "character": "Dhananjaya aka Dhana",
+        "gender": 2,
+        "profile_path": "/8zmHfxisRn5kkQOPR09z1cm5YmX.jpg"
+      },
+      {
+        "id": 1906560,
+        "name": "Raj B Shetty",
+        "character": "Maveera",
+        "gender": 2,
+        "profile_path": "/vlNvrGhaYzmRxhkd4GOKFNfSkHY.jpg"
+      },
+      {
+        "id": 3403383,
+        "name": "Sampada Hulivana",
+        "character": "Dakshina",
+        "gender": 0,
+        "profile_path": null
+      },
+      {
+        "id": 2262422,
+        "name": "Ramesh Indira",
+        "character": "Doddavru",
+        "gender": 0,
+        "profile_path": null
+      },
+      {
+        "id": 2071782,
+        "name": "Mithra",
+        "character": "Maabla",
+        "gender": 0,
+        "profile_path": null
+      }
+    ]
+  },
+  {
+    "id": 980431,
+    "title": "Avatar Aang: The Last Airbender",
+    "original_title": "Avatar Aang: The Last Airbender",
+    "original_language": "en",
+    "release_date": "2026-07-24",
+    "release_label": "JUL 24",
+    "full_release_date": "2026-07-24 (Theatrical)",
+    "duration": "1h 39m",
+    "runtime": 99,
+    "director": "Lauren Montgomery",
+    "production_companies": "Major Studio",
+    "vote_average": 9.6,
+    "vote_count": 1148,
+    "poster_path": "/3sgnSfNT27Bx5O5ukr7B26mhEQq.jpg",
+    "backdrop_path": "/ezbrL1dMymKQZw7mDEWa2ZTzN7d.jpg",
+    "overview": "Avatar Aang, the world's last Airbender, learns of an ancient power that could save his culture from extinction. With the help of his friends, he embarks on a global quest to find it before it falls into the wrong hands and threatens to upend the peace they sacrificed everything to achieve.",
+    "genre_ids": [
+      16,
+      12,
+      14,
+      28
+    ],
+    "trailerKey": "7b20GRFZBFE",
+    "ratings": {
+      "imdb": "9.6/10",
+      "prime": "9.9/10",
+      "rottenTomatoes": "96%",
+      "tmdb": "9.6/10"
+    },
+    "cast": [
+      {
+        "id": 1610783,
+        "name": "Eric Nam",
+        "character": "Aang (voice)",
+        "gender": 2,
+        "profile_path": "/gEH0b5q9tupL49dmUFkjm9dnxP2.jpg"
+      },
+      {
+        "id": 543530,
+        "name": "Dave Bautista",
+        "character": "Tagah (voice)",
+        "gender": 2,
+        "profile_path": "/snk6JiXOOoRjPtHU5VMoy6qbd32.jpg"
+      },
+      {
+        "id": 1703912,
+        "name": "Jessica Matten",
+        "character": "Katara (voice)",
+        "gender": 1,
+        "profile_path": "/EQsPxsav8AZmaeT3mpU3Evilee.jpg"
+      },
+      {
+        "id": 2775164,
+        "name": "Román Zaragoza",
+        "character": "Sokka (voice)",
+        "gender": 2,
+        "profile_path": "/uWkOkSLqj2POMqkeLk5E5UJzebv.jpg"
+      },
+      {
+        "id": 215055,
+        "name": "Steven Yeun",
+        "character": "Zuko (voice)",
+        "gender": 2,
+        "profile_path": "/fOMFO2Xx4duzpNgS9Q5ytO44yGb.jpg"
+      }
+    ]
+  },
+  {
+    "id": 1185806,
+    "title": "PAW Patrol: The Dino Movie",
+    "original_title": "PAW Patrol: The Dino Movie",
+    "original_language": "en",
+    "release_date": "2026-07-23",
+    "release_label": "JUL 23",
+    "full_release_date": "2026-07-23 (Theatrical)",
+    "duration": "1h 28m",
+    "runtime": 88,
+    "director": "Cal Brunker",
+    "production_companies": "Major Studio",
+    "vote_average": 8,
+    "vote_count": 115,
+    "poster_path": "/qnin56Syy5rbG7KCaxWY7SPuy6p.jpg",
+    "backdrop_path": "/6TSxLmwT7j1ugtKi8NyMmdzWAGj.jpg",
+    "overview": "The Paw Patrol lands on a mysterious dinosaur island after a storm, where they meet Rex, a stranded pup. When Humdinger's reckless mining triggers a volcano, the team faces their biggest rescue mission yet to save the island.",
+    "genre_ids": [
+      16,
+      12,
+      10751,
+      14,
+      35
+    ],
+    "trailerKey": "xgI5iYmOf5Q",
+    "ratings": {
+      "imdb": "8.0/10",
+      "prime": "8.3/10",
+      "rottenTomatoes": "88%",
+      "tmdb": "8.0/10"
+    },
+    "cast": [
+      {
+        "id": 3572176,
+        "name": "Carter Young",
+        "character": "Marshall (voice)",
+        "gender": 2,
+        "profile_path": "/ezkMRnYOjsYXrcwHEJ2JIDWTJJq.jpg"
+      },
+      {
+        "id": 1172108,
+        "name": "Mckenna Grace",
+        "character": "Skye (voice)",
+        "gender": 1,
+        "profile_path": "/sK0CVa56IIpFhCDrcXSTqPWxNbx.jpg"
+      },
+      {
+        "id": 53256,
+        "name": "Terry Crews",
+        "character": "Alistair Stonewall (voice)",
+        "gender": 2,
+        "profile_path": "/pxTY4SglLo5hFcMH00MxPeC5u55.jpg"
+      },
+      {
+        "id": 63606,
+        "name": "Meredith MacNeill",
+        "character": "Harper Cutlass (voice)",
+        "gender": 1,
+        "profile_path": "/jcJq5Af7KSleMFVhrla5xbv8TOg.jpg"
+      },
+      {
+        "id": 1227611,
+        "name": "Ron Pardo",
+        "character": "Mayor Humdinger (voice)",
+        "gender": 2,
+        "profile_path": "/hE4QOBmPqstfmBVXmlcJmsljUMw.jpg"
+      }
+    ]
+  },
+  {
     "id": 1235877,
     "title": "Jana Nayagan",
     "original_title": "ஜன நாயகன்",
@@ -212,270 +1483,200 @@ export const THEATRICAL_NOW_PLAYING = [
     ]
   },
   {
-    "id": 969681,
-    "title": "Spider-Man: Brand New Day",
-    "original_title": "Spider-Man: Brand New Day",
-    "original_language": "en",
-    "release_date": "2026-07-29",
-    "release_label": "JUL 29",
-    "full_release_date": "2026-07-29 (Theatrical)",
-    "duration": "2h 25m",
-    "runtime": 145,
-    "director": "Destin Daniel Cretton",
+    "id": 1542187,
+    "title": "Varavu",
+    "original_title": "വരവ്",
+    "original_language": "ml",
+    "release_date": "2026-07-16",
+    "release_label": "JUL 16",
+    "full_release_date": "2026-07-16 (Theatrical)",
+    "duration": "2h 23m",
+    "runtime": 143,
+    "director": "Shaji Kailas",
     "production_companies": "Major Studio",
-    "vote_average": 7.8,
-    "vote_count": 2746,
-    "poster_path": "/bjiS5ipwxb9JFy3XRRN4OAilSeX.jpg",
-    "backdrop_path": "/qeQJx07rK2xm8SD2sJxFKhE7gs0.jpg",
-    "overview": "Fighting crime full-time as Spider-Man in a world that doesn't remember him—and the pressure of seeing his old friends move on without him—sparks a change in Peter Parker he may not have the power to control. But that transformation might also be the only thing that can stop a shocking new threat to the city and those he loves - a powerful villain no one can even see.",
+    "vote_average": 4.8,
+    "vote_count": 2,
+    "poster_path": "/xUBo6JBHGV52xbfPwg3xxyvBLPx.jpg",
+    "backdrop_path": "/321ed6TvXWw5Y6SRcFF2DuAgpjC.jpg",
+    "overview": "A family falls victim to the powerful elite in a small town. One man's return forces a confrontation that will expose decades of lies and corruption",
     "genre_ids": [
-      878,
       28,
-      12
+      53
     ],
-    "trailerKey": "P3uI5sLosKU",
+    "trailerKey": "aQ7tTufi63s",
     "ratings": {
-      "imdb": "7.8/10",
-      "prime": "8.1/10",
-      "rottenTomatoes": "86%",
-      "tmdb": "7.8/10"
+      "imdb": "4.8/10",
+      "prime": "5.1/10",
+      "rottenTomatoes": "75%",
+      "tmdb": "4.8/10"
     },
     "cast": [
       {
+        "id": 1357376,
+        "name": "Joju George",
+        "character": "Paulson",
+        "gender": 2,
+        "profile_path": "/jCObRH5idadzrTvyC9XnlnR8rXH.jpg"
+      },
+      {
+        "id": 1061905,
+        "name": "Murali Gopy",
+        "character": "Medayil Kochettan",
+        "gender": 2,
+        "profile_path": "/oNEKhIL7PmE6yXzOcaVNGqPMnmw.jpg"
+      },
+      {
+        "id": 1440952,
+        "name": "Arjun Ashokan",
+        "character": "Williams \"Willy\"",
+        "gender": 2,
+        "profile_path": "/fA9V9ImvGlLGQ9HWB68j8d8eo0J.jpg"
+      },
+      {
+        "id": 584238,
+        "name": "Sukanya",
+        "character": "Sister Daisy",
+        "gender": 1,
+        "profile_path": "/q15g0PQN0sCtMN82aU0sPYGtW8D.jpg"
+      },
+      {
+        "id": 1274871,
+        "name": "Deepak Parambol",
+        "character": "Seban",
+        "gender": 2,
+        "profile_path": "/ri2gQM9o9MmcZQZjjq6pQmdbIxb.jpg"
+      }
+    ]
+  },
+  {
+    "id": 1368337,
+    "title": "The Odyssey",
+    "original_title": "The Odyssey",
+    "original_language": "en",
+    "release_date": "2026-07-15",
+    "release_label": "JUL 15",
+    "full_release_date": "2026-07-15 (Theatrical)",
+    "duration": "2h 53m",
+    "runtime": 173,
+    "director": "Christopher Nolan",
+    "production_companies": "Major Studio",
+    "vote_average": 8.7,
+    "vote_count": 3761,
+    "poster_path": "/5rhTDKUhPYvpdQIijFIs5VoWsON.jpg",
+    "backdrop_path": "/RMXG8myu1aGlNUsRjtxzmpdMK0.jpg",
+    "overview": "Odysseus, the legendary King of Ithaca, embarks on a long and perilous journey home following the Trojan War. Throughout his voyage, he is forced to confront the whims of gods, mythological monsters, and trials that stretch both his cunning and his humanity to the breaking point.",
+    "genre_ids": [
+      12,
+      28,
+      14
+    ],
+    "trailerKey": "AyIZ9tiiN8I",
+    "ratings": {
+      "imdb": "8.7/10",
+      "prime": "9.0/10",
+      "rottenTomatoes": "95%",
+      "tmdb": "8.7/10"
+    },
+    "cast": [
+      {
+        "id": 1892,
+        "name": "Matt Damon",
+        "character": "Odysseus",
+        "gender": 2,
+        "profile_path": "/aCvBXTAR9B1qRjIRzMBYhhbm1fR.jpg"
+      },
+      {
         "id": 1136406,
         "name": "Tom Holland",
-        "character": "Peter Parker / Spider-Man",
+        "character": "Telemachus",
         "gender": 2,
         "profile_path": "/5OK84Wn1bIEIThFKcVoaN087mLj.jpg"
       },
       {
-        "id": 505710,
-        "name": "Zendaya",
-        "character": "MJ",
+        "id": 1813,
+        "name": "Anne Hathaway",
+        "character": "Penelope",
         "gender": 1,
-        "profile_path": "/3WdOloHpjtjL96uVOhFRRCcYSwq.jpg"
+        "profile_path": "/nbccV2pMoyLTCeg5DQip24Eq0Jp.jpg"
       },
       {
-        "id": 103,
-        "name": "Mark Ruffalo",
-        "character": "Bruce Banner / Hulk",
+        "id": 11288,
+        "name": "Robert Pattinson",
+        "character": "Antinous",
         "gender": 2,
-        "profile_path": "/5GilHMOt5PAQh6rlUKZzGmaKEI7.jpg"
+        "profile_path": "/3qZ09UE7lN6AtorfXFRYpEtSY93.jpg"
       },
       {
-        "id": 19498,
-        "name": "Jon Bernthal",
-        "character": "Frank Castle / Punisher",
+        "id": 1227717,
+        "name": "Himesh Patel",
+        "character": "Eurylochus",
         "gender": 2,
-        "profile_path": "/aSH27tGD4PJoCO54RQnARSSSIQy.jpg"
-      },
-      {
-        "id": 1649152,
-        "name": "Jacob Batalon",
-        "character": "Ned Leeds",
-        "gender": 2,
-        "profile_path": "/53YhaL4xw4Sb1ssoHkeSSBaO29c.jpg"
+        "profile_path": "/icqsXLmU0FxBGTv63kkA0GcrecO.jpg"
       }
     ]
   },
   {
-    "id": 1213243,
-    "title": "Toxic: A Fairy Tale for Grown-ups",
-    "original_title": "ಟಾಕ್ಸಿಕ್",
-    "original_language": "kn",
-    "release_date": "2026-08-26",
-    "release_label": "AUG 26",
-    "full_release_date": "2026-08-26 (Theatrical)",
-    "duration": "3h 12m",
-    "runtime": 192,
-    "director": "Geetu Mohandas",
-    "production_companies": "Major Studio",
-    "vote_average": 8.1,
-    "vote_count": 73,
-    "poster_path": "/oiIPU4lvnI0Ag2K9cyAi44eCaoE.jpg",
-    "backdrop_path": "/tBRSSfgqOAq7YlG8udcoJIBm2FG.jpg",
-    "overview": "A powerful drug cartel pulls the strings behind a facade of sun-soaked beaches as a gritty, violent underworld power struggle emerges during the crumbling of Portuguese colonial rule.",
-    "genre_ids": [
-      28,
-      80,
-      18
-    ],
-    "trailerKey": "EfluEyQ5QIA",
-    "ratings": {
-      "imdb": "8.1/10",
-      "prime": "8.4/10",
-      "rottenTomatoes": "89%",
-      "tmdb": "8.1/10"
-    },
-    "cast": [
-      {
-        "id": 1293681,
-        "name": "Yash",
-        "character": "Raya / Ticket",
-        "gender": 2,
-        "profile_path": "/ixHvgN8hGh8YgWd3j9RqUATvBiy.jpg"
-      },
-      {
-        "id": 1340978,
-        "name": "Kiara Advani",
-        "character": "Nadia",
-        "gender": 1,
-        "profile_path": "/2xmU03a6kTWUvuTPMdofiFLxdAw.jpg"
-      },
-      {
-        "id": 91548,
-        "name": "Nayanthara",
-        "character": "Ganga",
-        "gender": 1,
-        "profile_path": "/sYUzvjsSsqeOgBblSzda6ZwwbEa.jpg"
-      },
-      {
-        "id": 1108805,
-        "name": "Huma Qureshi",
-        "character": "Elizabeth",
-        "gender": 1,
-        "profile_path": "/nJWauZQdRjMJxwY3UP4SXrqh9CM.jpg"
-      },
-      {
-        "id": 2030881,
-        "name": "Tara Sutaria",
-        "character": "Rebecca",
-        "gender": 1,
-        "profile_path": "/tF2OxFzOaDOMX1Sn4k17qZxhvFL.jpg"
-      }
-    ]
-  },
-  {
-    "id": 1122030,
-    "title": "Alpha",
-    "original_title": "अल्फा",
+    "id": 1303331,
+    "title": "Dhamaal 4",
+    "original_title": "धमाल ४",
     "original_language": "hi",
-    "release_date": "2026-07-02",
-    "release_label": "JUL 02",
-    "full_release_date": "2026-07-02 (Theatrical)",
-    "duration": "2h 21m",
-    "runtime": 141,
-    "director": "Shiv Rawail",
+    "release_date": "2026-07-10",
+    "release_label": "JUL 10",
+    "full_release_date": "2026-07-10 (Theatrical)",
+    "duration": "2h 23m",
+    "runtime": 143,
+    "director": "Indra Kumar",
     "production_companies": "Major Studio",
-    "vote_average": 5.3,
-    "vote_count": 24,
-    "poster_path": "/bPtRt3ajQ0EkyeQ1O6iJwAIi9Py.jpg",
-    "backdrop_path": "/b4WXm5ahmtubYXy3wqHUG2nUKoM.jpg",
-    "overview": "When Sita, a highly trained assassin raised in isolation as a super-soldier by a rogue commander, discovers the dark truth about her family and her stolen childhood, she teams up with her long lost sister to take down her creator and his illicit military program.",
+    "vote_average": 4.4,
+    "vote_count": 11,
+    "poster_path": "/5d7hpbefNiuebl5eqP5cRrckVxs.jpg",
+    "backdrop_path": "/95sjD0dRajtU6SKD6Gq6PtrGoGY.jpg",
+    "overview": "The Dhamaal boys are back for another treasure hunt, facing hilarious challenges in their quest for the Treasure of Life.",
     "genre_ids": [
-      28,
-      53
+      35
     ],
-    "trailerKey": "YP1uSAggr6Y",
+    "trailerKey": "Mf8Yiy3FL24",
     "ratings": {
-      "imdb": "5.3/10",
-      "prime": "5.6/10",
+      "imdb": "4.4/10",
+      "prime": "4.7/10",
       "rottenTomatoes": "75%",
-      "tmdb": "5.3/10"
+      "tmdb": "4.4/10"
     },
     "cast": [
       {
-        "id": 1108120,
-        "name": "Alia Bhatt",
-        "character": "Sita",
-        "gender": 1,
-        "profile_path": "/lAgBZgHKTo6amIO9CfNxUbm1usH.jpg"
+        "id": 42803,
+        "name": "Ajay Devgn",
+        "character": "Guddu",
+        "gender": 2,
+        "profile_path": "/vnHQQFzTjJ0sv14DGMIoKa3qTxN.jpg"
       },
       {
-        "id": 2518564,
-        "name": "Sharvari",
-        "character": "Durga",
-        "gender": 1,
-        "profile_path": "/zAkx24qd7eH1Ck3ouBnPOysAOaJ.jpg"
+        "id": 85889,
+        "name": "Arshad Warsi",
+        "character": "Adi",
+        "gender": 2,
+        "profile_path": "/1Hv35hhpfwNXNm0DqJxpfNJt1q.jpg"
       },
       {
-        "id": 77235,
-        "name": "Bobby Deol",
-        "character": "Fateh Singh Lakhawat",
+        "id": 84957,
+        "name": "Riteish Deshmukh",
+        "character": "Lallan",
         "gender": 2,
-        "profile_path": "/2npVa3PduichY8e7qBiE54m9VVP.jpg"
+        "profile_path": "/b4Mwk9dDgMS82269iBX7V1YsOpu.jpg"
       },
       {
-        "id": 72118,
-        "name": "Anil Kapoor",
-        "character": "Vikrant Kaul",
+        "id": 86086,
+        "name": "Javed Jaffrey",
+        "character": "Manav",
         "gender": 2,
-        "profile_path": "/dwvnpiwg9m2zj0VHzlgzEotFl0G.jpg"
+        "profile_path": "/5JvPPxLsDEUFy6qDVawM3Itl6NV.jpg"
       },
       {
-        "id": 101823,
-        "name": "Dibyendu Bhattacharya",
-        "character": "Dr. John Verghese",
+        "id": 85879,
+        "name": "Sanjay Mishra",
+        "character": "Johnny",
         "gender": 2,
-        "profile_path": "/uLlGKCL9y5CFBwcAafTDQhupz5h.jpg"
-      }
-    ]
-  },
-  {
-    "id": 1378537,
-    "title": "Mirzapur: The Movie",
-    "original_title": "मिर्ज़ापुर - द मूवी",
-    "original_language": "hi",
-    "release_date": "2026-09-03",
-    "release_label": "SEP 03",
-    "full_release_date": "2026-09-03 (Theatrical)",
-    "duration": "3h 17m",
-    "runtime": 197,
-    "director": "Gurmmeet Singh",
-    "production_companies": "Major Studio",
-    "vote_average": 7.6,
-    "vote_count": 18,
-    "poster_path": "/cdDKdCRyq6BYuNblpKUYqRPWvEg.jpg",
-    "backdrop_path": "/nTkQBI8ldvPByIkxsemGxtKlr8E.jpg",
-    "overview": "The battle for Mirzapur’s throne intensifies as old enemies resurface and a new threat emerges in the form of Babban Babua, a ruthless businessman from Jaisalmer with ambitions of his own. As the Tripathis face enemies from both the past and present, loyalties are tested while Guddu and Bablu Pandit fight to establish themselves in the power struggle for Mirzapur.",
-    "genre_ids": [
-      28,
-      80,
-      18,
-      53
-    ],
-    "trailerKey": "",
-    "ratings": {
-      "imdb": "7.6/10",
-      "prime": "7.9/10",
-      "rottenTomatoes": "84%",
-      "tmdb": "7.6/10"
-    },
-    "cast": [
-      {
-        "id": 1179460,
-        "name": "Pankaj Tripathi",
-        "character": "Akhandanand 'Kaleen' Tripathi",
-        "gender": 2,
-        "profile_path": "/f3Vxz0QB7PHeyPcXrfJX14Xkxnu.jpg"
-      },
-      {
-        "id": 492791,
-        "name": "Ali Fazal",
-        "character": "Govind 'Guddu' Pandit",
-        "gender": 2,
-        "profile_path": "/lLDmx3RDuMXObASvdFXeUh1GOgd.jpg"
-      },
-      {
-        "id": 1158934,
-        "name": "Divyendu Sharma",
-        "character": "Phoolchand 'Munna' Tripathi",
-        "gender": 2,
-        "profile_path": "/rGlCCQtOBiNJULfB5w0FXgPPKw0.jpg"
-      },
-      {
-        "id": 1485519,
-        "name": "Jitendra Kumar",
-        "character": "Vinay 'Bablu' Pandit",
-        "gender": 2,
-        "profile_path": "/562Mucw9YaDHUlFBqK5aot3H2lJ.jpg"
-      },
-      {
-        "id": 85882,
-        "name": "Ravi Kishan",
-        "character": "Babban Babua",
-        "gender": 2,
-        "profile_path": "/rkUTRk0tuA98RepP9jhgcCbhHqy.jpg"
+        "profile_path": "/4MGKohKGU4v9SoXcQKCcC4e4Bpi.jpg"
       }
     ]
   },
@@ -548,6 +1749,71 @@ export const THEATRICAL_NOW_PLAYING = [
     ]
   },
   {
+    "id": 1212763,
+    "title": "Evil Dead Burn",
+    "original_title": "Evil Dead Burn",
+    "original_language": "en",
+    "release_date": "2026-07-07",
+    "release_label": "JUL 07",
+    "full_release_date": "2026-07-07 (Theatrical)",
+    "duration": "1h 50m",
+    "runtime": 110,
+    "director": "Sébastien Vaniček",
+    "production_companies": "Major Studio",
+    "vote_average": 7.8,
+    "vote_count": 1536,
+    "poster_path": "/uRxrNXQWkHoENm3nwVOZDYSCx2F.jpg",
+    "backdrop_path": "/o0jkkpcN81QqSl8DMLScBCXyUH9.jpg",
+    "overview": "After her husband's abrupt death, Alice seeks solace with his remaining family — descendants of a leading researcher on demonic possession. As her in-laws transform one by one into creatures that feed on fear, she comes to discover that the vows she took in life survive even in death.",
+    "genre_ids": [
+      27
+    ],
+    "trailerKey": "RddZObTlmA8",
+    "ratings": {
+      "imdb": "7.8/10",
+      "prime": "8.1/10",
+      "rottenTomatoes": "86%",
+      "tmdb": "7.8/10"
+    },
+    "cast": [
+      {
+        "id": 2037046,
+        "name": "Souheila Yacoub",
+        "character": "Alice",
+        "gender": 1,
+        "profile_path": "/A233BHgXw0dzbeOpvHfJwL9gLy1.jpg"
+      },
+      {
+        "id": 33310,
+        "name": "Tandi Wright",
+        "character": "Susan",
+        "gender": 1,
+        "profile_path": "/xLQ9j4pJ46HZhs5jMJ87w9zjv82.jpg"
+      },
+      {
+        "id": 1911865,
+        "name": "Hunter Doohan",
+        "character": "Joseph",
+        "gender": 2,
+        "profile_path": "/ihno5ut6ha8TaubQFgl5Ozco2K1.jpg"
+      },
+      {
+        "id": 1399806,
+        "name": "Luciane Buchanan",
+        "character": "Thya",
+        "gender": 1,
+        "profile_path": "/9fTzSU4310StDoO9T0nQyGOLurn.jpg"
+      },
+      {
+        "id": 150396,
+        "name": "Erroll Shand",
+        "character": "Edgar",
+        "gender": 2,
+        "profile_path": "/75nc5lUcp1So9RTNNr08NZ0oQDG.jpg"
+      }
+    ]
+  },
+  {
     "id": 1509599,
     "title": "Gatta Kusthi 2",
     "original_title": "கட்டா குஸ்தி 2",
@@ -614,733 +1880,68 @@ export const THEATRICAL_NOW_PLAYING = [
     ]
   },
   {
-    "id": 1368337,
-    "title": "The Odyssey",
-    "original_title": "The Odyssey",
-    "original_language": "en",
-    "release_date": "2026-07-15",
-    "release_label": "JUL 15",
-    "full_release_date": "2026-07-15 (Theatrical)",
-    "duration": "2h 53m",
-    "runtime": 173,
-    "director": "Christopher Nolan",
+    "id": 1122030,
+    "title": "Alpha",
+    "original_title": "अल्फा",
+    "original_language": "hi",
+    "release_date": "2026-07-02",
+    "release_label": "JUL 02",
+    "full_release_date": "2026-07-02 (Theatrical)",
+    "duration": "2h 21m",
+    "runtime": 141,
+    "director": "Shiv Rawail",
     "production_companies": "Major Studio",
-    "vote_average": 8.7,
-    "vote_count": 3761,
-    "poster_path": "/5rhTDKUhPYvpdQIijFIs5VoWsON.jpg",
-    "backdrop_path": "/RMXG8myu1aGlNUsRjtxzmpdMK0.jpg",
-    "overview": "Odysseus, the legendary King of Ithaca, embarks on a long and perilous journey home following the Trojan War. Throughout his voyage, he is forced to confront the whims of gods, mythological monsters, and trials that stretch both his cunning and his humanity to the breaking point.",
-    "genre_ids": [
-      12,
-      28,
-      14
-    ],
-    "trailerKey": "AyIZ9tiiN8I",
-    "ratings": {
-      "imdb": "8.7/10",
-      "prime": "9.0/10",
-      "rottenTomatoes": "95%",
-      "tmdb": "8.7/10"
-    },
-    "cast": [
-      {
-        "id": 1892,
-        "name": "Matt Damon",
-        "character": "Odysseus",
-        "gender": 2,
-        "profile_path": "/aCvBXTAR9B1qRjIRzMBYhhbm1fR.jpg"
-      },
-      {
-        "id": 1136406,
-        "name": "Tom Holland",
-        "character": "Telemachus",
-        "gender": 2,
-        "profile_path": "/5OK84Wn1bIEIThFKcVoaN087mLj.jpg"
-      },
-      {
-        "id": 1813,
-        "name": "Anne Hathaway",
-        "character": "Penelope",
-        "gender": 1,
-        "profile_path": "/nbccV2pMoyLTCeg5DQip24Eq0Jp.jpg"
-      },
-      {
-        "id": 11288,
-        "name": "Robert Pattinson",
-        "character": "Antinous",
-        "gender": 2,
-        "profile_path": "/3qZ09UE7lN6AtorfXFRYpEtSY93.jpg"
-      },
-      {
-        "id": 1227717,
-        "name": "Himesh Patel",
-        "character": "Eurylochus",
-        "gender": 2,
-        "profile_path": "/icqsXLmU0FxBGTv63kkA0GcrecO.jpg"
-      }
-    ]
-  },
-  {
-    "id": 1441228,
-    "title": "Irumudi",
-    "original_title": "ఇరుముడి",
-    "original_language": "te",
-    "release_date": "2026-08-20",
-    "release_label": "AUG 20",
-    "full_release_date": "2026-08-20 (Theatrical)",
-    "duration": "2h 32m",
-    "runtime": 152,
-    "director": "Shiva Nirvana",
-    "production_companies": "Major Studio",
-    "vote_average": 6.9,
-    "vote_count": 18,
-    "poster_path": "/sPePQmJRKkB14sGjB7zBkLJkaTW.jpg",
-    "backdrop_path": "/578jrGVEN4a5rxJGtkt9sMI2w6c.jpg",
-    "overview": "An alcoholic with a violent past—living peacefully with his daughter beside a waterfall—decides to take Ayyappa Deeksha (a 41-day spiritual vow and period of intense austerity) at her request.",
-    "genre_ids": [
-      18,
-      10751,
-      28
-    ],
-    "trailerKey": "lqlYx4MdsAY",
-    "ratings": {
-      "imdb": "6.9/10",
-      "prime": "7.2/10",
-      "rottenTomatoes": "77%",
-      "tmdb": "6.9/10"
-    },
-    "cast": [
-      {
-        "id": 146935,
-        "name": "Ravi Teja",
-        "character": "Trinadh Rama Kasu",
-        "gender": 2,
-        "profile_path": "/5a9g645O30Qzhe3VFjvkhjnNfm2.jpg"
-      },
-      {
-        "id": 5850342,
-        "name": "Nakshathra C M",
-        "character": "Manikanta / Manamma",
-        "gender": 1,
-        "profile_path": "/1PxA7kkWPLpqDE0UpLaqhMapYA2.jpg"
-      },
-      {
-        "id": 1900674,
-        "name": "Priya Bhavani Shankar",
-        "character": "Kaveri",
-        "gender": 1,
-        "profile_path": "/sX5Ue02f5kzOzVCa0R3dV2yPRmO.jpg"
-      },
-      {
-        "id": 146148,
-        "name": "Sai Kumar",
-        "character": "Guru Swamy / Goparaju",
-        "gender": 2,
-        "profile_path": "/Xq5VNf8rPgQF0tuQLjl5YwHPoc.jpg"
-      },
-      {
-        "id": 1289211,
-        "name": "Ajay Ghosh",
-        "character": "Erraji",
-        "gender": 2,
-        "profile_path": "/bvexSjSRhZM8ke753Sq1oZf5pxY.jpg"
-      }
-    ]
-  },
-  {
-    "id": 1036081,
-    "title": "Khalifa: The Ruler",
-    "original_title": "ഖലീഫ: The Ruler",
-    "original_language": "ml",
-    "release_date": "2026-08-20",
-    "release_label": "AUG 20",
-    "full_release_date": "2026-08-20 (Theatrical)",
-    "duration": "2h 37m",
-    "runtime": 157,
-    "director": "Vysakh",
-    "production_companies": "Major Studio",
-    "vote_average": 7.1,
-    "vote_count": 4,
-    "poster_path": "/cAl7uuRojdxysptYBj9Mg0czGmI.jpg",
-    "backdrop_path": "/6Jz7rnnZrSkgs9ySWUxewpcxr7Q.jpg",
-    "overview": "Aamir Ali, a notorious gold smuggling kingpin who inherited his multi-million dollar criminal enterprise from a lineage of gangsters, is drawn into a web of vengeance, legacy and power.",
-    "genre_ids": [
-      80,
-      28
-    ],
-    "trailerKey": "",
-    "ratings": {
-      "imdb": "7.1/10",
-      "prime": "7.4/10",
-      "rottenTomatoes": "79%",
-      "tmdb": "7.1/10"
-    },
-    "cast": [
-      {
-        "id": 117690,
-        "name": "Prithviraj Sukumaran",
-        "character": "Aamir Ali",
-        "gender": 2,
-        "profile_path": "/1xhG42QU8tMQRTDdP1Ed3y9GRvm.jpg"
-      },
-      {
-        "id": 82732,
-        "name": "Mohanlal",
-        "character": "Mambarakkal Ahmed Ali",
-        "gender": 2,
-        "profile_path": "/wvoBULQimwguAGPOHZ8TDoy7jBJ.jpg"
-      },
-      {
-        "id": 85045,
-        "name": "Neil Nitin Mukesh",
-        "character": "Harris Basheer",
-        "gender": 2,
-        "profile_path": "/7lfd8WfMc2hOXYpCRFwhjiVZ7fl.jpg"
-      },
-      {
-        "id": 1061913,
-        "name": "Indrans",
-        "character": "Hamsa",
-        "gender": 2,
-        "profile_path": "/vs5Acy2hJ4dWoM3xRGdnFKdVXzw.jpg"
-      },
-      {
-        "id": 584910,
-        "name": "Shammi Thilakan",
-        "character": "Raghavan",
-        "gender": 2,
-        "profile_path": "/7lDFgyfGXbQEFFrbnVA24XaYGW.jpg"
-      }
-    ]
-  },
-  {
-    "id": 1288445,
-    "title": "Mutiny",
-    "original_title": "Mutiny",
-    "original_language": "en",
-    "release_date": "2026-08-19",
-    "release_label": "AUG 19",
-    "full_release_date": "2026-08-19 (Theatrical)",
-    "duration": "1h 36m",
-    "runtime": 96,
-    "director": "Jean-François Richet",
-    "production_companies": "Major Studio",
-    "vote_average": 6.6,
-    "vote_count": 411,
-    "poster_path": "/pu2VxGlpGwffOx292w18b1tv96j.jpg",
-    "backdrop_path": "/e2QAGrEmbpmZpMymDRkDisJkvg9.jpg",
-    "overview": "After witnessing his billionaire boss' murder and being framed for the crime, Cole Reed boards a cargo ship on a one-man crusade to avenge his boss' death only to discover an international conspiracy.",
+    "vote_average": 5.3,
+    "vote_count": 24,
+    "poster_path": "/bPtRt3ajQ0EkyeQ1O6iJwAIi9Py.jpg",
+    "backdrop_path": "/b4WXm5ahmtubYXy3wqHUG2nUKoM.jpg",
+    "overview": "When Sita, a highly trained assassin raised in isolation as a super-soldier by a rogue commander, discovers the dark truth about her family and her stolen childhood, she teams up with her long lost sister to take down her creator and his illicit military program.",
     "genre_ids": [
       28,
       53
     ],
-    "trailerKey": "2Iqvbe98Gb4",
+    "trailerKey": "YP1uSAggr6Y",
     "ratings": {
-      "imdb": "6.6/10",
-      "prime": "6.9/10",
+      "imdb": "5.3/10",
+      "prime": "5.6/10",
       "rottenTomatoes": "75%",
-      "tmdb": "6.6/10"
+      "tmdb": "5.3/10"
     },
     "cast": [
       {
-        "id": 976,
-        "name": "Jason Statham",
-        "character": "Cole Reed",
-        "gender": 2,
-        "profile_path": "/8l6lmrmKFDvhDjMJPj6tBpJdhaA.jpg"
-      },
-      {
-        "id": 82809,
-        "name": "Annabelle Wallis",
-        "character": "Angie Ellis",
+        "id": 1108120,
+        "name": "Alia Bhatt",
+        "character": "Sita",
         "gender": 1,
-        "profile_path": "/2ZmO2Zz9TcR0rmSJHOkivcu0heR.jpg"
+        "profile_path": "/lAgBZgHKTo6amIO9CfNxUbm1usH.jpg"
       },
       {
-        "id": 141876,
-        "name": "Roland Møller",
-        "character": "Captain Marko Madsen",
-        "gender": 2,
-        "profile_path": "/bF7wrJ5mrIhSwyi6ylhyQWj9BoN.jpg"
-      },
-      {
-        "id": 178622,
-        "name": "Ramon Tikaram",
-        "character": "Tibu Campallo",
-        "gender": 2,
-        "profile_path": "/wtBLiI8tzeqPLMB9uswkyFhChva.jpg"
-      },
-      {
-        "id": 1156305,
-        "name": "Arnas Fedaravičius",
-        "character": "Mateo Pineda",
-        "gender": 2,
-        "profile_path": "/7WfcGugvkuPqEzu0cUJBeJPt1lD.jpg"
-      }
-    ]
-  },
-  {
-    "id": 1204680,
-    "title": "Coyote vs. Acme",
-    "original_title": "Coyote vs. Acme",
-    "original_language": "en",
-    "release_date": "2026-08-20",
-    "release_label": "AUG 20",
-    "full_release_date": "2026-08-20 (Theatrical)",
-    "duration": "1h 43m",
-    "runtime": 103,
-    "director": "Dave Green",
-    "production_companies": "Major Studio",
-    "vote_average": 7.5,
-    "vote_count": 432,
-    "poster_path": "/kYDCl2y0VPvhT5eYWbMRInPoB03.jpg",
-    "backdrop_path": "/7GOW6jod9lLurW5utokAatxg7ql.jpg",
-    "overview": "After Acme products fail him one too many times in his dogged pursuit of the Roadrunner, Wile E. Coyote decides to hire a billboard lawyer to sue the Acme Corporation.",
-    "genre_ids": [
-      35,
-      12,
-      10751
-    ],
-    "trailerKey": "kMsiD1Nky5I",
-    "ratings": {
-      "imdb": "7.5/10",
-      "prime": "7.8/10",
-      "rottenTomatoes": "83%",
-      "tmdb": "7.5/10"
-    },
-    "cast": [
-      {
-        "id": 62831,
-        "name": "Will Forte",
-        "character": "Kevin Avery",
-        "gender": 2,
-        "profile_path": "/4VEzbkL3HwHTUZAPA5PyypFG2U.jpg"
-      },
-      {
-        "id": 1452046,
-        "name": "Lana Condor",
-        "character": "Paige Avery",
+        "id": 2518564,
+        "name": "Sharvari",
+        "character": "Durga",
         "gender": 1,
-        "profile_path": "/vWn27Fk2GLwH7o9fBG9hBWZI6OR.jpg"
+        "profile_path": "/zAkx24qd7eH1Ck3ouBnPOysAOaJ.jpg"
       },
       {
-        "id": 56446,
-        "name": "John Cena",
-        "character": "Buddy Crane",
+        "id": 77235,
+        "name": "Bobby Deol",
+        "character": "Fateh Singh Lakhawat",
         "gender": 2,
-        "profile_path": "/rgB2eIOt7WyQjdgJCOuESdDlrjg.jpg"
+        "profile_path": "/2npVa3PduichY8e7qBiE54m9VVP.jpg"
       },
       {
-        "id": 1120700,
-        "name": "Tone Bell",
-        "character": "Sal Maltese",
+        "id": 72118,
+        "name": "Anil Kapoor",
+        "character": "Vikrant Kaul",
         "gender": 2,
-        "profile_path": "/fB06Xj5FgwvHcZESsNGMupGBTyY.jpg"
+        "profile_path": "/dwvnpiwg9m2zj0VHzlgzEotFl0G.jpg"
       },
       {
-        "id": 1572541,
-        "name": "Martha Kelly",
-        "character": "Dottie Jones",
-        "gender": 1,
-        "profile_path": "/ac7HoARDIHdYNqpzgJBzpmKHXHR.jpg"
-      }
-    ]
-  },
-  {
-    "id": 1376856,
-    "title": "The Paradise",
-    "original_title": "ది ప్యారడైస్",
-    "original_language": "te",
-    "release_date": "2026-09-23",
-    "release_label": "SEP 23",
-    "full_release_date": "2026-09-23 (Theatrical)",
-    "duration": "2h 45m",
-    "runtime": 165,
-    "director": "Srikanth Odela",
-    "production_companies": "Major Studio",
-    "vote_average": 7.1,
-    "vote_count": 120,
-    "poster_path": "/9k5F5Lk2bUP7ODifk1KP5Vw8yGm.jpg",
-    "backdrop_path": "/7AcH5TFppoMusNkCBLaQP6UOODp.jpg",
-    "overview": "In 1980s Secunderabad, a marginalized tribe battles discrimination and fights for citizenship under an unexpected leader's guidance, challenging systemic oppression.",
-    "genre_ids": [
-      28,
-      53,
-      18
-    ],
-    "trailerKey": "Y3xewv1ZnHc",
-    "ratings": {
-      "imdb": "7.1/10",
-      "prime": "7.4/10",
-      "rottenTomatoes": "79%",
-      "tmdb": "7.1/10"
-    },
-    "cast": [
-      {
-        "id": 225387,
-        "name": "Nani",
-        "character": "Jadal Zamana",
+        "id": 101823,
+        "name": "Dibyendu Bhattacharya",
+        "character": "Dr. John Verghese",
         "gender": 2,
-        "profile_path": "/jfOH4sUWs3VXuGUlo0VLMYNRBQ4.jpg"
-      },
-      {
-        "id": 2578168,
-        "name": "Kayadu Lohar",
-        "character": "Subbu",
-        "gender": 1,
-        "profile_path": "/pHaMPnrfnWvTPZA4IOmZk8BHY0U.jpg"
-      },
-      {
-        "id": 585268,
-        "name": "Mohan Babu",
-        "character": "Shikanja Maalik",
-        "gender": 2,
-        "profile_path": "/zwqcXtnk0ju0nhuhvZXSLL2nLIy.jpg"
-      },
-      {
-        "id": 1374676,
-        "name": "Raghav Juyal",
-        "character": "Vikram Maalik",
-        "gender": 2,
-        "profile_path": "/ncJa8IBYfDknQLpjeciaQy6dXkH.jpg"
-      },
-      {
-        "id": 78920,
-        "name": "Sonali Kulkarni",
-        "character": "",
-        "gender": 1,
-        "profile_path": "/aQeM6N2JgGFbI5VoltWhkxw6OQC.jpg"
-      }
-    ]
-  },
-  {
-    "id": 1408162,
-    "title": "Vishwanath & Sons",
-    "original_title": "விஸ்வநாத் & சன்ஸ்",
-    "original_language": "ta",
-    "release_date": "2026-08-14",
-    "release_label": "AUG 14",
-    "full_release_date": "2026-08-14 (Theatrical)",
-    "duration": "2h 41m",
-    "runtime": 161,
-    "director": "Venky Atluri",
-    "production_companies": "KVN Productions",
-    "vote_average": 7.3,
-    "vote_count": 26,
-    "poster_path": "/adDZVEQZnMJ380zPOmVj6vBWHgk.jpg",
-    "backdrop_path": "/nfNaAiiILjYRc2CKkId1ZfPTtlh.jpg",
-    "overview": "A celebrated Olympian shooter travels to America looking for a donor to help his sick child — but unexpected romance complicates his search.",
-    "genre_ids": [
-      18,
-      10749,
-      35
-    ],
-    "trailerKey": "",
-    "ratings": {
-      "imdb": "7.3/10",
-      "prime": "7.6/10",
-      "rottenTomatoes": "81%",
-      "tmdb": "7.3/10"
-    },
-    "cast": [
-      {
-        "id": 85720,
-        "name": "Suriya",
-        "character": "Sanjay 'Sanju' Vishwanath",
-        "gender": 2,
-        "profile_path": "/hIFXv3gIjlNS78gJmaguEOxvfPH.jpg"
-      },
-      {
-        "id": 2191938,
-        "name": "Mamitha Baiju",
-        "character": "Madanakameshwari 'Maddy Jay' Jothilingam",
-        "gender": 1,
-        "profile_path": "/9ySiE3j7ep16fhKi3u5iq5rbOk6.jpg"
-      },
-      {
-        "id": 562177,
-        "name": "Radhika Sarathkumar",
-        "character": "Nirmala Devi",
-        "gender": 1,
-        "profile_path": "/kEKzT8HAJw8lfFUtWWd0SoQ9kC9.jpg"
-      },
-      {
-        "id": 123180,
-        "name": "Raveena Tandon",
-        "character": "Anjali Devi",
-        "gender": 1,
-        "profile_path": "/4z0X9ZMgyNZRHfJG4G2Z10rhLpu.jpg"
-      },
-      {
-        "id": 2261843,
-        "name": "Sunil",
-        "character": "Ramu",
-        "gender": 0,
-        "profile_path": "/w92Vawfw4DcLYSLtUeFTm46KNIe.jpg"
-      }
-    ]
-  },
-  {
-    "id": 1303331,
-    "title": "Dhamaal 4",
-    "original_title": "धमाल ४",
-    "original_language": "hi",
-    "release_date": "2026-07-10",
-    "release_label": "JUL 10",
-    "full_release_date": "2026-07-10 (Theatrical)",
-    "duration": "2h 23m",
-    "runtime": 143,
-    "director": "Indra Kumar",
-    "production_companies": "Major Studio",
-    "vote_average": 4.4,
-    "vote_count": 11,
-    "poster_path": "/5d7hpbefNiuebl5eqP5cRrckVxs.jpg",
-    "backdrop_path": "/95sjD0dRajtU6SKD6Gq6PtrGoGY.jpg",
-    "overview": "The Dhamaal boys are back for another treasure hunt, facing hilarious challenges in their quest for the Treasure of Life.",
-    "genre_ids": [
-      35
-    ],
-    "trailerKey": "Mf8Yiy3FL24",
-    "ratings": {
-      "imdb": "4.4/10",
-      "prime": "4.7/10",
-      "rottenTomatoes": "75%",
-      "tmdb": "4.4/10"
-    },
-    "cast": [
-      {
-        "id": 42803,
-        "name": "Ajay Devgn",
-        "character": "Guddu",
-        "gender": 2,
-        "profile_path": "/vnHQQFzTjJ0sv14DGMIoKa3qTxN.jpg"
-      },
-      {
-        "id": 85889,
-        "name": "Arshad Warsi",
-        "character": "Adi",
-        "gender": 2,
-        "profile_path": "/1Hv35hhpfwNXNm0DqJxpfNJt1q.jpg"
-      },
-      {
-        "id": 84957,
-        "name": "Riteish Deshmukh",
-        "character": "Lallan",
-        "gender": 2,
-        "profile_path": "/b4Mwk9dDgMS82269iBX7V1YsOpu.jpg"
-      },
-      {
-        "id": 86086,
-        "name": "Javed Jaffrey",
-        "character": "Manav",
-        "gender": 2,
-        "profile_path": "/5JvPPxLsDEUFy6qDVawM3Itl6NV.jpg"
-      },
-      {
-        "id": 85879,
-        "name": "Sanjay Mishra",
-        "character": "Johnny",
-        "gender": 2,
-        "profile_path": "/4MGKohKGU4v9SoXcQKCcC4e4Bpi.jpg"
-      }
-    ]
-  },
-  {
-    "id": 1137844,
-    "title": "Mayday",
-    "original_title": "Mayday",
-    "original_language": "en",
-    "release_date": "2026-09-03",
-    "release_label": "SEP 03",
-    "full_release_date": "2026-09-03 (Theatrical)",
-    "duration": "1h 51m",
-    "runtime": 111,
-    "director": "Jonathan Goldstein",
-    "production_companies": "Major Studio",
-    "vote_average": 8.1,
-    "vote_count": 655,
-    "poster_path": "/hVXjX1jLZ1ljFSNGXpjJfbTUOa7.jpg",
-    "backdrop_path": "/g7Ccid5kuD7A8hXWlsQiNfwOxaD.jpg",
-    "overview": "When a U.S. Navy pilot on a top-secret mission during the Cold War gets trapped behind enemy lines, his only chance at survival is to form an alliance with an eccentric ex-KGB agent.",
-    "genre_ids": [
-      28,
-      35
-    ],
-    "trailerKey": "om5Un9X720M",
-    "ratings": {
-      "imdb": "8.1/10",
-      "prime": "8.4/10",
-      "rottenTomatoes": "89%",
-      "tmdb": "8.1/10"
-    },
-    "cast": [
-      {
-        "id": 10859,
-        "name": "Ryan Reynolds",
-        "character": "Troy Kelly",
-        "gender": 2,
-        "profile_path": "/trzgptffGvAlAT6MEu01fz47cLW.jpg"
-      },
-      {
-        "id": 11181,
-        "name": "Kenneth Branagh",
-        "character": "Nikolai Ustinov",
-        "gender": 2,
-        "profile_path": "/AbCqqFxNi5w3nDUFdQt0DGMFh5H.jpg"
-      },
-      {
-        "id": 591295,
-        "name": "Marcin Dorociński",
-        "character": "Alexander Volkov",
-        "gender": 2,
-        "profile_path": "/pyPUnMHxNPKKYxn8PehQJfSbZzO.jpg"
-      },
-      {
-        "id": 2408703,
-        "name": "Maria Bakalova",
-        "character": "Anna Ustinov",
-        "gender": 1,
-        "profile_path": "/vCz0ycZr1PgJVOAeS29fIiZE8pN.jpg"
-      },
-      {
-        "id": 52,
-        "name": "David Morse",
-        "character": "Harold Kelly",
-        "gender": 2,
-        "profile_path": "/A6zGbkFjM3uajIakgsSeNTmSKqY.jpg"
-      }
-    ]
-  },
-  {
-    "id": 980431,
-    "title": "Avatar Aang: The Last Airbender",
-    "original_title": "Avatar Aang: The Last Airbender",
-    "original_language": "en",
-    "release_date": "2026-07-24",
-    "release_label": "JUL 24",
-    "full_release_date": "2026-07-24 (Theatrical)",
-    "duration": "1h 39m",
-    "runtime": 99,
-    "director": "Lauren Montgomery",
-    "production_companies": "Major Studio",
-    "vote_average": 9.6,
-    "vote_count": 1148,
-    "poster_path": "/3sgnSfNT27Bx5O5ukr7B26mhEQq.jpg",
-    "backdrop_path": "/ezbrL1dMymKQZw7mDEWa2ZTzN7d.jpg",
-    "overview": "Avatar Aang, the world's last Airbender, learns of an ancient power that could save his culture from extinction. With the help of his friends, he embarks on a global quest to find it before it falls into the wrong hands and threatens to upend the peace they sacrificed everything to achieve.",
-    "genre_ids": [
-      16,
-      12,
-      14,
-      28
-    ],
-    "trailerKey": "7b20GRFZBFE",
-    "ratings": {
-      "imdb": "9.6/10",
-      "prime": "9.9/10",
-      "rottenTomatoes": "96%",
-      "tmdb": "9.6/10"
-    },
-    "cast": [
-      {
-        "id": 1610783,
-        "name": "Eric Nam",
-        "character": "Aang (voice)",
-        "gender": 2,
-        "profile_path": "/gEH0b5q9tupL49dmUFkjm9dnxP2.jpg"
-      },
-      {
-        "id": 543530,
-        "name": "Dave Bautista",
-        "character": "Tagah (voice)",
-        "gender": 2,
-        "profile_path": "/snk6JiXOOoRjPtHU5VMoy6qbd32.jpg"
-      },
-      {
-        "id": 1703912,
-        "name": "Jessica Matten",
-        "character": "Katara (voice)",
-        "gender": 1,
-        "profile_path": "/EQsPxsav8AZmaeT3mpU3Evilee.jpg"
-      },
-      {
-        "id": 2775164,
-        "name": "Román Zaragoza",
-        "character": "Sokka (voice)",
-        "gender": 2,
-        "profile_path": "/uWkOkSLqj2POMqkeLk5E5UJzebv.jpg"
-      },
-      {
-        "id": 215055,
-        "name": "Steven Yeun",
-        "character": "Zuko (voice)",
-        "gender": 2,
-        "profile_path": "/fOMFO2Xx4duzpNgS9Q5ytO44yGb.jpg"
-      }
-    ]
-  },
-  {
-    "id": 1489543,
-    "title": "G.D.N",
-    "original_title": "ஜி.டி.என்",
-    "original_language": "ta",
-    "release_date": "2026-08-07",
-    "release_label": "AUG 07",
-    "full_release_date": "2026-08-07 (Theatrical)",
-    "duration": "2h 27m",
-    "runtime": 147,
-    "director": "Krishnakumar Ramakumar",
-    "production_companies": "KVN Productions",
-    "vote_average": 7.1,
-    "vote_count": 1,
-    "poster_path": "/aAbvbKbNU6YyYDZ5ntSQcOygliw.jpg",
-    "backdrop_path": "/hR0QpzOO2Gx1Lt7KxqKFWZvj5Vl.jpg",
-    "overview": "G.D. Naidu overcomes challenges and defies a repressive colonial regime to become one of India's greatest innovators.",
-    "genre_ids": [
-      18
-    ],
-    "trailerKey": "DC11NRrn9Vc",
-    "ratings": {
-      "imdb": "7.1/10",
-      "prime": "7.4/10",
-      "rottenTomatoes": "79%",
-      "tmdb": "7.1/10"
-    },
-    "cast": [
-      {
-        "id": 85519,
-        "name": "R. Madhavan",
-        "character": "GD Naidu",
-        "gender": 2,
-        "profile_path": "/gaDrAdXxIrbBRCd9cX8YvJDEuLb.jpg"
-      },
-      {
-        "id": 1107197,
-        "name": "Priyamani",
-        "character": "Chellammal",
-        "gender": 1,
-        "profile_path": "/grcW2eMm77Q2Kj1xX0HvZlRpGRR.jpg"
-      },
-      {
-        "id": 581895,
-        "name": "Sathyaraj",
-        "character": "Ramaiah Pillai",
-        "gender": 2,
-        "profile_path": "/lnlBZ7V3K3Z3OIsjCd0zkKx26L3.jpg"
-      },
-      {
-        "id": 141704,
-        "name": "Jayaram",
-        "character": "Ambalapara Krishnan",
-        "gender": 2,
-        "profile_path": "/cc1SfVFctuYH353NgxXNBoAFX2d.jpg"
-      },
-      {
-        "id": 1974753,
-        "name": "Dushara Vijayan",
-        "character": "Ranganayaki",
-        "gender": 1,
-        "profile_path": "/5C5V9qdYil7LVCp8LqctZCEsu1n.jpg"
+        "profile_path": "/uLlGKCL9y5CFBwcAafTDQhupz5h.jpg"
       }
     ]
   },
@@ -1408,607 +2009,6 @@ export const THEATRICAL_NOW_PLAYING = [
         "character": "Suvarna",
         "gender": 2,
         "profile_path": "/4lFytre6m4SruIUpUIoyNjsMo7F.jpg"
-      }
-    ]
-  },
-  {
-    "id": 1355228,
-    "title": "Gandhari",
-    "original_title": "गांधारी",
-    "original_language": "hi",
-    "release_date": "2026-09-03",
-    "release_label": "SEP 03",
-    "full_release_date": "2026-09-03 (Theatrical)",
-    "duration": "1h 57m",
-    "runtime": 117,
-    "director": "Devashish Makhija",
-    "production_companies": "Major Studio",
-    "vote_average": 5.7,
-    "vote_count": 9,
-    "poster_path": "/aF3IhwS1mrVfvM9OMXmTaXAT0l8.jpg",
-    "backdrop_path": "/sT5WVT8LzvDwIbfy9BGXK0fvf3s.jpg",
-    "overview": "When a mother loses her eyesight and her daughter in a kidnapping, she takes matters into her own hands to hunt down those responsible.",
-    "genre_ids": [
-      28,
-      18,
-      53
-    ],
-    "trailerKey": "TRyBiPD1bUc",
-    "ratings": {
-      "imdb": "5.7/10",
-      "prime": "6.0/10",
-      "rottenTomatoes": "75%",
-      "tmdb": "5.7/10"
-    },
-    "cast": [
-      {
-        "id": 550167,
-        "name": "Taapsee Pannu",
-        "character": "Bani",
-        "gender": 1,
-        "profile_path": "/43e24aeOC8AZITo6ShaKKG9aV0Y.jpg"
-      },
-      {
-        "id": 1424750,
-        "name": "Ishwak Singh",
-        "character": "Gokul",
-        "gender": 2,
-        "profile_path": "/iN1QUGzN7c4qBps3xpuWYVzpMag.jpg"
-      },
-      {
-        "id": 1140663,
-        "name": "Mita Vashisht",
-        "character": "",
-        "gender": 1,
-        "profile_path": "/mcnaQTCmuz3lXNotFFdkwCO7FTY.jpg"
-      },
-      {
-        "id": 1144344,
-        "name": "Swastika Mukherjee",
-        "character": "",
-        "gender": 1,
-        "profile_path": "/xjEdXwco3KjWU7zFDhJgMJYmerh.jpg"
-      },
-      {
-        "id": 1550351,
-        "name": "Chhaya Kadam",
-        "character": "",
-        "gender": 1,
-        "profile_path": "/umOPkpPA4JUWLkVziYU5GF6gELD.jpg"
-      }
-    ]
-  },
-  {
-    "id": 1542187,
-    "title": "Varavu",
-    "original_title": "വരവ്",
-    "original_language": "ml",
-    "release_date": "2026-07-16",
-    "release_label": "JUL 16",
-    "full_release_date": "2026-07-16 (Theatrical)",
-    "duration": "2h 23m",
-    "runtime": 143,
-    "director": "Shaji Kailas",
-    "production_companies": "Major Studio",
-    "vote_average": 4.8,
-    "vote_count": 2,
-    "poster_path": "/xUBo6JBHGV52xbfPwg3xxyvBLPx.jpg",
-    "backdrop_path": "/321ed6TvXWw5Y6SRcFF2DuAgpjC.jpg",
-    "overview": "A family falls victim to the powerful elite in a small town. One man's return forces a confrontation that will expose decades of lies and corruption",
-    "genre_ids": [
-      28,
-      53
-    ],
-    "trailerKey": "aQ7tTufi63s",
-    "ratings": {
-      "imdb": "4.8/10",
-      "prime": "5.1/10",
-      "rottenTomatoes": "75%",
-      "tmdb": "4.8/10"
-    },
-    "cast": [
-      {
-        "id": 1357376,
-        "name": "Joju George",
-        "character": "Paulson",
-        "gender": 2,
-        "profile_path": "/jCObRH5idadzrTvyC9XnlnR8rXH.jpg"
-      },
-      {
-        "id": 1061905,
-        "name": "Murali Gopy",
-        "character": "Medayil Kochettan",
-        "gender": 2,
-        "profile_path": "/oNEKhIL7PmE6yXzOcaVNGqPMnmw.jpg"
-      },
-      {
-        "id": 1440952,
-        "name": "Arjun Ashokan",
-        "character": "Williams \"Willy\"",
-        "gender": 2,
-        "profile_path": "/fA9V9ImvGlLGQ9HWB68j8d8eo0J.jpg"
-      },
-      {
-        "id": 584238,
-        "name": "Sukanya",
-        "character": "Sister Daisy",
-        "gender": 1,
-        "profile_path": "/q15g0PQN0sCtMN82aU0sPYGtW8D.jpg"
-      },
-      {
-        "id": 1274871,
-        "name": "Deepak Parambol",
-        "character": "Seban",
-        "gender": 2,
-        "profile_path": "/ri2gQM9o9MmcZQZjjq6pQmdbIxb.jpg"
-      }
-    ]
-  },
-  {
-    "id": 1215812,
-    "title": "Karavali",
-    "original_title": "ಕರಾವಳಿ",
-    "original_language": "kn",
-    "release_date": "2026-07-24",
-    "release_label": "JUL 24",
-    "full_release_date": "2026-07-24 (Theatrical)",
-    "duration": "2h 20m",
-    "runtime": 140,
-    "director": "Gurudatha Ganiga",
-    "production_companies": "Major Studio",
-    "vote_average": 9.5,
-    "vote_count": 1,
-    "poster_path": "/buxVz5LZQY1QLfFIIZnfe6t2F4I.jpg",
-    "backdrop_path": "/tKBoVyOMrL0xp6NtBZEHcxthLfZ.jpg",
-    "overview": "Karavali is a film that explores the struggles between man and nature, set against the raw, untamed beauty of coastal Karnataka. The story revolves around the world of Kambala, a traditional annual buffalo race, showcasing the unique culture and challenges of the region.",
-    "genre_ids": [
-      28,
-      18,
-      12,
-      53
-    ],
-    "trailerKey": "TGYTlowY0zM",
-    "ratings": {
-      "imdb": "9.5/10",
-      "prime": "9.8/10",
-      "rottenTomatoes": "96%",
-      "tmdb": "9.5/10"
-    },
-    "cast": [
-      {
-        "id": 1859636,
-        "name": "Prajwal Devaraj",
-        "character": "Dhananjaya aka Dhana",
-        "gender": 2,
-        "profile_path": "/8zmHfxisRn5kkQOPR09z1cm5YmX.jpg"
-      },
-      {
-        "id": 1906560,
-        "name": "Raj B Shetty",
-        "character": "Maveera",
-        "gender": 2,
-        "profile_path": "/vlNvrGhaYzmRxhkd4GOKFNfSkHY.jpg"
-      },
-      {
-        "id": 3403383,
-        "name": "Sampada Hulivana",
-        "character": "Dakshina",
-        "gender": 0,
-        "profile_path": null
-      },
-      {
-        "id": 2262422,
-        "name": "Ramesh Indira",
-        "character": "Doddavru",
-        "gender": 0,
-        "profile_path": null
-      },
-      {
-        "id": 2071782,
-        "name": "Mithra",
-        "character": "Maabla",
-        "gender": 0,
-        "profile_path": null
-      }
-    ]
-  },
-  {
-    "id": 1538457,
-    "title": "Meesaya Murukku 2",
-    "original_title": "மீசைய முறுக்கு 2",
-    "original_language": "ta",
-    "release_date": "2026-09-25",
-    "release_label": "SEP 25",
-    "full_release_date": "2026-09-25 (Theatrical)",
-    "duration": "2h 20m",
-    "runtime": 140,
-    "director": "HipHop Tamizha Adhi",
-    "production_companies": "KVN Productions",
-    "vote_average": 7.2,
-    "vote_count": 120,
-    "poster_path": "/qD1QwmInB9ezd2peVb5EbhaM4Mo.jpg",
-    "backdrop_path": "/8iG6naruSFn4CuSWB01F0JuImCc.jpg",
-    "overview": "After facing rejection in love and getting into a fight, Jeeva learns about his father Siva's struggles and sacrifices. Inspired by his grandfather's legacy and father's dedication, Jeeva changes his outlook and works hard toward his musical dream. Through determination and perseverance, Jeeva earns recognition in the music industry and brings pride to his family.",
-    "genre_ids": [
-      35,
-      10749,
-      18
-    ],
-    "trailerKey": "",
-    "ratings": {
-      "imdb": "7.2/10",
-      "prime": "7.5/10",
-      "rottenTomatoes": "80%",
-      "tmdb": "7.2/10"
-    },
-    "cast": [
-      {
-        "id": 1414019,
-        "name": "HipHop Tamizha Adhi",
-        "character": "Jeeva/Tiger Shiva",
-        "gender": 2,
-        "profile_path": "/k2oEkE6Du42QpDn8Ss6dphr5nll.jpg"
-      },
-      {
-        "id": 2994489,
-        "name": "Ketika Sharma",
-        "character": "Laila",
-        "gender": 1,
-        "profile_path": "/jvElVKGhzwMUFNNxijYCK8pubdW.jpg"
-      },
-      {
-        "id": 2488387,
-        "name": "Chaithra J Achar",
-        "character": "Latchumi",
-        "gender": 1,
-        "profile_path": "/mCpqijk7HhguNYcffPhprGVHts5.jpg"
-      },
-      {
-        "id": 4446230,
-        "name": "Ramya Ranganathan",
-        "character": "Vaani",
-        "gender": 1,
-        "profile_path": "/8yRztudKzhaigLfiIgPcSHTZFvg.jpg"
-      },
-      {
-        "id": 4492069,
-        "name": "Harshath Khan",
-        "character": "",
-        "gender": 0,
-        "profile_path": "/kE3DLC2XkpRAnuHOZq6YnaJrU9g.jpg"
-      }
-    ]
-  },
-  {
-    "id": 1250502,
-    "title": "I'm Game",
-    "original_title": "ഐ ആം ഗെയിം",
-    "original_language": "ml",
-    "release_date": "2026-09-03",
-    "release_label": "SEP 03",
-    "full_release_date": "2026-09-03 (Theatrical)",
-    "duration": "2h 53m",
-    "runtime": 173,
-    "director": "Nahas Hidayath",
-    "production_companies": "Major Studio",
-    "vote_average": 8.1,
-    "vote_count": 1,
-    "poster_path": "/h1ezPKcMYv5FHbHDuHcZfTbWTY5.jpg",
-    "backdrop_path": "/z8PMsnvYs2t3fmKpK1ZYPMz4QQ9.jpg",
-    "overview": "A fearless gambler who trusts luck more than life gets caught in a series of crazy and unexpected events that turn his world upside down.",
-    "genre_ids": [
-      28,
-      53,
-      18
-    ],
-    "trailerKey": "",
-    "ratings": {
-      "imdb": "8.1/10",
-      "prime": "8.4/10",
-      "rottenTomatoes": "89%",
-      "tmdb": "8.1/10"
-    },
-    "cast": [
-      {
-        "id": 1115225,
-        "name": "Dulquer Salmaan",
-        "character": "Dan John",
-        "gender": 2,
-        "profile_path": "/cKngC3leAnZRXTzg0N8N2DYn4HY.jpg"
-      },
-      {
-        "id": 2578168,
-        "name": "Kayadu Lohar",
-        "character": "Isha",
-        "gender": 1,
-        "profile_path": "/pHaMPnrfnWvTPZA4IOmZk8BHY0U.jpg"
-      },
-      {
-        "id": 1758913,
-        "name": "Antony Varghese",
-        "character": "Vignesh 'Vicky' Das",
-        "gender": 2,
-        "profile_path": "/dKRa8ghSXw6J1OTcxMziZh3l1jb.jpg"
-      },
-      {
-        "id": 560039,
-        "name": "Mysskin",
-        "character": "David Abraham",
-        "gender": 2,
-        "profile_path": "/2g65eG5FBh9oOMAhxpfk5T6um6A.jpg"
-      },
-      {
-        "id": 1044337,
-        "name": "Kathir",
-        "character": "Jason Antony",
-        "gender": 2,
-        "profile_path": "/cQNlW5ztPIANrUNRos81cxZuZe5.jpg"
-      }
-    ]
-  },
-  {
-    "id": 1101412,
-    "title": "Fall 2: Deadpoint",
-    "original_title": "Fall 2: Deadpoint",
-    "original_language": "en",
-    "release_date": "2026-09-01",
-    "release_label": "SEP 01",
-    "full_release_date": "2026-09-01 (Theatrical)",
-    "duration": "1h 38m",
-    "runtime": 98,
-    "director": "Michael Spierig",
-    "production_companies": "Major Studio",
-    "vote_average": 7.3,
-    "vote_count": 37,
-    "poster_path": "/fgSm5ylwiXbIHn8UbUXDjk9RRu4.jpg",
-    "backdrop_path": "/yBDxqDB29kpH9VojTytjGWBgmdJ.jpg",
-    "overview": "On a perilous climb across Thailand's Mount Kwan, two climbers become trapped thousands of feet above the ground, where vertigo-inducing heights, sheer exposure, and impossible odds turn every moment into a fight for survival.",
-    "genre_ids": [
-      53
-    ],
-    "trailerKey": "Krs0VDIjhmE",
-    "ratings": {
-      "imdb": "7.3/10",
-      "prime": "7.6/10",
-      "rottenTomatoes": "81%",
-      "tmdb": "7.3/10"
-    },
-    "cast": [
-      {
-        "id": 2480853,
-        "name": "Harriet Slater",
-        "character": "Jax Hunter",
-        "gender": 1,
-        "profile_path": "/9BJxdhi4tuiQdgT8bfDuiPipnsx.jpg"
-      },
-      {
-        "id": 3486664,
-        "name": "Arsema Thomas",
-        "character": "Luce",
-        "gender": 1,
-        "profile_path": "/lvzhZIbkWIVLSRHsOICs9o37g2I.jpg"
-      },
-      {
-        "id": 1626604,
-        "name": "Tom Brittney",
-        "character": "Jon Platt",
-        "gender": 2,
-        "profile_path": "/qSe3SuZHVPR5AMOuOAGxLdD6kYv.jpg"
-      },
-      {
-        "id": 1279279,
-        "name": "Virginia Gardner",
-        "character": "Shiloh Hunter",
-        "gender": 1,
-        "profile_path": "/1DnNysK267b0te48KCkUlTKoTzj.jpg"
-      },
-      {
-        "id": 521673,
-        "name": "Sahajak Boonthanakit",
-        "character": "Thai Barman",
-        "gender": 2,
-        "profile_path": "/a36MI02S0f11bJZjBoxkZTsUDAK.jpg"
-      }
-    ]
-  },
-  {
-    "id": 1185806,
-    "title": "PAW Patrol: The Dino Movie",
-    "original_title": "PAW Patrol: The Dino Movie",
-    "original_language": "en",
-    "release_date": "2026-07-23",
-    "release_label": "JUL 23",
-    "full_release_date": "2026-07-23 (Theatrical)",
-    "duration": "1h 28m",
-    "runtime": 88,
-    "director": "Cal Brunker",
-    "production_companies": "Major Studio",
-    "vote_average": 8,
-    "vote_count": 115,
-    "poster_path": "/qnin56Syy5rbG7KCaxWY7SPuy6p.jpg",
-    "backdrop_path": "/6TSxLmwT7j1ugtKi8NyMmdzWAGj.jpg",
-    "overview": "The Paw Patrol lands on a mysterious dinosaur island after a storm, where they meet Rex, a stranded pup. When Humdinger's reckless mining triggers a volcano, the team faces their biggest rescue mission yet to save the island.",
-    "genre_ids": [
-      16,
-      12,
-      10751,
-      14,
-      35
-    ],
-    "trailerKey": "xgI5iYmOf5Q",
-    "ratings": {
-      "imdb": "8.0/10",
-      "prime": "8.3/10",
-      "rottenTomatoes": "88%",
-      "tmdb": "8.0/10"
-    },
-    "cast": [
-      {
-        "id": 3572176,
-        "name": "Carter Young",
-        "character": "Marshall (voice)",
-        "gender": 2,
-        "profile_path": "/ezkMRnYOjsYXrcwHEJ2JIDWTJJq.jpg"
-      },
-      {
-        "id": 1172108,
-        "name": "Mckenna Grace",
-        "character": "Skye (voice)",
-        "gender": 1,
-        "profile_path": "/sK0CVa56IIpFhCDrcXSTqPWxNbx.jpg"
-      },
-      {
-        "id": 53256,
-        "name": "Terry Crews",
-        "character": "Alistair Stonewall (voice)",
-        "gender": 2,
-        "profile_path": "/pxTY4SglLo5hFcMH00MxPeC5u55.jpg"
-      },
-      {
-        "id": 63606,
-        "name": "Meredith MacNeill",
-        "character": "Harper Cutlass (voice)",
-        "gender": 1,
-        "profile_path": "/jcJq5Af7KSleMFVhrla5xbv8TOg.jpg"
-      },
-      {
-        "id": 1227611,
-        "name": "Ron Pardo",
-        "character": "Mayor Humdinger (voice)",
-        "gender": 2,
-        "profile_path": "/hE4QOBmPqstfmBVXmlcJmsljUMw.jpg"
-      }
-    ]
-  },
-  {
-    "id": 1423191,
-    "title": "Resident Evil",
-    "original_title": "Resident Evil",
-    "original_language": "en",
-    "release_date": "2026-09-16",
-    "release_label": "SEP 16",
-    "full_release_date": "2026-09-16 (Theatrical)",
-    "duration": "1h 34m",
-    "runtime": 94,
-    "director": "Zach Cregger",
-    "production_companies": "Major Studio",
-    "vote_average": 8.1,
-    "vote_count": 57,
-    "poster_path": "/i7UyjfPio0VFHB9rBUZSFyhOoM8.jpg",
-    "backdrop_path": "/1CIaRYKf3zg2Xyce1CSfCMg2Vfw.jpg",
-    "overview": "A hapless medical courier fights for his life amid an outbreak of a deadly mutagenic virus in an isolated mountain town.",
-    "genre_ids": [
-      27,
-      878,
-      12
-    ],
-    "trailerKey": "mNd1gb19A-c",
-    "ratings": {
-      "imdb": "8.1/10",
-      "prime": "8.4/10",
-      "rottenTomatoes": "89%",
-      "tmdb": "8.1/10"
-    },
-    "cast": [
-      {
-        "id": 148992,
-        "name": "Austin Abrams",
-        "character": "Bryan",
-        "gender": 2,
-        "profile_path": "/5S7ahFPQk4NUh8GTwp8zZlUQNFs.jpg"
-      },
-      {
-        "id": 1838225,
-        "name": "Zach Cherry",
-        "character": "Dave",
-        "gender": 2,
-        "profile_path": "/fT3Wv8ef0Vn0daHWAObCp2Bd4Y.jpg"
-      },
-      {
-        "id": 3119545,
-        "name": "Kali Reis",
-        "character": "Pauline",
-        "gender": 1,
-        "profile_path": "/ruLDXHnKA4aHEQCcFGDAJ7bLTdt.jpg"
-      },
-      {
-        "id": 1294982,
-        "name": "Paul Walter Hauser",
-        "character": "Carl",
-        "gender": 2,
-        "profile_path": "/hXjjbYg1Ah8mFf5ZcaakyXzDKMx.jpg"
-      },
-      {
-        "id": 1169291,
-        "name": "Johnno Wilson",
-        "character": "Max",
-        "gender": 2,
-        "profile_path": "/eZtBoBE0F7Qb9ZyNpacMOQtmWnM.jpg"
-      }
-    ]
-  },
-  {
-    "id": 1212763,
-    "title": "Evil Dead Burn",
-    "original_title": "Evil Dead Burn",
-    "original_language": "en",
-    "release_date": "2026-07-07",
-    "release_label": "JUL 07",
-    "full_release_date": "2026-07-07 (Theatrical)",
-    "duration": "1h 50m",
-    "runtime": 110,
-    "director": "Sébastien Vaniček",
-    "production_companies": "Major Studio",
-    "vote_average": 7.8,
-    "vote_count": 1536,
-    "poster_path": "/uRxrNXQWkHoENm3nwVOZDYSCx2F.jpg",
-    "backdrop_path": "/o0jkkpcN81QqSl8DMLScBCXyUH9.jpg",
-    "overview": "After her husband's abrupt death, Alice seeks solace with his remaining family — descendants of a leading researcher on demonic possession. As her in-laws transform one by one into creatures that feed on fear, she comes to discover that the vows she took in life survive even in death.",
-    "genre_ids": [
-      27
-    ],
-    "trailerKey": "RddZObTlmA8",
-    "ratings": {
-      "imdb": "7.8/10",
-      "prime": "8.1/10",
-      "rottenTomatoes": "86%",
-      "tmdb": "7.8/10"
-    },
-    "cast": [
-      {
-        "id": 2037046,
-        "name": "Souheila Yacoub",
-        "character": "Alice",
-        "gender": 1,
-        "profile_path": "/A233BHgXw0dzbeOpvHfJwL9gLy1.jpg"
-      },
-      {
-        "id": 33310,
-        "name": "Tandi Wright",
-        "character": "Susan",
-        "gender": 1,
-        "profile_path": "/xLQ9j4pJ46HZhs5jMJ87w9zjv82.jpg"
-      },
-      {
-        "id": 1911865,
-        "name": "Hunter Doohan",
-        "character": "Joseph",
-        "gender": 2,
-        "profile_path": "/ihno5ut6ha8TaubQFgl5Ozco2K1.jpg"
-      },
-      {
-        "id": 1399806,
-        "name": "Luciane Buchanan",
-        "character": "Thya",
-        "gender": 1,
-        "profile_path": "/9fTzSU4310StDoO9T0nQyGOLurn.jpg"
-      },
-      {
-        "id": 150396,
-        "name": "Erroll Shand",
-        "character": "Edgar",
-        "gender": 2,
-        "profile_path": "/75nc5lUcp1So9RTNNr08NZ0oQDG.jpg"
       }
     ]
   }
@@ -6293,6 +6293,7 @@ export const tmdb = {
       }
 
       const strictlyQ3 = merged.filter(isQ3_2026);
+      strictlyQ3.sort((a, b) => b.release_date.localeCompare(a.release_date));
       if (strictlyQ3.length > 0) {
         return {
           page: 1,

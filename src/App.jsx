@@ -73,8 +73,12 @@ export default function App() {
   const [showtimesMovie, setShowtimesMovie] = useState(null);
 
   const displayedCatalogMovies = useMemo(() => {
-    if (catalogLanguage === 'all') return movies;
-    return movies.filter((m) => (m.original_language || '').toLowerCase() === catalogLanguage.toLowerCase());
+    let list = movies;
+    if (catalogLanguage !== 'all') {
+      list = movies.filter((m) => (m.original_language || '').toLowerCase() === catalogLanguage.toLowerCase());
+    }
+    // Reverse chronological order: September -> August -> July 2026
+    return [...list].sort((a, b) => (b.release_date || '').localeCompare(a.release_date || ''));
   }, [movies, catalogLanguage]);
 
   const syncAdminState = () => {
@@ -408,7 +412,7 @@ export default function App() {
                       <p className="section-subheading">
                         {mediaType === 'tv'
                           ? 'Binge-worthy web series, critically acclaimed dramas & fan-favorite TV shows'
-                          : 'Now Screening — July to September 2026 Blockbusters'}
+                          : 'Now Screening — September, August & July 2026 Blockbusters'}
                       </p>
                     </div>
 

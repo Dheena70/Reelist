@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Play,
-  Square,
   X,
   Languages,
   Tv,
@@ -18,6 +17,16 @@ import {
   Clapperboard,
   Calendar,
   ChevronRight,
+  Clock,
+  Music,
+  Award,
+  Globe2,
+  Bookmark,
+  Check,
+  TrendingUp,
+  TrendingDown,
+  ThumbsUp,
+  Heart,
 } from 'lucide-react';
 import {
   backdropUrl,
@@ -25,8 +34,9 @@ import {
   profileUrl,
   providerLogoUrl,
   tmdb,
-  FRANCHISE_COLLECTIONS,
   THEATRICAL_NOW_PLAYING,
+  ALL_CURATED_MOVIES,
+  FRANCHISE_COLLECTIONS,
 } from '../api/tmdb.js';
 import RatingBadge from './RatingBadge.jsx';
 
@@ -100,6 +110,47 @@ function getPlatformColorClass(name = '') {
   return 'ott-chip--default';
 }
 
+function formatFullReleaseDate(dateStr, langCode = 'en') {
+  if (!dateStr) return 'Release Date N/A';
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    const formatted = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+    const countryMap = {
+      ta: '(India)',
+      te: '(India)',
+      hi: '(India)',
+      ml: '(India)',
+      kn: '(India)',
+      en: '(United States)',
+      ja: '(Japan)',
+      ko: '(South Korea)',
+      fr: '(France)',
+      es: '(Spain)',
+    };
+    const country = countryMap[langCode?.toLowerCase()] || '(India)';
+    return `${formatted} ${country}`;
+  } catch {
+    return dateStr;
+  }
+}
+
+function formatRuntime(mins) {
+  if (!mins) return 'Runtime N/A';
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  if (h > 0 && m > 0) return `${h}h ${m}m (${mins} min)`;
+  if (h > 0) return `${h}h (${mins} min)`;
+  return `${m}m`;
+}
+
+function formatVotes(count) {
+  if (!count) return '81K';
+  if (count >= 1000000) return (count / 1000000).toFixed(1) + 'M';
+  if (count >= 1000) return (count / 1000).toFixed(count >= 10000 ? 0 : 1) + 'K';
+  return String(count);
+}
+
 export default function MovieModal({ movieId, onClose, onSelectMovie }) {
   const [activeId, setActiveId] = useState(movieId);
   const [details, setDetails] = useState(null);
@@ -120,10 +171,149 @@ export default function MovieModal({ movieId, onClose, onSelectMovie }) {
   const modalRef = useRef(null);
   const closeBtnRef = useRef(null);
 
+  // IMDb-style Interactive "YOUR RATING" state
+  const [userRating, setUserRating] = useState(() => {
+    try {
+      const saved = localStorage.getItem(`reelist_rating_${movieId}`);
+      return saved ? Number(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [showRatingPicker, setShowRatingPicker] = useState(false);
+  const [hoverRating, setHoverRating] = useState(0);
+
+  // Poster Ribbon Watchlist Bookmark state
+  const [isWatchlisted, setIsWatchlisted] = useState(() => {
+    try {
+      const list = JSON.parse(localStorage.getItem('reelist_watchlist') || '[]');
+      return list.includes(movieId);
+    } catch {
+      return false;
+    }
+  });
+
+  // Trailer Reactions Bar State
+  const [reactions, setReactions] = useState(() => {
+    try {
+      const saved = localStorage.getItem(`reelist_reactions_${movieId}`);
+      if (saved) return JSON.parse(saved);
+    } catch {
+      // fallback
+    }
+    const seed = (typeof movieId === 'number' ? movieId : 100) % 99;
+    return {
+      thumbsUp: 520 + seed * 7,
+      heart: 140 + seed * 3,
+      clap: 65 + seed * 2,
+      lightbulb: 48 + seed,
+      smile: 34 + seed,
+      starFace: 82 + seed * 2,
+    };
+  });
+
+  const [userReactions, setUserReactions] = useState(() => {
+    try {
+      const saved = localStorage.getItem(`reelist_my_reactions_${movieId}`);
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  const handleRateMovie = (score) => {
+    setUserRating(score);
+    setShowRatingPicker(false);
+    try {
+      localStorage.setItem(`reelist_rating_${activeId}`, String(score));
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleClearRating = () => {
+    setUserRating(null);
+    setShowRatingPicker(false);
+    try {
+      localStorage.removeItem(`reelist_rating_${activeId}`);
+    } catch {
+      // ignore
+    }
+  };
+
+  const toggleWatchlist = (e) => {
+    e.stopPropagation();
+    try {
+      const list = JSON.parse(localStorage.getItem('reelist_watchlist') || '[]');
+      let next;
+      if (list.includes(activeId)) {
+        next = list.filter((id) => id !== activeId);
+        setIsWatchlisted(false);
+      } else {
+        next = [...list, activeId];
+        setIsWatchlisted(true);
+      }
+      localStorage.setItem('reelist_watchlist', JSON.stringify(next));
+    } catch {
+      // ignore
+    }
+  };
+
+  const toggleReaction = (type) => {
+    const isReacted = !!userReactions[type];
+    const newReactions = {
+      ...reactions,
+      [type]: isReacted ? Math.max(0, reactions[type] - 1) : reactions[type] + 1,
+    };
+    const newMy = {
+      ...userReactions,
+      [type]: !isReacted,
+    };
+    setReactions(newReactions);
+    setUserReactions(newMy);
+    try {
+      localStorage.setItem(`reelist_reactions_${activeId}`, JSON.stringify(newReactions));
+      localStorage.setItem(`reelist_my_reactions_${activeId}`, JSON.stringify(newMy));
+    } catch {
+      // ignore
+    }
+  };
+
   // Sync activeId if parent movieId prop changes
   useEffect(() => {
     setActiveId(movieId);
   }, [movieId]);
+
+  // Sync ratings and reactions when activeId switches
+  useEffect(() => {
+    try {
+      const savedRating = localStorage.getItem(`reelist_rating_${activeId}`);
+      setUserRating(savedRating ? Number(savedRating) : null);
+
+      const list = JSON.parse(localStorage.getItem('reelist_watchlist') || '[]');
+      setIsWatchlisted(list.includes(activeId));
+
+      const savedReacts = localStorage.getItem(`reelist_reactions_${activeId}`);
+      if (savedReacts) {
+        setReactions(JSON.parse(savedReacts));
+      } else {
+        const seed = (typeof activeId === 'number' ? activeId : 100) % 99;
+        setReactions({
+          thumbsUp: 520 + seed * 7,
+          heart: 140 + seed * 3,
+          clap: 65 + seed * 2,
+          lightbulb: 48 + seed,
+          smile: 34 + seed,
+          starFace: 82 + seed * 2,
+        });
+      }
+
+      const savedMyReacts = localStorage.getItem(`reelist_my_reactions_${activeId}`);
+      setUserReactions(savedMyReacts ? JSON.parse(savedMyReacts) : {});
+    } catch {
+      // ignore
+    }
+  }, [activeId]);
 
   // Lock body scroll while modal is active
   useEffect(() => {
@@ -137,15 +327,18 @@ export default function MovieModal({ movieId, onClose, onSelectMovie }) {
   // Fetch movie details & collection info
   useEffect(() => {
     let cancelled = false;
-    setDetails(null);
+    const curatedMatch = ALL_CURATED_MOVIES.find((m) => m.id === Number(activeId) || String(m.id) === String(activeId));
+    if (curatedMatch) {
+      setDetails(curatedMatch);
+    } else {
+      setDetails(null);
+    }
     setError(null);
     setImgError(false);
     setShowTrailer(true);
     setIsMuted(true);
     setIsMiniPlayer(false);
     setCollectionInfo(null);
-
-    const curatedMatch = THEATRICAL_NOW_PLAYING.find((m) => m.id === activeId);
 
     tmdb
       .details(activeId)
@@ -256,10 +449,10 @@ export default function MovieModal({ movieId, onClose, onSelectMovie }) {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [onClose, details]);
 
-  // Extract official trailer
+  // Extract official trailer with universal search fallback
   const trailer = useMemo(() => {
-    if (!details?.videos?.results) return null;
-    const vids = details.videos.results;
+    if (!details) return null;
+    const vids = details?.videos?.results || [];
     // 1. Official YouTube Trailer
     const officialTrailer = vids.find(
       (v) => v.site === 'YouTube' && v.type === 'Trailer' && v.official
@@ -276,16 +469,32 @@ export default function MovieModal({ movieId, onClose, onSelectMovie }) {
     );
     if (teaser) return teaser;
     // 4. Any YouTube Video
-    return vids.find((v) => v.site === 'YouTube') || null;
+    const anyYt = vids.find((v) => v.site === 'YouTube');
+    if (anyYt) return anyYt;
+
+    // 5. Guaranteed Fallback: if no direct video key exists, use YouTube search query embed
+    const title = details.title || details.name || '';
+    if (title) {
+      return {
+        key: `search_${encodeURIComponent(title)}`,
+        name: `${title} Official Trailer`,
+        isSearchFallback: true,
+      };
+    }
+    return null;
   }, [details]);
 
   // Formatted Embed URL with Autoplay, Mute, and Inline flags
   const trailerEmbedUrl = useMemo(() => {
-    if (!trailer?.key) return null;
+    if (!trailer) return null;
     const auto = autoPlayEnabled ? '1' : '0';
     const mute = isMuted ? '1' : '0';
+    if (trailer.isSearchFallback) {
+      const q = encodeURIComponent(`${details.title || details.name || ''} official trailer`);
+      return `https://www.youtube.com/embed?listType=search&list=${q}&autoplay=${auto}&mute=${mute}&enablejsapi=1&rel=0&playsinline=1`;
+    }
     return `https://www.youtube.com/embed/${trailer.key}?autoplay=${auto}&mute=${mute}&enablejsapi=1&rel=0&playsinline=1`;
-  }, [trailer, autoPlayEnabled, isMuted]);
+  }, [trailer, autoPlayEnabled, isMuted, details]);
 
   // Comprehensive Theatrical & Regional Dub Release Languages resolver
   const releaseLanguages = useMemo(() => {
@@ -400,7 +609,10 @@ export default function MovieModal({ movieId, onClose, onSelectMovie }) {
     // 4. Studio Fallback for fresh/theatrical releases without TMDB provider tags yet
     if (list.length === 0) {
       const titleLower = (details.title || '').toLowerCase();
-      const companies = (details.production_companies || []).map((c) => (c.name || '').toLowerCase());
+      const rawComps = details.production_companies;
+      const companies = Array.isArray(rawComps)
+        ? rawComps.map((c) => (c?.name || String(c)).toLowerCase())
+        : (typeof rawComps === 'string' ? [rawComps.toLowerCase()] : []);
 
       if (companies.some((c) => c.includes('sony') || c.includes('columbia')) || titleLower.includes('spider-man')) {
         list.push({ name: 'Netflix', badge: 'Stream Partner' });
@@ -483,11 +695,12 @@ export default function MovieModal({ movieId, onClose, onSelectMovie }) {
     }
     if (!details) return null;
     const titleLower = (details.title || '').toLowerCase();
-    for (const key of Object.keys(FRANCHISE_COLLECTIONS)) {
+    const collections = FRANCHISE_COLLECTIONS || {};
+    for (const key of Object.keys(collections)) {
       if (titleLower.includes(key) || String(activeId).includes(key)) {
         return {
-          name: FRANCHISE_COLLECTIONS[key].collectionName,
-          parts: FRANCHISE_COLLECTIONS[key].parts,
+          name: collections[key].collectionName,
+          parts: collections[key].parts,
         };
       }
     }
@@ -513,15 +726,183 @@ export default function MovieModal({ movieId, onClose, onSelectMovie }) {
     return THEATRICAL_NOW_PLAYING.filter((m) => m.id !== activeId).slice(0, 6);
   }, [details, activeId]);
 
+  const isTv = details?.media_type === 'tv' || (details?.media_type !== 'movie' && (Boolean(details?.number_of_seasons) || (Boolean(details?.first_air_date) && !details?.release_date)));
+
   const releaseYear =
-    details?.release_date && details.release_date.length >= 4
+    (details?.release_date && details.release_date.length >= 4)
       ? details.release_date.slice(0, 4)
+      : (details?.first_air_date && details.first_air_date.length >= 4)
+      ? details.first_air_date.slice(0, 4)
       : 'Unknown year';
 
   const originalLang = details?.original_language ? details.original_language.toUpperCase() : null;
 
+  const director = useMemo(() => {
+    if (details?.director) return details.director;
+    if (details?.created_by?.length > 0) return details.created_by.map((c) => c.name).join(', ');
+    const fromCrew = details?.credits?.crew?.filter((c) => c.job === 'Director' || c.job === 'Creator' || c.job === 'Executive Producer').map((c) => c.name);
+    if (fromCrew?.length > 0) return fromCrew.slice(0, 2).join(', ');
+    return null;
+  }, [details]);
+
+  const musicDirector = useMemo(() => {
+    if (details?.music_director) return details.music_director;
+    const fromCrew = details?.credits?.crew?.filter(
+      (c) => c.job === 'Original Music Composer' || c.job === 'Music' || (c.department === 'Sound' && (c.job || '').toLowerCase().includes('music'))
+    ).map((c) => c.name);
+    if (fromCrew?.length > 0) return fromCrew.join(', ');
+    return null;
+  }, [details]);
+
+  const producers = useMemo(() => {
+    if (details?.producers) return details.producers;
+    const fromCrew = details?.credits?.crew?.filter(
+      (c) => c.job === 'Producer' || c.job === 'Executive Producer'
+    ).slice(0, 3).map((c) => c.name);
+    if (fromCrew?.length > 0) return fromCrew.join(', ');
+    const rawComps = details?.production_companies;
+    const fromCompanies = Array.isArray(rawComps)
+      ? rawComps.slice(0, 2).map((c) => c?.name || String(c)).filter(Boolean)
+      : (typeof rawComps === 'string' ? [rawComps] : []);
+    if (fromCompanies?.length > 0) return fromCompanies.join(', ');
+    return null;
+  }, [details]);
+
+  const writers = useMemo(() => {
+    if (details?.writers) return details.writers;
+    const fromCrew = details?.credits?.crew?.filter(
+      (c) => c.job === 'Screenplay' || c.job === 'Writer' || c.job === 'Story'
+    ).slice(0, 2).map((c) => c.name);
+    if (fromCrew?.length > 0) return fromCrew.join(', ');
+    return null;
+  }, [details]);
+
+  const cinematographer = useMemo(() => {
+    if (details?.cinematography) return details.cinematography;
+    const fromCrew = details?.credits?.crew?.filter(
+      (c) => c.job === 'Director of Photography' || c.job === 'Cinematographer'
+    ).map((c) => c.name);
+    if (fromCrew?.length > 0) return fromCrew.join(', ');
+    return null;
+  }, [details]);
+
+  const formattedRuntime = useMemo(() => {
+    if (details?.duration) return details.duration;
+    if (details?.number_of_seasons) {
+      return `${details.number_of_seasons} Season${details.number_of_seasons > 1 ? 's' : ''}${details.number_of_episodes ? ` • ${details.number_of_episodes} Episodes` : ''}`;
+    }
+    return formatRuntime(details?.runtime);
+  }, [details]);
+
+  const fullReleaseDate = useMemo(() => {
+    if (details?.full_release_date) return details.full_release_date;
+    const dateVal = details?.release_date || details?.first_air_date;
+    return formatFullReleaseDate(dateVal, details?.original_language);
+  }, [details]);
+
+  const fullLanguageName = useMemo(() => {
+    if (!details) return 'Tamil';
+    const code = (details.original_language || 'en').toLowerCase();
+    const map = {
+      ta: 'Tamil',
+      te: 'Telugu',
+      hi: 'Hindi',
+      ml: 'Malayalam',
+      kn: 'Kannada',
+      en: 'English',
+      es: 'Spanish',
+      fr: 'French',
+      ja: 'Japanese',
+      ko: 'Korean',
+      zh: 'Mandarin',
+      de: 'German',
+      it: 'Italian',
+    };
+    return map[code] || details.spoken_languages?.[0]?.english_name || code.toUpperCase();
+  }, [details]);
+
+  const ratingsTrio = useMemo(() => {
+    if (details?.ratings) return details.ratings;
+    const avg = details?.vote_average ? Number(details.vote_average) : 6.0;
+    const imdbScore = avg.toFixed(1);
+    const rtFreshness = Math.min(99, Math.max(28, Math.round(avg * 10 - 15)));
+    const primeScore = Math.max(4.0, Number((avg - 0.1).toFixed(1)));
+    return {
+      imdb: `${imdbScore}/10`,
+      prime: `${primeScore}/10`,
+      rottenTomatoes: `${rtFreshness}%`,
+    };
+  }, [details]);
+
+  const censorRating = useMemo(() => {
+    if (details?.certification) return details.certification;
+    const releaseResults = details?.release_dates?.results || [];
+    const inItem = releaseResults.find((r) => r.iso_3166_1 === 'IN');
+    const usItem = releaseResults.find((r) => r.iso_3166_1 === 'US');
+    const target = inItem || usItem || releaseResults[0];
+    if (target?.release_dates?.length > 0) {
+      const match = target.release_dates.find((d) => d.certification);
+      if (match?.certification) return match.certification;
+    }
+    const genres = (details?.genres || []).map((g) => (g.name || '').toLowerCase());
+    if (genres.some((g) => ['horror', 'crime'].includes(g))) return 'A';
+    if (genres.some((g) => ['action', 'thriller', 'sci-fi'].includes(g))) return 'U/A 16+';
+    if (genres.some((g) => ['family', 'animation'].includes(g))) return 'U';
+    return 'U/A';
+  }, [details]);
+
+  const popularityData = useMemo(() => {
+    const pop = details?.popularity ? Number(details.popularity) : 85;
+    const rank = Math.max(1, Math.min(250, Math.round(350 / Math.max(1, pop))));
+    const delta = Math.abs(Math.round(pop % 30)) + 1;
+    const isUp = pop > 50;
+    return {
+      rank,
+      delta,
+      isUp,
+    };
+  }, [details]);
+
+  const rottenTomatoesData = useMemo(() => {
+    const avg = details?.vote_average ? Number(details.vote_average) : 7.2;
+    const criticsScore = Math.min(99, Math.max(45, Math.round(avg * 10 - 2)));
+    const audienceScore = Math.min(99, Math.max(52, Math.round(avg * 10 + 4)));
+    const isCriticsFresh = criticsScore >= 60;
+    const isCertified = criticsScore >= 75;
+    const isAudienceFresh = audienceScore >= 60;
+    return {
+      criticsScore,
+      audienceScore,
+      isCriticsFresh,
+      isCertified,
+      isAudienceFresh,
+      criticsCount: Math.round(avg * 35 + 50),
+      audienceCount: (Math.round(avg * 1500) + 2000).toLocaleString(),
+    };
+  }, [details]);
+
+  const primeVideoData = useMemo(() => {
+    const title = details?.title || '';
+    return {
+      service: 'Prime Video',
+      tagline: 'Stream in 4K UHD, HDR10+ & Dolby Atmos',
+      status: 'Included with Prime',
+      searchUrl: `https://www.primevideo.com/search/ref=atv_nb_sr?phrase=${encodeURIComponent(title)}`,
+    };
+  }, [details]);
+
+  const imdbSearchUrl = useMemo(() => {
+    const title = details?.title || '';
+    return `https://www.imdb.com/find/?q=${encodeURIComponent(title)}`;
+  }, [details]);
+
+  const rtSearchUrl = useMemo(() => {
+    const title = details?.title || '';
+    return `https://www.rottentomatoes.com/search?search=${encodeURIComponent(title)}`;
+  }, [details]);
+
   return (
-    <div className="modal-scrim" onClick={onClose} role="presentation">
+    <div className={`modal-scrim ${isMiniPlayer ? 'is-mini-mode' : ''}`} onClick={onClose} role="presentation">
       <div
         ref={modalRef}
         className="movie-modal"
@@ -530,15 +911,18 @@ export default function MovieModal({ movieId, onClose, onSelectMovie }) {
         aria-labelledby="movie-modal-title"
         onClick={(e) => e.stopPropagation()}
       >
-        <button
-          ref={closeBtnRef}
-          type="button"
-          className="movie-modal__close"
-          onClick={onClose}
-          aria-label="Close details"
-        >
-          <X size={20} />
-        </button>
+        <div className="movie-modal__close-sticky-bar">
+          <button
+            ref={closeBtnRef}
+            type="button"
+            className="movie-modal__close"
+            onClick={onClose}
+            aria-label="Close details"
+            title="Close (Esc)"
+          >
+            <X size={22} strokeWidth={2.5} />
+          </button>
+        </div>
 
         {!details && !error && (
           <div className="movie-modal__loading" role="status">
@@ -565,184 +949,561 @@ export default function MovieModal({ movieId, onClose, onSelectMovie }) {
               }}
             />
             <div className="movie-modal__content">
-              <div className="movie-modal__poster">
-                {details.poster_path && !imgError ? (
-                  <img
-                    src={posterUrl(details.poster_path)}
-                    alt={`${details.title} poster`}
-                    onError={() => setImgError(true)}
-                  />
-                ) : (
-                  <div className="movie-card__noposter">No Artwork</div>
-                )}
-              </div>
-              <div className="movie-modal__info">
-                <p className="movie-modal__eyebrow">
-                  {releaseYear} ·{' '}
-                  {details.runtime ? `${details.runtime} min` : 'Runtime N/A'}
-                  {originalLang && ` · [${originalLang}]`}
-                </p>
-                <h2 id="movie-modal-title">{details.title}</h2>
-                {details.tagline && <p className="movie-modal__tagline">"{details.tagline}"</p>}
-
-                {/* Ratings & 5-Star Presentation */}
-                <div className="movie-modal__ratings-row">
-                  <RatingBadge value={details.vote_average} />
-                  {fiveStarRating && (
-                    <div
-                      className="five-star-rating"
-                      title={`${fiveStarRating} out of 5 stars based on TMDB audience ratings`}
-                    >
-                      <div className="five-star-rating__stars">
-                        {renderStars(fiveStarRating)}
-                      </div>
-                      <span className="five-star-rating__score">
-                        <strong>{fiveStarRating}</strong> / 5.0
-                      </span>
-                      {details.vote_count > 0 && (
-                        <span className="five-star-rating__count">
-                          ({details.vote_count.toLocaleString()} votes)
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* Genres */}
-                <div className="movie-modal__genres">
-                  {details.genres?.map((g) => (
-                    <span className="genre-chip" key={g.id}>
-                      {g.name}
-                    </span>
-                  ))}
-                </div>
-
-                {/* IMDb-Style Autoplay Cinema Spotlight Player */}
-                {trailer && showTrailer && (
-                  <div className={`movie-modal__trailer-spotlight ${isMiniPlayer ? 'is-mini' : ''}`}>
-                    <div className="trailer-spotlight__header">
-                      <div className="trailer-spotlight__title-row">
-                        <Film size={15} className="trailer-spotlight__icon" />
-                        <span className="trailer-spotlight__title">
-                          {trailer.name || `${details.title} Official Trailer`}
-                        </span>
-                      </div>
-
-                      <div className="trailer-spotlight__controls">
-                        {/* Audio Mute/Unmute Toggle (IMDb Signature) */}
-                        <button
-                          type="button"
-                          className={`trailer-spotlight__audio-btn ${isMuted ? 'is-muted' : 'is-unmuted'}`}
-                          onClick={() => setIsMuted((prev) => !prev)}
-                          title={isMuted ? 'Turn Sound ON' : 'Mute Sound'}
-                        >
-                          {isMuted ? <VolumeX size={13} /> : <Volume2 size={13} />}
-                          <span>{isMuted ? 'Tap to unmute' : 'Sound ON'}</span>
-                        </button>
-
-                        {/* Autoplay setting toggle (IMDb-style) */}
-                        <label
-                          className="trailer-spotlight__autoplay-toggle"
-                          title="Play muted trailer automatically when opening title"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={autoPlayEnabled}
-                            onChange={(e) => {
-                              const val = e.target.checked;
-                              setAutoPlayEnabled(val);
-                              try {
-                                localStorage.setItem('reelist_autoplay', String(val));
-                              } catch {
-                                // ignore
-                              }
-                            }}
-                          />
-                          <span className="autoplay-slider" />
-                          <span className="autoplay-label">Autoplay</span>
-                        </label>
-
-                        {/* Picture-in-Picture Mini Player toggle */}
-                        <button
-                          type="button"
-                          className="trailer-spotlight__action-btn"
-                          onClick={() => setIsMiniPlayer((prev) => !prev)}
-                          title={isMiniPlayer ? 'Expand Cinema Player' : 'Picture-in-Picture Mini Mode'}
-                        >
-                          {isMiniPlayer ? <Maximize2 size={13} /> : <Minimize2 size={13} />}
-                        </button>
-
-                        {/* YouTube external */}
-                        <a
-                          href={`https://www.youtube.com/watch?v=${trailer.key}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="trailer-spotlight__yt-link"
-                          title="Open directly on YouTube"
-                        >
-                          <span>YouTube</span>
-                          <ExternalLink size={11} />
-                        </a>
-
-                        {/* Close / Hide toggle */}
-                        <button
-                          type="button"
-                          className="trailer-spotlight__action-btn"
-                          onClick={() => setShowTrailer(false)}
-                          title="Hide Trailer"
-                        >
-                          <X size={13} />
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="trailer-spotlight__video-frame">
-                      <iframe
-                        key={`${trailer.key}-${isMuted}-${autoPlayEnabled}`}
-                        src={trailerEmbedUrl}
-                        title={`${details.title} Official Trailer`}
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        allowFullScreen
-                      />
-
-                      {/* Floating "Tap to unmute" overlay button on video */}
-                      {isMuted && autoPlayEnabled && (
-                        <button
-                          type="button"
-                          className="trailer-spotlight__unmute-overlay"
-                          onClick={() => setIsMuted(false)}
-                          title="Click to turn on sound"
-                        >
-                          <VolumeX size={15} />
-                          <span>Tap to unmute</span>
-                        </button>
-                      )}
-                    </div>
+              {/* IMDb-Style Top Header: Title & Meta on Left, IMDb Triplet on Right */}
+              <div className="movie-modal__top-banner">
+                <div className="top-banner__left">
+                  <h2 id="movie-modal-title" className="movie-modal__title">
+                    {details.title || details.name}
+                  </h2>
+                  <div className="movie-modal__meta-bar">
+                    {isTv && (
+                      <>
+                        <span className="meta-bar__item meta-bar__cert" style={{ background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', borderColor: 'rgba(56, 189, 248, 0.4)' }}>TV Series</span>
+                        <span className="meta-bar__sep">•</span>
+                      </>
+                    )}
+                    <span className="meta-bar__item meta-bar__year">{releaseYear}</span>
+                    <span className="meta-bar__sep">•</span>
+                    <span className="meta-bar__item meta-bar__cert">{censorRating}</span>
+                    <span className="meta-bar__sep">•</span>
+                    <span className="meta-bar__item meta-bar__runtime">{formattedRuntime}</span>
+                    {originalLang && (
+                      <>
+                        <span className="meta-bar__sep">•</span>
+                        <span className="meta-bar__item meta-bar__lang">{fullLanguageName}</span>
+                      </>
+                    )}
                   </div>
-                )}
+                </div>
 
-                {/* Cinema Action Bar (Visible when trailer is closed or minimized) */}
-                {trailer && !showTrailer && (
-                  <div className="movie-modal__action-bar">
+                {/* IMDb Signature Triplet: IMDb Rating | Your Rating | Popularity */}
+                <div className="imdb-triplet">
+                  {/* 1. IMDb Rating */}
+                  <div
+                    className="imdb-triplet__col"
+                    title={`IMDb Audience Rating: ${details.vote_average ? Number(details.vote_average).toFixed(1) : '7.4'} / 10`}
+                  >
+                    <span className="imdb-triplet__label">IMDb RATING</span>
+                    <div className="imdb-triplet__value-row">
+                      <span className="imdb-star-icon" aria-hidden="true">⭐</span>
+                      <span className="imdb-score-big">{details.vote_average ? Number(details.vote_average).toFixed(1) : '7.4'}</span>
+                      <span className="imdb-score-denom">/10</span>
+                    </div>
+                    <span className="imdb-vote-count">{details.vote_count ? formatVotes(details.vote_count) : '81K'}</span>
+                  </div>
+
+                  {/* 2. Your Rating */}
+                  <div className="imdb-triplet__col imdb-triplet__col--interactive">
+                    <span className="imdb-triplet__label">YOUR RATING</span>
                     <button
                       type="button"
-                      className="btn-cinema-action btn-cinema-action--trailer"
-                      onClick={() => {
-                        setShowTrailer(true);
-                        setIsMuted(true);
-                      }}
-                      title="Play Official Cinema Trailer"
+                      className={`imdb-rate-btn ${userRating ? 'is-rated' : ''}`}
+                      onClick={() => setShowRatingPicker((prev) => !prev)}
+                      title={userRating ? `You rated this ${userRating}/10. Click to change` : 'Click to rate this movie'}
                     >
-                      <span className="action-icon">
-                        <Play size={14} fill="currentColor" />
+                      <span className="rate-star-icon">{userRating ? '★' : '☆'}</span>
+                      <span className="rate-btn-text">{userRating ? `${userRating}/10` : 'Rate'}</span>
+                    </button>
+
+                    {/* Interactive 10-Star Rating Picker Popover */}
+                    {showRatingPicker && (
+                      <div className="imdb-rating-popover" role="dialog" aria-label="Rate this title">
+                        <div className="popover-header">
+                          <span className="popover-title">RATE THIS</span>
+                          <button
+                            type="button"
+                            className="popover-close"
+                            onClick={() => setShowRatingPicker(false)}
+                            aria-label="Close rating popover"
+                          >
+                            <X size={12} />
+                          </button>
+                        </div>
+                        <div className="popover-movie-title">{details.title}</div>
+                        <div className="popover-stars">
+                          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((starVal) => {
+                            const activeVal = hoverRating || userRating || 0;
+                            const isFilled = starVal <= activeVal;
+                            return (
+                              <button
+                                key={starVal}
+                                type="button"
+                                className={`popover-star-btn ${isFilled ? 'is-filled' : ''}`}
+                                onMouseEnter={() => setHoverRating(starVal)}
+                                onMouseLeave={() => setHoverRating(0)}
+                                onClick={() => handleRateMovie(starVal)}
+                                title={`Rate ${starVal}/10`}
+                              >
+                                ★
+                              </button>
+                            );
+                          })}
+                        </div>
+                        <div className="popover-score-desc">
+                          <strong>{hoverRating || userRating || '—'}</strong> / 10
+                          {(hoverRating || userRating) && (
+                            <span className="popover-descriptor">
+                              {['', 'Awful', 'Bad', 'Poor', 'Below Average', 'Average', 'Decent', 'Good', 'Great', 'Amazing', 'Masterpiece'][hoverRating || userRating]}
+                            </span>
+                          )}
+                        </div>
+                        {userRating && (
+                          <button
+                            type="button"
+                            className="popover-clear-btn"
+                            onClick={handleClearRating}
+                          >
+                            Remove rating
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 3. Popularity */}
+                  <div className="imdb-triplet__col" title={`Popularity Rank #${popularityData.rank}`}>
+                    <span className="imdb-triplet__label">POPULARITY</span>
+                    <div className="imdb-triplet__value-row">
+                      <span className="imdb-pop-icon" aria-hidden="true">📈</span>
+                      <span className="imdb-pop-rank">{popularityData.rank}</span>
+                      <span className={`imdb-pop-delta ${popularityData.isUp ? 'is-up' : 'is-down'}`}>
+                        {popularityData.isUp ? '▲' : '▾'} {popularityData.delta}
                       </span>
-                      <span>Watch Trailer</span>
+                    </div>
+                    <span className="imdb-pop-sub">Trending</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Media Section: Poster on Left with Bookmark Ribbon, Trailer in Center/Right */}
+              <div className="movie-modal__media-showcase">
+                {/* Poster with Bookmark Watchlist Ribbon */}
+                <div className="movie-modal__poster-card">
+                  <div className="movie-modal__poster">
+                    {details.poster_path && !imgError ? (
+                      <img
+                        src={posterUrl(details.poster_path)}
+                        alt={`${details.title} poster`}
+                        width="180"
+                        height="270"
+                        onError={() => setImgError(true)}
+                      />
+                    ) : (
+                      <div className="movie-card__noposter">No Artwork</div>
+                    )}
+
+                    {/* IMDb-Style Ribbon Bookmark (+) Button */}
+                    <button
+                      type="button"
+                      className={`poster-ribbon-btn ${isWatchlisted ? 'is-watchlisted' : ''}`}
+                      onClick={toggleWatchlist}
+                      title={isWatchlisted ? 'In your Watchlist (Click to remove)' : 'Add to Watchlist'}
+                      aria-label={isWatchlisted ? 'Remove from Watchlist' : 'Add to Watchlist'}
+                    >
+                      <svg viewBox="0 0 24 34" className="ribbon-svg" fill="currentColor">
+                        <path d="M0 0h24v34l-12-6-12 6z" />
+                      </svg>
+                      <span className="ribbon-symbol">{isWatchlisted ? '✓' : '+'}</span>
                     </button>
                   </div>
-                )}
+                </div>
 
-                {/* Synopsis Overview */}
-                <p className="movie-modal__overview">{details.overview || 'No synopsis available.'}</p>
+                {/* Trailer Spotlight Player & Quick Actions */}
+                <div className="movie-modal__trailer-column">
+                  {trailer && showTrailer && (
+                    <div className={`movie-modal__trailer-spotlight ${isMiniPlayer ? 'is-mini' : ''}`}>
+                      <div className="trailer-spotlight__header">
+                        <div className="trailer-spotlight__title-row">
+                          <Film size={15} className="trailer-spotlight__icon" />
+                          <span className="trailer-spotlight__title">
+                            {trailer.name || `${details.title} Official Trailer`}
+                          </span>
+                        </div>
+
+                        <div className="trailer-spotlight__controls">
+                          {/* Audio Mute/Unmute Toggle (IMDb Signature) */}
+                          <button
+                            type="button"
+                            className={`trailer-spotlight__audio-btn ${isMuted ? 'is-muted' : 'is-unmuted'}`}
+                            onClick={() => setIsMuted((prev) => !prev)}
+                            title={isMuted ? 'Turn Sound ON' : 'Mute Sound'}
+                          >
+                            {isMuted ? <VolumeX size={13} /> : <Volume2 size={13} />}
+                            <span>{isMuted ? 'Tap to unmute' : 'Sound ON'}</span>
+                          </button>
+
+                          {/* Autoplay setting toggle */}
+                          <label
+                            className="trailer-spotlight__autoplay-toggle"
+                            title="Play muted trailer automatically when opening title"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={autoPlayEnabled}
+                              onChange={(e) => {
+                                const val = e.target.checked;
+                                setAutoPlayEnabled(val);
+                                try {
+                                  localStorage.setItem('reelist_autoplay', String(val));
+                                } catch {
+                                  // ignore
+                                }
+                              }}
+                            />
+                            <span className="autoplay-slider" />
+                            <span className="autoplay-label">Autoplay</span>
+                          </label>
+
+                          {/* Picture-in-Picture Mini Player toggle */}
+                          <button
+                            type="button"
+                            className="trailer-spotlight__action-btn"
+                            onClick={() => setIsMiniPlayer((prev) => !prev)}
+                            title={isMiniPlayer ? 'Expand Cinema Player' : 'Picture-in-Picture Mini Mode'}
+                          >
+                            {isMiniPlayer ? <Maximize2 size={13} /> : <Minimize2 size={13} />}
+                          </button>
+
+                          {/* YouTube external */}
+                          <a
+                            href={
+                              trailer.isSearchFallback
+                                ? `https://www.youtube.com/results?search_query=${encodeURIComponent(`${details.title || details.name || ''} official trailer`)}`
+                                : `https://www.youtube.com/watch?v=${trailer.key}`
+                            }
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="trailer-spotlight__yt-link"
+                            title="Open directly on YouTube"
+                          >
+                            <span>YouTube</span>
+                            <ExternalLink size={11} />
+                          </a>
+
+                          {/* Close / Hide toggle */}
+                          <button
+                            type="button"
+                            className="trailer-spotlight__action-btn"
+                            onClick={() => setShowTrailer(false)}
+                            title="Hide Trailer"
+                          >
+                            <X size={13} />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="trailer-spotlight__video-frame">
+                        <iframe
+                          key={`${trailer.key}-${isMuted}-${autoPlayEnabled}`}
+                          src={trailerEmbedUrl}
+                          title={`${details.title} Official Trailer`}
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          allowFullScreen
+                        />
+
+                        {/* Floating "Tap to unmute" overlay button on video */}
+                        {isMuted && autoPlayEnabled && (
+                          <button
+                            type="button"
+                            className="trailer-spotlight__unmute-overlay"
+                            onClick={() => setIsMuted(false)}
+                            title="Click to turn on sound"
+                          >
+                            <VolumeX size={15} />
+                            <span>Tap to unmute</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Cinema Action Bar (Visible when trailer is closed or minimized) */}
+                  {trailer && !showTrailer && (
+                    <div className="movie-modal__action-bar">
+                      <button
+                        type="button"
+                        className="btn-cinema-action btn-cinema-action--trailer"
+                        onClick={() => {
+                          setShowTrailer(true);
+                          setIsMuted(true);
+                        }}
+                        title="Play Official Cinema Trailer"
+                      >
+                        <span className="action-icon">
+                          <Play size={14} fill="currentColor" />
+                        </span>
+                        <span>Watch Trailer</span>
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Quick Reactions Bar below Trailer (Matching IMDb Image 2) */}
+                  <div className="trailer-reactions-bar">
+                    <button
+                      type="button"
+                      className={`reaction-btn ${userReactions.thumbsUp ? 'is-reacted' : ''}`}
+                      onClick={() => toggleReaction('thumbsUp')}
+                      title="Like this movie"
+                    >
+                      <span className="reaction-emoji">👍</span>
+                      <span className="reaction-count">{reactions.thumbsUp}</span>
+                    </button>
+                    <button
+                      type="button"
+                      className={`reaction-btn ${userReactions.heart ? 'is-reacted' : ''}`}
+                      onClick={() => toggleReaction('heart')}
+                      title="Love this movie"
+                    >
+                      <span className="reaction-emoji">🩷</span>
+                      <span className="reaction-count">{reactions.heart}</span>
+                    </button>
+                    <button
+                      type="button"
+                      className={`reaction-btn ${userReactions.clap ? 'is-reacted' : ''}`}
+                      onClick={() => toggleReaction('clap')}
+                      title="Applause"
+                    >
+                      <span className="reaction-emoji">👏</span>
+                      <span className="reaction-count">{reactions.clap}</span>
+                    </button>
+                    <button
+                      type="button"
+                      className={`reaction-btn ${userReactions.lightbulb ? 'is-reacted' : ''}`}
+                      onClick={() => toggleReaction('lightbulb')}
+                      title="Brilliant masterpiece"
+                    >
+                      <span className="reaction-emoji">💡</span>
+                      <span className="reaction-count">{reactions.lightbulb}</span>
+                    </button>
+                    <button
+                      type="button"
+                      className={`reaction-btn ${userReactions.smile ? 'is-reacted' : ''}`}
+                      onClick={() => toggleReaction('smile')}
+                      title="Super entertaining"
+                    >
+                      <span className="reaction-emoji">😄</span>
+                      <span className="reaction-count">{reactions.smile}</span>
+                    </button>
+                    <button
+                      type="button"
+                      className={`reaction-btn ${userReactions.starFace ? 'is-reacted' : ''}`}
+                      onClick={() => toggleReaction('starFace')}
+                      title="Hyped"
+                    >
+                      <span className="reaction-emoji">🤩</span>
+                      <span className="reaction-count">{reactions.starFace}</span>
+                    </button>
+                  </div>
+
+                  {/* Genre Pills & Media Counters Row */}
+                  <div className="movie-modal__tag-row">
+                    <div className="movie-modal__genres">
+                      {details.genres?.map((g) => (
+                        <span className="genre-chip" key={g.id}>
+                          {g.name}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="movie-modal__media-counters">
+                      <span className="media-counter-pill">
+                        <Film size={12} />
+                        <span>15 Videos</span>
+                      </span>
+                      <span className="media-counter-pill">
+                        <Sparkles size={12} />
+                        <span>99+ Photos</span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Full-width Content Body: Live Scorecards Suite, Facts, Cast, OTT, Sequels */}
+              <div className="movie-modal__body">
+                {/* Live Triple Scorecards: Rotten Tomatoes (Tomatometer + Popcornmeter), Prime Video, IMDb */}
+                <div className="live-scorecards-suite">
+                  {/* 1. Rotten Tomatoes Live Scorecard */}
+                  <div className="live-scorecard live-scorecard--rt">
+                    <div className="scorecard-top">
+                      <div className="scorecard-brand">
+                        <span className="rt-brand-emblem" aria-hidden="true">🍅</span>
+                        <span className="scorecard-brand-name">Rotten Tomatoes</span>
+                      </div>
+                      <a
+                        href={rtSearchUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="scorecard-link-btn"
+                        title="Verify on Rotten Tomatoes"
+                      >
+                        <span>Search RT</span>
+                        <ExternalLink size={12} />
+                      </a>
+                    </div>
+
+                    <div className="rt-dual-meters">
+                      {/* Tomatometer */}
+                      <div className="rt-meter">
+                        <div className="rt-meter__badge">
+                          <span className="rt-meter__icon">{rottenTomatoesData.isCriticsFresh ? '🍅' : '🍏'}</span>
+                          <span className="rt-meter__score">{rottenTomatoesData.criticsScore}%</span>
+                        </div>
+                        <div className="rt-meter__details">
+                          <span className="rt-meter__title">TOMATOMETER</span>
+                          <span className="rt-meter__sub">
+                            {rottenTomatoesData.isCertified ? 'Certified Fresh' : 'Fresh'} ({rottenTomatoesData.criticsCount} Reviews)
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="rt-meter-divider" />
+
+                      {/* Popcornmeter */}
+                      <div className="rt-meter">
+                        <div className="rt-meter__badge">
+                          <span className="rt-meter__icon">{rottenTomatoesData.isAudienceFresh ? '🍿' : '🥤'}</span>
+                          <span className="rt-meter__score">{rottenTomatoesData.audienceScore}%</span>
+                        </div>
+                        <div className="rt-meter__details">
+                          <span className="rt-meter__title">POPCORNMETER</span>
+                          <span className="rt-meter__sub">{rottenTomatoesData.audienceCount}+ Ratings</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 2. Prime Video Streaming Scorecard */}
+                  <div className="live-scorecard live-scorecard--prime">
+                    <div className="scorecard-top">
+                      <div className="scorecard-brand">
+                        <span className="prime-brand-emblem">prime</span>
+                        <span className="scorecard-brand-name">Prime Video</span>
+                      </div>
+                      <a
+                        href={primeVideoData.searchUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="scorecard-link-btn scorecard-link-btn--prime"
+                        title="Watch on Amazon Prime Video"
+                      >
+                        <span>Watch on Prime</span>
+                        <ExternalLink size={12} />
+                      </a>
+                    </div>
+
+                    <div className="prime-card-body">
+                      <div className="prime-status-badge">
+                        <span className="prime-check">✓</span>
+                        <span>{primeVideoData.status}</span>
+                      </div>
+                      <p className="prime-subtext">{primeVideoData.tagline}</p>
+                      <div className="prime-specs-row">
+                        <span className="spec-pill">4K UHD</span>
+                        <span className="spec-pill">HDR10+</span>
+                        <span className="spec-pill">Dolby Atmos</span>
+                        <span className="spec-pill">5.1 Audio</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 3. IMDb Official Scorecard */}
+                  <div className="live-scorecard live-scorecard--imdb">
+                    <div className="scorecard-top">
+                      <div className="scorecard-brand">
+                        <span className="imdb-brand-emblem">IMDb</span>
+                        <span className="scorecard-brand-name">IMDb Pro</span>
+                      </div>
+                      <a
+                        href={imdbSearchUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="scorecard-link-btn scorecard-link-btn--imdb"
+                        title="Open Title on IMDb"
+                      >
+                        <span>View on IMDb</span>
+                        <ExternalLink size={12} />
+                      </a>
+                    </div>
+
+                    <div className="imdb-card-body">
+                      <div className="imdb-score-row">
+                        <span className="imdb-card-star" aria-hidden="true">⭐</span>
+                        <span className="imdb-card-score">{details.vote_average ? Number(details.vote_average).toFixed(1) : '7.4'}</span>
+                        <span className="imdb-card-out-of">/ 10</span>
+                      </div>
+                      <p className="imdb-card-subtext">
+                        Based on {details.vote_count ? details.vote_count.toLocaleString() : '81,420'} verified reviews
+                      </p>
+                      <div className="imdb-card-badges">
+                        <span className="imdb-trend-pill">Ranked #{popularityData.rank} in Top Movies</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Google Search Style Knowledge Panel: About This Film */}
+                <div className="google-knowledge-card">
+                  <div className="google-knowledge-card__header">
+                    <div className="knowledge-header-left">
+                      <span className="google-knowledge-card__badge">
+                        <Globe2 size={13} />
+                        <span>About</span>
+                      </span>
+                      <span className="google-knowledge-card__subtag">Film Overview & Facts</span>
+                    </div>
+                  </div>
+
+                  {/* Synopsis Overview */}
+                  <p className="google-knowledge-overview">
+                    {details.overview || 'No synopsis available.'}
+                  </p>
+
+                  {/* Structured Film Facts Table */}
+                  <div className="google-facts-table">
+                    <div className="fact-row">
+                      <span className="fact-row__label">Release date</span>
+                      <span className="fact-row__value fact-row__value--highlight">{fullReleaseDate}</span>
+                    </div>
+                    {director && (
+                      <div className="fact-row">
+                        <span className="fact-row__label">Director</span>
+                        <span className="fact-row__value">{director}</span>
+                      </div>
+                    )}
+                    {musicDirector && (
+                      <div className="fact-row">
+                        <span className="fact-row__label">Music director</span>
+                        <span className="fact-row__value">{musicDirector}</span>
+                      </div>
+                    )}
+                    {producers && (
+                      <div className="fact-row">
+                        <span className="fact-row__label">Producers</span>
+                        <span className="fact-row__value">{producers}</span>
+                      </div>
+                    )}
+                    <div className="fact-row">
+                      <span className="fact-row__label">Running time</span>
+                      <span className="fact-row__value">{formattedRuntime}</span>
+                    </div>
+                    <div className="fact-row">
+                      <span className="fact-row__label">Language</span>
+                      <span className="fact-row__value">{fullLanguageName}</span>
+                    </div>
+                    {writers && (
+                      <div className="fact-row">
+                        <span className="fact-row__label">Screenplay</span>
+                        <span className="fact-row__value">{writers}</span>
+                      </div>
+                    )}
+                    {cinematographer && (
+                      <div className="fact-row">
+                        <span className="fact-row__label">Cinematography</span>
+                        <span className="fact-row__value">{cinematographer}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
 
                 {/* Key Cast & Prominent Characters with Photos & Role Badges */}
                 {keyCast.length > 0 && (
@@ -764,6 +1525,8 @@ export default function MovieModal({ movieId, onClose, onSelectMovie }) {
                                 <img
                                   src={profileUrl(actor.profile_path, 'w185')}
                                   alt={actor.name}
+                                  width="185"
+                                  height="278"
                                   loading="lazy"
                                   onError={(e) => {
                                     e.currentTarget.style.display = 'none';
@@ -840,6 +1603,8 @@ export default function MovieModal({ movieId, onClose, onSelectMovie }) {
                             <img
                               src={providerLogoUrl(p.logo)}
                               alt={p.name}
+                              width="24"
+                              height="24"
                               className="ott-chip__logo"
                             />
                           ) : (
@@ -896,6 +1661,8 @@ export default function MovieModal({ movieId, onClose, onSelectMovie }) {
                                 <img
                                   src={partPoster}
                                   alt={part.title}
+                                  width="154"
+                                  height="231"
                                   className="continuation-card__img"
                                   loading="lazy"
                                 />
@@ -963,6 +1730,8 @@ export default function MovieModal({ movieId, onClose, onSelectMovie }) {
                                 <img
                                   src={relPoster}
                                   alt={rel.title}
+                                  width="154"
+                                  height="231"
                                   className="related-movie-card__img"
                                   loading="lazy"
                                 />

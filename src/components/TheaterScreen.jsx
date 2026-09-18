@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 const REELIST_LETTERS = ['R', 'E', 'E', 'L', 'I', 'S', 'T'];
 
@@ -141,6 +141,23 @@ export default function TheaterScreen({ onEnter }) {
     }, 2450);
   };
 
+  useEffect(() => {
+    // Automatically trigger curtain open after 350ms so user is never stuck
+    const openTimer = setTimeout(() => {
+      handleOpenCurtain();
+    }, 350);
+
+    // Guaranteed safety fallback: after 3 seconds, unconditionally enter
+    const safetyTimer = setTimeout(() => {
+      if (onEnter) onEnter();
+    }, 3000);
+
+    return () => {
+      clearTimeout(openTimer);
+      clearTimeout(safetyTimer);
+    };
+  }, []);
+
   return (
     <div
       className={`theater-screen-wrapper ${isOpen ? 'theater-screen--open' : ''} ${
@@ -155,7 +172,39 @@ export default function TheaterScreen({ onEnter }) {
         if (e.key === 'Enter' || e.key === ' ') handleOpenCurtain();
       }}
     >
+      <button
+        type="button"
+        className="theater-screen__skip-btn"
+        onClick={(e) => {
+          e.stopPropagation();
+          if (onEnter) onEnter();
+        }}
+        aria-label="Skip cinema intro and enter website"
+      >
+        Skip Intro →
+      </button>
       <style>{`
+        .theater-screen__skip-btn {
+          position: absolute;
+          top: 18px;
+          right: 20px;
+          z-index: 100;
+          background: rgba(0, 0, 0, 0.7);
+          color: #ffd700;
+          border: 1px solid rgba(255, 215, 0, 0.4);
+          border-radius: 20px;
+          padding: 6px 14px;
+          font-family: var(--body, system-ui, sans-serif);
+          font-size: 0.8rem;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        .theater-screen__skip-btn:hover {
+          background: #ffd700;
+          color: #0b0b0f;
+        }
+
         .theater-screen-wrapper {
           position: fixed;
           inset: 0;
@@ -261,11 +310,11 @@ export default function TheaterScreen({ onEnter }) {
         /* PURE ZOOM IN ANIMATION FOR EACH LETTER (Matching User GIF) */
         .reelist-char {
           display: inline-block;
-          font-family: 'Bebas Neue', 'Inter', 'Impact', sans-serif;
+          font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
           font-size: clamp(4.5rem, 12vw, 9.5rem);
           font-weight: 900;
           line-height: 0.95;
-          letter-spacing: 0.06em;
+          letter-spacing: -0.02em;
           opacity: 0;
           transform: scale(0);
           filter: blur(20px) brightness(0.2);

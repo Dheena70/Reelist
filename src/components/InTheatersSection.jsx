@@ -6,17 +6,24 @@ import {
   Calendar,
   ChevronLeft,
   ChevronRight,
-  Sparkles,
   Clapperboard,
-  Clock,
   Globe2,
+  MapPin,
 } from 'lucide-react';
+import MovieCard from './MovieCard.jsx';
 import {
   tmdb,
   posterUrl,
   THEATRICAL_NOW_PLAYING,
   THEATRICAL_COMING_SOON,
 } from '../api/tmdb.js';
+import {
+  TAMIL_NADU_CITIES,
+  getSavedCity,
+  saveCity,
+  getCityDetails,
+  getTheatersForCity,
+} from '../data/theaters.js';
 
 const LANGUAGE_FILTERS = [
   { id: 'all', label: 'All Releases' },
@@ -44,7 +51,7 @@ function formatDateBadge(dateStr, label) {
   if (label && /^[A-Z]{3}\s+\d{1,2}$/.test(label.trim())) {
     return label.trim();
   }
-  if (!dateStr) return label || 'IN THEATERS';
+  if (!dateStr) return label || 'In theaters';
   const parts = String(dateStr).split('-');
   if (parts.length === 3) {
     const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
@@ -63,58 +70,106 @@ export default function InTheatersSection({ onSelectMovie, onOpenShowtimes }) {
   const [nowPlayingMovies, setNowPlayingMovies] = useState(THEATRICAL_NOW_PLAYING);
   const [upcomingMovies, setUpcomingMovies] = useState(THEATRICAL_COMING_SOON);
   const [loading, setLoading] = useState(false);
-  const [scrollProgress, setScrollProgress] = useState(0);
+  const [userLocation, setUserLocation] = useState({ city: 'Chennai', country: 'IN', regionName: 'Tamil Nadu' });
+  const [selectedCityId, setSelectedCityId] = useState(() => getSavedCity());
+  const currentCity = useMemo(() => getCityDetails(selectedCityId), [selectedCityId]);
+  const cityTheaters = useMemo(() => getTheatersForCity(selectedCityId), [selectedCityId]);
   const scrollRef = useRef(null);
 
-  const handleCarouselScroll = () => {
-    if (!scrollRef.current) return;
-    const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-    const maxScroll = scrollWidth - clientWidth;
-    if (maxScroll > 0) {
-      const progress = Math.min(100, Math.max(6, (scrollLeft / maxScroll) * 100));
-      setScrollProgress(progress);
-    }
-  };
+  // 1. Live Free IP-based Geolocation Lookup (100% Free, zero cost)
+  useEffect(() => {
+    let cancelled = false;
+    fetch('https://ipapi.co/json/')
+      .then((res) => res.json())
+      .then((data) => {
+        if (!cancelled && data?.city && data?.country_code) {
+          setUserLocation({
+            city: data.city,
+            country: data.country_code,
+            regionName: data.region || 'India',
+          });
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-  // Fetch live now playing and upcoming from TMDB if available, merging with curated movies
+  // 2. Fetch live now playing and upcoming from TMDB on mount
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
 
-    Promise.allSettled([tmdb.nowPlaying(), tmdb.upcoming()])
-      .then(([nowRes, upRes]) => {
+    Promise.allSettled([
+      tmdb.nowPlaying(1, 'IN'),
+      tmdb.nowPlaying(1, 'US'),
+      tmdb.discoverTheatrical({ region: 'IN' }),
+      tmdb.upcoming(1, 'IN'),
+      tmdb.upcoming(1, 'US'),
+    ])
+      .then(([nowInRes, nowUsRes, discInRes, upInRes, upUsRes]) => {
         if (cancelled) return;
 
-        if (nowRes.status === 'fulfilled' && nowRes.value?.results?.length > 0) {
-          const apiMovies = nowRes.value.results
+        const collectedNow = [];
+        if (nowInRes.status === 'fulfilled' && nowInRes.value?.results) {
+          collectedNow.push(...nowInRes.value.results);
+        }
+        if (nowUsRes.status === 'fulfilled' && nowUsRes.value?.results) {
+          collectedNow.push(...nowUsRes.value.results);
+        }
+        if (discInRes.status === 'fulfilled' && discInRes.value?.results) {
+          collectedNow.push(...discInRes.value.results);
+        }
+
+        if (collectedNow.length > 0) {
+          const apiMovies = collectedNow
             .filter((m) => m.poster_path && m.title)
             .map((m) => ({
               ...m,
-              release_label: m.release_date ? `IN THEATERS • ${m.release_date.slice(5)}` : 'IN THEATERS',
+              release_label: formatDateBadge(m.release_date, 'In theaters'),
             }));
           if (apiMovies.length > 0) {
-            // Keep regional Indian movies while merging live additions
+            // Keep curated Indian movies while merging live additions without duplicate IDs
             const existingIds = new Set(THEATRICAL_NOW_PLAYING.map((c) => c.id));
-            setNowPlayingMovies([
-              ...THEATRICAL_NOW_PLAYING,
-              ...apiMovies.filter((m) => !existingIds.has(m.id)),
-            ]);
+            const seenNewIds = new Set();
+            const uniqueApiMovies = [];
+            for (const m of apiMovies) {
+              if (!existingIds.has(m.id) && !seenNewIds.has(m.id)) {
+                seenNewIds.add(m.id);
+                uniqueApiMovies.push(m);
+              }
+            }
+            setNowPlayingMovies([...THEATRICAL_NOW_PLAYING, ...uniqueApiMovies]);
           }
         }
 
-        if (upRes.status === 'fulfilled' && upRes.value?.results?.length > 0) {
-          const apiUpcoming = upRes.value.results
+        const collectedUp = [];
+        if (upInRes.status === 'fulfilled' && upInRes.value?.results) {
+          collectedUp.push(...upInRes.value.results);
+        }
+        if (upUsRes.status === 'fulfilled' && upUsRes.value?.results) {
+          collectedUp.push(...upUsRes.value.results);
+        }
+
+        if (collectedUp.length > 0) {
+          const apiUpcoming = collectedUp
             .filter((m) => m.poster_path && m.title)
             .map((m) => ({
               ...m,
-              release_label: m.release_date ? m.release_date.slice(5) : 'COMING SOON',
+              release_label: formatDateBadge(m.release_date, 'Coming soon'),
             }));
           if (apiUpcoming.length > 0) {
             const existingUpIds = new Set(THEATRICAL_COMING_SOON.map((c) => c.id));
-            setUpcomingMovies([
-              ...THEATRICAL_COMING_SOON,
-              ...apiUpcoming.filter((m) => !existingUpIds.has(m.id)),
-            ]);
+            const seenUpIds = new Set();
+            const uniqueApiUp = [];
+            for (const m of apiUpcoming) {
+              if (!existingUpIds.has(m.id) && !seenUpIds.has(m.id)) {
+                seenUpIds.add(m.id);
+                uniqueApiUp.push(m);
+              }
+            }
+            setUpcomingMovies([...THEATRICAL_COMING_SOON, ...uniqueApiUp]);
           }
         }
       })
@@ -126,6 +181,39 @@ export default function InTheatersSection({ onSelectMovie, onOpenShowtimes }) {
       cancelled = true;
     };
   }, []);
+
+  // 3. Dynamic Real-Time Theatrical Discovery when language changes
+  useEffect(() => {
+    if (selectedLang === 'all') return;
+    let cancelled = false;
+
+    tmdb.discoverTheatrical({
+      region: userLocation.country || 'IN',
+      language: selectedLang,
+    })
+      .then((res) => {
+        if (cancelled || !res?.results?.length) return;
+        const liveItems = res.results
+          .filter((m) => m.poster_path && m.title)
+          .map((m) => ({
+            ...m,
+            release_label: formatDateBadge(m.release_date, 'In theaters'),
+          }));
+
+        if (liveItems.length > 0) {
+          setNowPlayingMovies((prev) => {
+            const existingIds = new Set(prev.map((m) => m.id));
+            const newUnique = liveItems.filter((m) => !existingIds.has(m.id));
+            return newUnique.length > 0 ? [...prev, ...newUnique] : prev;
+          });
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedLang, userLocation.country]);
 
   const currentList = useMemo(() => {
     const base = activeTab === 'now_playing' ? nowPlayingMovies : upcomingMovies;
@@ -147,15 +235,25 @@ export default function InTheatersSection({ onSelectMovie, onOpenShowtimes }) {
           <div className="in-theaters-section__headline">
             <span className="theaters-badge-indicator" />
             <h2 className="in-theaters-section__title">
-              In Theaters <span className="theaters-arrow">›</span>
+              In Theaters
             </h2>
+            <button
+              type="button"
+              className="theaters-location-chip theaters-location-chip--interactive"
+              onClick={() => onOpenShowtimes && onOpenShowtimes(currentList[0] || THEATRICAL_NOW_PLAYING[0])}
+              title={`View showtimes for ${cityTheaters.length} cinemas in ${currentCity.name} (${currentCity.tamilName})`}
+            >
+              <MapPin size={11} />
+              <span>{currentCity.tamilName} ({currentCity.name}) • {cityTheaters.length} Cinemas Active</span>
+              <span className="location-chip__action">View Showtimes →</span>
+            </button>
           </div>
           <p className="in-theaters-section__subtitle">
             Tamil, Telugu, Hindi, Malayalam, Kannada & Global Theatrical Releases
           </p>
         </div>
 
-        {/* Action Controls: Tabs */}
+        {/* Action Controls: Tabs & Carousel Navigation */}
         <div className="in-theaters-section__controls">
           <div className="in-theaters-tabs">
             <button
@@ -177,168 +275,106 @@ export default function InTheatersSection({ onSelectMovie, onOpenShowtimes }) {
               <span className="tab-count">{upcomingMovies.length}</span>
             </button>
           </div>
+
+          {/* Dedicated Header Carousel Controls (Issue 4: Eliminates poster occlusion) */}
+          <div className="carousel-nav-group" aria-label="Carousel scroll navigation">
+            <button
+              type="button"
+              className="btn-icon carousel-arrow-btn carousel-arrow-btn--header"
+              onClick={() => handleScroll('left')}
+              title="Scroll left"
+              aria-label="Scroll carousel left"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <button
+              type="button"
+              className="btn-icon carousel-arrow-btn carousel-arrow-btn--header"
+              onClick={() => handleScroll('right')}
+              title="Scroll right"
+              aria-label="Scroll carousel right"
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Tamil Nadu District / City Filter Bar */}
+      <div className="theaters-district-bar-wrapper">
+        <div className="theaters-district-bar">
+          <div className="theaters-district-bar__title">
+            <MapPin size={13} />
+            <span>Select District / ஊர்:</span>
+          </div>
+          <div className="theaters-district-chips-container" role="region" aria-label="District selection">
+            <div className="theaters-district-chips">
+              {TAMIL_NADU_CITIES.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  className={`district-filter-chip ${selectedCityId === c.id ? 'is-active' : ''}`}
+                  onClick={() => {
+                    setSelectedCityId(c.id);
+                    saveCity(c.id);
+                  }}
+                  title={`Show theaters & movies for ${c.name} (${c.tamilName})`}
+                >
+                  <span className="district-chip-tamil">{c.tamilName}</span>
+                  <span className="district-chip-en">{c.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Regional Cinema Language Filter Bar */}
-      <div className="theaters-lang-bar">
-        <div className="theaters-lang-bar__title">
-          <Globe2 size={13} />
-          <span>Filter by Language:</span>
-        </div>
-        <div className="theaters-lang-chips">
-          {LANGUAGE_FILTERS.map((lang) => (
-            <button
-              key={lang.id}
-              type="button"
-              className={`lang-filter-chip ${selectedLang === lang.id ? 'is-active' : ''}`}
-              onClick={() => setSelectedLang(lang.id)}
-            >
-              <span>{lang.label}</span>
-            </button>
-          ))}
+      <div className="theaters-lang-bar-wrapper">
+        <div className="theaters-lang-bar">
+          <div className="theaters-lang-bar__title">
+            <Globe2 size={13} />
+            <span>Filter by Language:</span>
+          </div>
+          <div className="theaters-lang-chips-container" role="region" aria-label="Language filter options">
+            <div className="theaters-lang-chips">
+              {LANGUAGE_FILTERS.map((lang) => (
+                <button
+                  key={lang.id}
+                  type="button"
+                  className={`lang-filter-chip ${selectedLang === lang.id ? 'is-active' : ''}`}
+                  onClick={() => setSelectedLang(lang.id)}
+                >
+                  <span>{lang.label}</span>
+                </button>
+              ))}
+            </div>
+            <div className="theaters-lang-chips__fade-end" aria-hidden="true" />
+          </div>
         </div>
       </div>
 
-      {/* Horizontal Scrolling Theatrical Showcase with side navigation arrows */}
+      {/* Horizontal Scrolling Theatrical Showcase (Clean, un-occluded poster view) */}
       <div className="in-theaters-carousel-wrapper">
-        <button
-          type="button"
-          className="carousel-arrow-btn carousel-arrow-btn--left"
-          onClick={() => handleScroll('left')}
-          title="Scroll left"
-          aria-label="Scroll left"
-        >
-          <ChevronLeft size={22} />
-        </button>
-
         <div
           className="in-theaters-carousel"
           ref={scrollRef}
-          onScroll={handleCarouselScroll}
+          tabIndex={0}
+          role="region"
+          aria-label="Theatrical movie carousel"
         >
-          {currentList.map((movie) => {
-            const poster = posterUrl(movie.poster_path, 'w342');
-            const releaseText = formatDateBadge(movie.release_date, movie.release_label);
-            const langCode = (movie.original_language || 'en').toLowerCase();
-            const langLabel = getLanguageLabel(langCode);
-
-            return (
-              <div key={movie.id} className="theater-card">
-                {/* Clean Card Poster with Star Rating Badge & Trailer Hint (Standardized with Trending Card) */}
-                <div
-                  className="theater-card__poster-box"
-                  onClick={() => onSelectMovie(movie)}
-                  title={`Open ${movie.title} trailer & details`}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') onSelectMovie(movie);
-                  }}
-                >
-                  {poster ? (
-                    <img
-                      src={poster}
-                      alt={`${movie.title} poster`}
-                      className="theater-card__img"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="theater-card__placeholder">
-                      <Film size={32} />
-                      <span>No Poster</span>
-                    </div>
-                  )}
-
-                  {/* Star Rating Badge (Top Right) */}
-                  {movie.vote_average && (
-                    <div className="theater-card__rating-badge">
-                      ★ {Number(movie.vote_average).toFixed(1)}
-                    </div>
-                  )}
-
-                  {/* Standardized Trailer Hint */}
-                  <div className="theater-card__action-hint">
-                    <Play size={11} fill="currentColor" />
-                    <span>Trailer</span>
-                  </div>
-
-                  <div className="theater-card__overlay-glow" />
-                </div>
-
-                {/* Title & Decluttered Metadata Area (Heuristic 7 Fix) */}
-                <div className="theater-card__body">
-                  <h3
-                    className="theater-card__title"
-                    title={movie.title}
-                    onClick={() => onSelectMovie(movie)}
-                  >
-                    {movie.title}
-                  </h3>
-
-                  <div className="theater-card__meta-line">
-                    <span className="theater-card__meta-date">{releaseText}</span>
-                    <span className="theater-card__meta-sep">•</span>
-                    <span className={`theater-card__meta-lang theater-card__meta-lang--${langCode}`}>
-                      {langLabel}
-                    </span>
-                    {movie.duration && (
-                      <>
-                        <span className="theater-card__meta-sep">•</span>
-                        <span className="theater-card__meta-duration">{movie.duration}</span>
-                      </>
-                    )}
-                  </div>
-
-                  {/* Consistent Action Row */}
-                  <div className="theater-card__actions">
-                    {activeTab === 'now_playing' && onOpenShowtimes && (
-                      <button
-                        type="button"
-                        className="theater-action-btn theater-action-btn--showtimes"
-                        onClick={() => onOpenShowtimes(movie)}
-                        title={`View theater showtimes for ${movie.title}`}
-                      >
-                        <Ticket size={13} />
-                        <span>Showtimes</span>
-                      </button>
-                    )}
-
-                    <button
-                      type="button"
-                      className="theater-action-btn theater-action-btn--trailer"
-                      onClick={() => onSelectMovie(movie)}
-                      title={`Play official trailer for ${movie.title}`}
-                    >
-                      <Play size={12} fill="currentColor" />
-                      <span>Watch Trailer</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          {currentList.map((movie, i) => (
+            <MovieCard
+              key={`${movie.id}-${i}`}
+              movie={movie}
+              index={i}
+              className="theater-card"
+              onSelect={onSelectMovie}
+              onOpenShowtimes={onOpenShowtimes}
+              showShowtimes={activeTab === 'now_playing'}
+            />
+          ))}
         </div>
-
-        <button
-          type="button"
-          className="carousel-arrow-btn carousel-arrow-btn--right"
-          onClick={() => handleScroll('right')}
-          title="Scroll right"
-          aria-label="Scroll right"
-        >
-          <ChevronRight size={22} />
-        </button>
-      </div>
-
-      {/* Visual Carousel Scroll Progress Feedback (Heuristic 10 Fix) */}
-      <div className="carousel-progress-wrapper" aria-hidden="true">
-        <div className="carousel-progress-track">
-          <div className="carousel-progress-fill" style={{ width: `${scrollProgress}%` }} />
-        </div>
-        <span className="carousel-progress-label">
-          {currentList.length} movies available • Scroll to explore
-        </span>
       </div>
     </section>
   );

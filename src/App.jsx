@@ -1,24 +1,26 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef, useCallback, lazy, Suspense } from 'react';
 import {
   Clapperboard,
   BarChart3,
   Crown,
-  LogOut,
-  Eye,
-  Calendar,
-  Search,
+  DoorOpen,
+  Film,
+  Tv,
+  Globe,
 } from 'lucide-react';
 import { tmdb } from './api/tmdb.js';
 import { analytics } from './api/analytics.js';
 import SearchBar from './components/SearchBar.jsx';
 import MovieGrid from './components/MovieGrid.jsx';
-import MovieModal from './components/MovieModal.jsx';
-import InTheatersSection from './components/InTheatersSection.jsx';
-import ShowtimesModal from './components/ShowtimesModal.jsx';
-import ApiKeyGate from './components/ApiKeyGate.jsx';
 import MonsterAuth from './components/MonsterAuth.jsx';
-import AdminDashboard from './components/AdminDashboard.jsx';
-import TheaterScreen from './components/TheaterScreen.jsx';
+import SearchSpotlight from './components/SearchSpotlight.jsx';
+import ArtistSpotlight from './components/ArtistSpotlight.jsx';
+
+const MovieModal = lazy(() => import('./components/MovieModal.jsx'));
+const ShowtimesModal = lazy(() => import('./components/ShowtimesModal.jsx'));
+const ApiKeyGate = lazy(() => import('./components/ApiKeyGate.jsx'));
+const AdminDashboard = lazy(() => import('./components/AdminDashboard.jsx'));
+const TheaterScreen = lazy(() => import('./components/TheaterScreen.jsx'));
 
 function getUserInitials(user) {
   if (!user) return 'U';
@@ -59,12 +61,21 @@ export default function App() {
   const [keyError, setKeyError] = useState('');
   const [query, setQuery] = useState('');
   const [activeQuery, setActiveQuery] = useState('');
+  const [matchedArtist, setMatchedArtist] = useState(null);
+  const [similarArtists, setSimilarArtists] = useState([]);
   const [reloadTrigger, setReloadTrigger] = useState(0);
+  const [mediaType, setMediaType] = useState('movie'); // 'movie' | 'tv'
+  const [catalogLanguage, setCatalogLanguage] = useState('all');
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedId, setSelectedId] = useState(null);
   const [showtimesMovie, setShowtimesMovie] = useState(null);
+
+  const displayedCatalogMovies = useMemo(() => {
+    if (catalogLanguage === 'all') return movies;
+    return movies.filter((m) => (m.original_language || '').toLowerCase() === catalogLanguage.toLowerCase());
+  }, [movies, catalogLanguage]);
 
   const syncAdminState = () => {
     const user = analytics.getCurrentUser();
@@ -74,13 +85,13 @@ export default function App() {
     setVisitorCount(analytics.getStats().totalVisitors);
   };
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     analytics.logout();
     setCurrentUser(null);
     setIsAdmin(false);
     setShowAdmin(false);
     setShowCurtain(false);
-  };
+  }, []);
 
   // Track visitor on mount (exclude administrators)
   useEffect(() => {
@@ -91,31 +102,92 @@ export default function App() {
     syncAdminState();
   }, []);
 
+  // Smart auto-hiding navbar on scroll ("vanthu pora maari")
+  const [navVisible, setNavVisible] = useState(true);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    let ticking = false;
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setIsScrolled(currentScrollY > 20);
+
+          if (currentScrollY <= 60) {
+            // Near top: always visible
+            setNavVisible(true);
+          } else if (currentScrollY > lastScrollY.current + 8) {
+            // Scrolling down: hide header
+            setNavVisible(false);
+          } else if (currentScrollY < lastScrollY.current - 8) {
+            // Scrolling up: show header
+            setNavVisible(true);
+          }
+
+          lastScrollY.current = currentScrollY;
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const mode = activeQuery ? 'search' : 'trending';
 
   const heading = useMemo(() => {
     if (mode === 'search') return `Results for "${activeQuery}"`;
-    return 'Trending this week';
-  }, [mode, activeQuery]);
+    return mediaType === 'tv' ? 'Trending TV Shows & Web Series' : 'Trending Movies This Week';
+  }, [mode, activeQuery, mediaType]);
 
-  const stats = useMemo(() => analytics.getStats(), [visitorCount, reloadTrigger, showAdmin]);
-
-  const handleRetry = () => {
+  const handleRetry = useCallback(() => {
     setReloadTrigger((prev) => prev + 1);
-  };
+  }, []);
 
-  const handleSearchSubmit = (val) => {
+  const handleSearchSubmit = useCallback((val) => {
     const trimmed = val.trim();
     if (trimmed) {
       analytics.recordSearch(trimmed);
     }
+    setMatchedArtist(null);
+    setSimilarArtists([]);
     if (trimmed === activeQuery) {
       // Force refetch if submitting same query
       setReloadTrigger((prev) => prev + 1);
     } else {
       setActiveQuery(trimmed);
     }
-  };
+  }, [activeQuery]);
+
+  const handleSelectMovie = useCallback((movie) => {
+    analytics.recordMovieView();
+    setSelectedId(movie.id);
+  }, []);
+
+  const handleOpenShowtimes = useCallback((movie) => {
+    setShowtimesMovie(movie);
+  }, []);
+
+  const handleSelectArtist = useCallback(async (artistSummary) => {
+    if (!artistSummary) return;
+    setLoading(true);
+    try {
+      const full = await tmdb.personDetails(artistSummary.id || artistSummary.tmdb_id);
+      if (full) {
+        setMatchedArtist(full);
+      }
+    } catch (err) {
+      console.error('Failed to load artist details:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (!currentUser || !hasKey) return;
@@ -124,12 +196,16 @@ export default function App() {
     setLoading(true);
     setError(null);
 
-    const request = activeQuery ? tmdb.search(activeQuery) : tmdb.trending();
+    const request = activeQuery
+      ? tmdb.search(activeQuery)
+      : (mediaType === 'tv' ? tmdb.trendingTv('week') : tmdb.trending('week'));
 
     request
       .then((data) => {
         if (cancelled) return;
         setMovies(data.results || []);
+        setMatchedArtist(data.artist || null);
+        setSimilarArtists(data.similarArtists || []);
       })
       .catch((err) => {
         if (cancelled) return;
@@ -147,7 +223,7 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, [activeQuery, hasKey, reloadTrigger, currentUser]);
+  }, [activeQuery, hasKey, reloadTrigger, currentUser, mediaType]);
 
   // Gatekeeper: Website front door MUST be the MonsterAuth login screen
   if (!currentUser) {
@@ -169,7 +245,7 @@ export default function App() {
 
   if (!hasKey || isEditingKey) {
     return (
-      <>
+      <Suspense fallback={<div className="modal-loading-gate" />}>
         {showCurtain && <TheaterScreen onEnter={() => setShowCurtain(false)} />}
         <ApiKeyGate
           errorMessage={keyError}
@@ -186,14 +262,22 @@ export default function App() {
           }}
           onOpenAdmin={isAdmin ? () => setShowAdmin(true) : null}
         />
-      </>
+      </Suspense>
     );
   }
 
   return (
     <div className="app">
-      {showCurtain && <TheaterScreen onEnter={() => setShowCurtain(false)} />}
-      <nav className="top-nav">
+      {showCurtain && (
+        <Suspense fallback={null}>
+          <TheaterScreen onEnter={() => setShowCurtain(false)} />
+        </Suspense>
+      )}
+      <nav
+        className={`top-nav ${navVisible ? 'top-nav--visible' : 'top-nav--hidden'} ${
+          isScrolled ? 'top-nav--scrolled' : ''
+        } ${selectedId || showtimesMovie ? 'top-nav--modal-open' : ''}`}
+      >
         <div className="top-nav__brand">
           <span className="top-nav__logo">REELIST</span>
         </div>
@@ -236,24 +320,21 @@ export default function App() {
             onClick={handleLogout}
             title="Log out and return to login screen"
           >
-            <LogOut size={15} />
+            <DoorOpen size={15} />
             <span>Log Out</span>
           </button>
         </div>
       </nav>
 
       {showAdmin && isAdmin ? (
-        <AdminDashboard onSwitchToMovies={() => setShowAdmin(false)} />
+        <Suspense fallback={<div className="container"><p className="state-panel__title">Loading Admin Dashboard…</p></div>}>
+          <AdminDashboard onSwitchToMovies={() => setShowAdmin(false)} />
+        </Suspense>
       ) : (
         <>
           <header className="hero">
-            <div className="hero__sprockets" aria-hidden="true">
-              {Array.from({ length: 24 }).map((_, i) => (
-                <span key={i} />
-              ))}
-            </div>
             <p className="hero__eyebrow">Now screening</p>
-            <h1 className="hero__title">REELIST</h1>
+            <h1 className="hero__title">Explore Cinema</h1>
             <p className="hero__subtitle">Find what's trending, or search the whole marquee.</p>
             <SearchBar
               value={query}
@@ -268,62 +349,156 @@ export default function App() {
                   onClick={() => {
                     setQuery('');
                     setActiveQuery('');
+                    setMatchedArtist(null);
+                    setSimilarArtists([]);
                   }}
                 >
                   ← Back to trending
                 </button>
               </div>
             )}
-            <div className="hero__sprockets hero__sprockets--bottom" aria-hidden="true">
-              {Array.from({ length: 24 }).map((_, i) => (
-                <span key={i} />
-              ))}
-            </div>
           </header>
 
           <main className="container">
-            <h2 className="section-heading">{heading}</h2>
-            <MovieGrid
-              movies={movies}
-              loading={loading}
-              error={error}
-              emptyLabel="Try another title, or check the spelling."
-              onSelect={(movie) => {
-                analytics.recordMovieView();
-                setSelectedId(movie.id);
-              }}
-              onRetry={handleRetry}
-            />
+            {mode === 'search' ? (
+              /* Search Results View */
+              <section className="search-results-section" aria-label="Search results">
+                {matchedArtist ? (
+                  /* Dedicated Artist Spotlight & Complete Multilingual Filmography */
+                  <ArtistSpotlight
+                    artist={matchedArtist}
+                    similarArtists={similarArtists}
+                    onSelectArtist={handleSelectArtist}
+                    onSelectMovie={handleSelectMovie}
+                  />
+                ) : (
+                  <>
+                    <h2 className="section-heading">{heading}</h2>
 
-            {/* Dedicated Theatrical Showcase Section matching user screenshots */}
-            <InTheatersSection
-              onSelectMovie={(movie) => {
-                analytics.recordMovieView();
-                setSelectedId(movie.id);
-              }}
-              onOpenShowtimes={(movie) => setShowtimesMovie(movie)}
-            />
+                    {/* Google Search Spotlight Knowledge Card for top match */}
+                    {!loading && movies.length > 0 && (
+                      <SearchSpotlight
+                        movie={movies[0]}
+                        onSelectMovie={handleSelectMovie}
+                        onOpenShowtimes={handleOpenShowtimes}
+                      />
+                    )}
+
+                    <MovieGrid
+                      movies={movies}
+                      loading={loading}
+                      error={error}
+                      emptyLabel="Try another title, series, or artist name, or check the spelling."
+                      onSelect={handleSelectMovie}
+                      onRetry={handleRetry}
+                    />
+                  </>
+                )}
+              </section>
+            ) : (
+              /* Home / Explore View */
+              <>
+                {/* Global Trending & Acclaimed Catalog Section */}
+                <section className="trending-catalog-section" aria-labelledby="trending-heading">
+                  <div className="section-header-wrap section-header-wrap--with-toggle">
+                    <div className="section-header-left">
+                      <h2 id="trending-heading" className="section-heading">
+                        {mediaType === 'tv' ? 'Trending TV Shows & Series' : 'Trending Movies This Week'}
+                      </h2>
+                      <p className="section-subheading">
+                        {mediaType === 'tv'
+                          ? 'Binge-worthy web series, critically acclaimed dramas & fan-favorite TV shows'
+                          : 'Now Screening — July to September 2026 Blockbusters'}
+                      </p>
+                    </div>
+
+                    <div className="media-format-switcher" role="tablist" aria-label="Media format switcher">
+                      <button
+                        type="button"
+                        role="tab"
+                        aria-selected={mediaType === 'movie'}
+                        className={`format-switch-btn ${mediaType === 'movie' ? 'is-active' : ''}`}
+                        onClick={() => setMediaType('movie')}
+                      >
+                        <Film size={15} />
+                        <span>All Movies</span>
+                      </button>
+                      <button
+                        type="button"
+                        role="tab"
+                        aria-selected={mediaType === 'tv'}
+                        className={`format-switch-btn ${mediaType === 'tv' ? 'is-active' : ''}`}
+                        onClick={() => setMediaType('tv')}
+                      >
+                        <Tv size={15} />
+                        <span>TV Shows & Web Series</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="catalog-language-bar-wrap">
+                    <div className="catalog-language-bar" role="tablist" aria-label="Filter by language">
+                      {[
+                        { code: 'all', label: 'All Releases', isAll: true },
+                        { code: 'ta', label: 'Tamil (தமிழ்)' },
+                        { code: 'te', label: 'Telugu (తెలుగు)' },
+                        { code: 'hi', label: 'Hindi (हिंदी)' },
+                        { code: 'ml', label: 'Malayalam (മലയാളം)' },
+                        { code: 'kn', label: 'Kannada (ಕನ್ನಡ)' },
+                        { code: 'en', label: 'English / Global' },
+                      ].map((lang) => (
+                        <button
+                          key={lang.code}
+                          type="button"
+                          role="tab"
+                          aria-selected={catalogLanguage === lang.code}
+                          className={`catalog-lang-chip ${catalogLanguage === lang.code ? 'is-active' : ''}`}
+                          onClick={() => setCatalogLanguage(lang.code)}
+                        >
+                          {lang.isAll && <Globe size={13} className="catalog-lang-icon" />}
+                          <span>{lang.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <MovieGrid
+                    movies={displayedCatalogMovies}
+                    loading={loading}
+                    error={error}
+                    emptyLabel="No titles found in this language. Try another filter."
+                    onSelect={handleSelectMovie}
+                    onRetry={handleRetry}
+                  />
+                </section>
+              </>
+            )}
           </main>
         </>
       )}
 
       {selectedId && (
-        <MovieModal
-          movieId={selectedId}
-          onClose={() => setSelectedId(null)}
-          onSelectMovie={(movie) => setSelectedId(movie.id)}
-        />
+        <Suspense fallback={null}>
+          <MovieModal
+            movieId={selectedId}
+            onClose={() => setSelectedId(null)}
+            onSelectMovie={(movie) => setSelectedId(movie.id)}
+          />
+        </Suspense>
       )}
 
       {showtimesMovie && (
-        <ShowtimesModal
-          movie={showtimesMovie}
-          onClose={() => setShowtimesMovie(null)}
-          onWatchTrailer={(movie) => {
-            setShowtimesMovie(null);
-            setSelectedId(movie.id);
-          }}
-        />
+        <Suspense fallback={null}>
+          <ShowtimesModal
+            movie={showtimesMovie}
+            onClose={() => setShowtimesMovie(null)}
+            onSelectMovie={(movie) => setShowtimesMovie(movie)}
+            onWatchTrailer={(movie) => {
+              setShowtimesMovie(null);
+              setSelectedId(movie.id);
+            }}
+          />
+        </Suspense>
       )}
     </div>
   );

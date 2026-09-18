@@ -7,8 +7,14 @@ export default function MovieGrid({ movies, loading, error, emptyLabel, onSelect
   if (loading) {
     return (
       <div className="movie-grid" role="status" aria-busy="true" aria-label="Loading movies">
-        {Array.from({ length: 12 }).map((_, i) => (
-          <div className="movie-card movie-card--skeleton" key={i} />
+        {Array.from({ length: 10 }).map((_, i) => (
+          <div className="movie-card movie-card--skeleton" key={i}>
+            <div className="skeleton-poster" />
+            <div className="skeleton-meta">
+              <div className="skeleton-line skeleton-line--title" />
+              <div className="skeleton-line skeleton-line--sub" />
+            </div>
+          </div>
         ))}
       </div>
     );
@@ -20,7 +26,7 @@ export default function MovieGrid({ movies, loading, error, emptyLabel, onSelect
         <p className="state-panel__title">Reel jammed</p>
         <p className="state-panel__body">{error}</p>
         {onRetry && (
-          <button type="button" className="btn-retry" onClick={onRetry}>
+          <button type="button" className="btn-outline btn-retry" onClick={onRetry}>
             ↻ Try again
           </button>
         )}
@@ -37,8 +43,8 @@ export default function MovieGrid({ movies, loading, error, emptyLabel, onSelect
     );
   }
 
-  // Display initial 12 items (2 complete 6-column rows) to eliminate incomplete row whitespace (Heuristic 9 Fix)
-  const displayedMovies = showAll || movies.length <= 12 ? movies : movies.slice(0, 12);
+  // Display initial 10 items (2 complete 5-column rows) to eliminate ragged bottom edge
+  const displayedMovies = showAll || movies.length <= 10 ? movies : movies.slice(0, 10);
 
   return (
     <div className="movie-grid-container">
@@ -48,15 +54,15 @@ export default function MovieGrid({ movies, loading, error, emptyLabel, onSelect
         ))}
       </div>
 
-      {movies.length > 12 && (
+      {movies.length > 10 && (
         <div className="movie-grid__view-more">
           <button
             type="button"
-            className="btn-view-more"
+            className="btn-secondary btn-view-more"
             onClick={() => setShowAll((prev) => !prev)}
             aria-expanded={showAll}
           >
-            {showAll ? 'Show Fewer Titles' : `View More Titles (+${movies.length - 12})`}
+            {showAll ? 'Show Fewer Titles' : `View More Titles (+${movies.length - 10})`}
           </button>
         </div>
       )}

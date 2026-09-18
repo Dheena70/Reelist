@@ -177,11 +177,28 @@ function Monsters({ mouse, passwordFocused, emailTyping }) {
 }
 
 export default function MonsterAuth({ onClose, onLoginSuccess }) {
-  const [mode, setMode] = useState("login");
+  const [mode, setMode] = useState("login"); // 'login' | 'signup' | 'forgot'
+  const [forgotStep, setForgotStep] = useState("email"); // 'email' | 'otp' | 'newpw'
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showConfirmPw, setShowConfirmPw] = useState(false);
+  
+  // SafeHire-style OTP Password Reset States
+  const [otpEmail, setOtpEmail] = useState("");
+  const [generatedOtp, setGeneratedOtp] = useState("");
+  const [enteredOtp, setEnteredOtp] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [showNewPw, setShowNewPw] = useState(false);
+  const [showConfirmNewPw, setShowConfirmNewPw] = useState(false);
+  const [otpBannerMsg, setOtpBannerMsg] = useState("");
+  const [resendTimer, setResendTimer] = useState(0);
+  const [rememberMe, setRememberMe] = useState(true);
+
   const [error, setError] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
   const [mouse, setMouse] = useState(null);
   const [passwordFocused, setPasswordFocused] = useState(false);
   const [emailTyping, setEmailTyping] = useState(false);
@@ -191,13 +208,29 @@ export default function MonsterAuth({ onClose, onLoginSuccess }) {
   const typingTimeout = useRef(null);
   const switchTimeout = useRef(null);
 
+  // Resend Countdown Timer for SafeHire OTP
+  useEffect(() => {
+    if (resendTimer <= 0) return;
+    const interval = setInterval(() => {
+      setResendTimer((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [resendTimer]);
+
   const switchMode = (next) => {
     if (next === mode) return;
     setFieldsVisible(false);
     setError("");
     setEmail("");
     setPassword("");
+    setConfirmPassword("");
     setName("");
+    setEnteredOtp("");
+    setNewPassword("");
+    setConfirmNewPassword("");
+    if (next === "forgot") {
+      setForgotStep("email");
+    }
     clearTimeout(switchTimeout.current);
     switchTimeout.current = setTimeout(() => {
       setMode(next);
@@ -239,14 +272,90 @@ export default function MonsterAuth({ onClose, onLoginSuccess }) {
     special: /[!@#$%^&*(),.?":{}|<>_~+=-]/.test(password || ""),
   };
 
+  const newPwRules = {
+    length: (newPassword || "").length >= 8,
+    upper: /[A-Z]/.test(newPassword || ""),
+    number: /[0-9]/.test(newPassword || ""),
+    special: /[!@#$%^&*(),.?":{}|<>_~+=-]/.test(newPassword || ""),
+  };
+
+  // SafeHire OTP Flow: Step 1 - Send 6-digit OTP code to email
+  const handleSendOtp = (targetEmail) => {
+    const cleanEmail = (targetEmail || email || "").toLowerCase().trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!cleanEmail || !emailRegex.test(cleanEmail)) {
+      setError("Please enter a valid email address to receive your OTP verification code.");
+      return;
+    }
+    setError("");
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    setGeneratedOtp(code);
+    setOtpEmail(cleanEmail);
+    setEnteredOtp("");
+    setOtpBannerMsg(`📧 Verification email sent to ${cleanEmail}! SafeHire Security OTP: [ ${code} ]`);
+    setForgotStep("otp");
+    setResendTimer(30);
+  };
+
+  // SafeHire OTP Flow: Step 2 - Verify entered 6-digit code
+  const handleVerifyOtp = (e) => {
+    e?.preventDefault?.();
+    setError("");
+    const cleaned = (enteredOtp || "").trim();
+    if (!cleaned) {
+      setError("Please enter the 6-digit verification code sent to your email.");
+      return;
+    }
+    if (cleaned === generatedOtp) {
+      setError("");
+      setForgotStep("newpw");
+    } else {
+      setError("Invalid OTP code. Please enter the correct 6-digit verification code.");
+    }
+  };
+
+  // SafeHire OTP Flow: Step 3 - Set and confirm new password
+  const handleResetPassword = async (e) => {
+    e?.preventDefault?.();
+    setError("");
+    if (newPassword !== confirmNewPassword) {
+      setError("Passwords do not match. Please verify and re-enter.");
+      return;
+    }
+    if (!newPwRules.length || !newPwRules.upper || !newPwRules.number || !newPwRules.special) {
+      setError("Password must contain at least 8 characters, 1 uppercase letter (A-Z), 1 number (0-9), and 1 special symbol (!@#$).");
+      return;
+    }
+
+    const res = await analytics.resetPassword(otpEmail, newPassword);
+    if (res.success) {
+      setError("");
+      setSuccessMsg("✓ Password reset successfully! Please sign in with your new password.");
+      setMode("login");
+      setEmail(otpEmail);
+      setPassword("");
+      setConfirmPassword("");
+      setNewPassword("");
+      setConfirmNewPassword("");
+      setForgotStep("email");
+      setOtpBannerMsg("");
+    } else {
+      setError(res.error || "Failed to update password. Please try again.");
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (mode === "signup") {
+      if (password !== confirmPassword) {
+        setError("Passwords do not match. Please verify and try again.");
+        return;
+      }
       if (!pwRules.length || !pwRules.upper || !pwRules.number || !pwRules.special) {
         setError("Password must contain at least 8 characters, 1 uppercase letter (A-Z), 1 number (0-9), and 1 special symbol (!@#$).");
         return;
       }
-      const res = await analytics.register(name, email, password);
+      const res = await analytics.register(name, email, password, rememberMe);
       if (res.success) {
         setError("");
         if (onLoginSuccess) onLoginSuccess(res.user);
@@ -256,8 +365,8 @@ export default function MonsterAuth({ onClose, onLoginSuccess }) {
       } else {
         setError(res.error || "Registration failed.");
       }
-    } else {
-      const res = await analytics.login(email, password);
+    } else if (mode === "login") {
+      const res = await analytics.login(email, password, rememberMe);
       if (res.success) {
         setError("");
         if (onLoginSuccess) onLoginSuccess(res.user);
@@ -283,9 +392,9 @@ export default function MonsterAuth({ onClose, onLoginSuccess }) {
           --popcorn-red: #e63946;
           --soda-can: #4ecdc4;
           --radius-full: 999px;
-          --radius-lg: 20px;
+          --radius-lg: 16px;
           --radius-md: 10px;
-          --radius-sm: 4px;
+          --radius-sm: 6px;
           font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
           position: relative;
           max-width: 960px;
@@ -319,7 +428,8 @@ export default function MonsterAuth({ onClose, onLoginSuccess }) {
           background: #ffffff;
           border-radius: var(--radius-lg);
           overflow: hidden;
-          min-height: 590px;
+          min-height: 620px;
+          max-height: 94vh;
           box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.15);
           display: flex;
         }
@@ -344,16 +454,134 @@ export default function MonsterAuth({ onClose, onLoginSuccess }) {
           width: 50%;
           height: 100%;
           background: #ffffff;
-          padding: 44px 50px;
+          padding: 28px 36px 28px;
           display: flex;
           flex-direction: column;
-          justify-content: center;
+          justify-content: flex-start;
           box-sizing: border-box;
-          overflow: visible;
+          overflow-y: auto;
+          scrollbar-width: thin;
+          scrollbar-color: #cbd5e1 transparent;
           transition: left .6s cubic-bezier(.65,0,.35,1);
+        }
+        .right-panel::-webkit-scrollbar {
+          width: 5px;
+        }
+        .right-panel::-webkit-scrollbar-thumb {
+          background: #cbd5e1;
+          border-radius: var(--radius-full);
         }
         .right-panel.at-left { left: 0; }
         .right-panel.at-right { left: 50%; }
+
+        /* Top Segmented Mode Switcher (Sign In vs Create Account) */
+        .auth-segmented-switch {
+          display: flex;
+          background: #f1f5f9;
+          border: 1.5px solid #e2e8f0;
+          border-radius: var(--radius-md);
+          padding: 3px;
+          margin-bottom: 16px;
+          width: 100%;
+          box-sizing: border-box;
+        }
+        .auth-segmented-btn {
+          flex: 1;
+          border: none;
+          background: transparent;
+          padding: 8px 12px;
+          font-size: 13.5px;
+          font-weight: 700;
+          color: #64748b;
+          border-radius: calc(var(--radius-md) - 3px);
+          cursor: pointer;
+          transition: all 0.15s ease;
+          text-align: center;
+        }
+        .auth-segmented-btn:hover {
+          color: #0f172a;
+        }
+        .auth-segmented-btn.is-active {
+          background: #ffffff;
+          color: #0f172a;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        /* SafeHire-style OTP Verification Elements */
+        .otp-display-banner {
+          background: #f0fdf4;
+          border: 1.5px solid #22c55e;
+          color: #15803d;
+          padding: 12px 14px;
+          border-radius: var(--radius-md);
+          font-size: 13px;
+          line-height: 1.45;
+          margin-bottom: 16px;
+          text-align: left;
+          font-weight: 500;
+          box-shadow: 0 2px 10px rgba(34, 197, 94, 0.1);
+        }
+        .otp-code-highlight {
+          display: inline-block;
+          background: #16a34a;
+          color: #ffffff;
+          font-family: monospace;
+          font-size: 16px;
+          font-weight: 800;
+          letter-spacing: 3px;
+          padding: 2px 10px;
+          border-radius: var(--radius-sm);
+          margin: 4px 0 2px;
+        }
+        .otp-input-field input {
+          text-align: center;
+          font-size: 26px !important;
+          letter-spacing: 8px !important;
+          font-family: monospace !important;
+          font-weight: 800 !important;
+        }
+        .otp-actions-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin: 12px 0;
+          font-size: 13px;
+        }
+        .btn-resend-otp {
+          background: transparent;
+          border: none;
+          color: #7a4a35;
+          font-weight: 700;
+          font-size: 13px;
+          cursor: pointer;
+          padding: 4px 0;
+          text-decoration: underline;
+          transition: color 0.15s ease;
+        }
+        .btn-resend-otp:disabled {
+          color: #94a3b8;
+          cursor: not-allowed;
+          text-decoration: none;
+        }
+        .btn-back-link {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: transparent;
+          border: none;
+          color: #64748b;
+          font-size: 13.5px;
+          font-weight: 600;
+          cursor: pointer;
+          margin-top: 14px;
+          padding: 4px 0;
+          transition: color 0.15s ease;
+        }
+        .btn-back-link:hover {
+          color: #0f172a;
+          text-decoration: underline;
+        }
+
         .form-fade { transition: opacity .25s ease; }
         .monsters-wrapper {
           display: flex;
@@ -410,14 +638,14 @@ export default function MonsterAuth({ onClose, onLoginSuccess }) {
         .mon { position: relative; display: flex; flex-direction: column; align-items: center; }
         .eyes-row { display: flex; gap: 6px; z-index: 3; position: relative; }
         .snack-legs { display: flex; gap: 20px; margin-top: -4px; }
-        .leg { width: 8px; height: 34px; border-radius: 4px; }
+        .leg { width: 8px; height: 34px; border-radius: var(--radius-sm); }
         .leg.cup { background: var(--coffee-dark); opacity: 0.5; }
         .leg.donut { background: #b5762f; opacity: 0.5; }
         .leg.soda { background: #7a1620; opacity: 0.6; }
 
         .mon-cup { width: 98px; position: relative; }
         .cup-steam { position: relative; height: 20px; display: flex; justify-content: center; gap: 8px; margin-bottom: 2px; }
-        .cup-steam span { width: 3px; height: 16px; border-radius: 3px; background: #c9a876; opacity: 0.6; transform: rotate(8deg); }
+        .cup-steam span { width: 3px; height: 16px; border-radius: var(--radius-sm); background: #c9a876; opacity: 0.6; transform: rotate(8deg); }
         .cup-steam span:nth-child(2) { transform: rotate(-6deg); height: 20px; }
         .cup-handle {
           position: absolute; right: -12px; top: 40px;
@@ -425,17 +653,17 @@ export default function MonsterAuth({ onClose, onLoginSuccess }) {
           border: 5px solid var(--coffee-dark); border-left-color: transparent; border-bottom-color: transparent;
           transform: rotate(45deg);
         }
-        .cup-sleeve { width: 100%; height: 16px; background: var(--coffee); border-radius: 8px 8px 0 0; border: 2.5px solid var(--coffee-dark); border-bottom: none; }
+        .cup-sleeve { width: 100%; height: 16px; background: var(--coffee); border-radius: var(--radius-sm) var(--radius-sm) 0 0; border: 2.5px solid var(--coffee-dark); border-bottom: none; }
         .cup-body {
           width: 100%; height: 92px;
           background: #fff;
           border: 2.5px solid var(--coffee-dark);
-          border-radius: 0 0 16px 16px;
+          border-radius: 0 0 var(--radius-lg) var(--radius-lg);
           display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
           box-shadow: 0 6px 0 rgba(0,0,0,0.08);
         }
-        .cup-mouth { width: 22px; height: 6px; background: var(--coffee-dark); border-radius: 4px; overflow: hidden; transition: height .15s ease; display: flex; }
-        .cup-mouth.open { height: 14px; border-radius: 8px; background: #fff; }
+        .cup-mouth { width: 22px; height: 6px; background: var(--coffee-dark); border-radius: var(--radius-sm); overflow: hidden; transition: height .15s ease; display: flex; }
+        .cup-mouth.open { height: 14px; border-radius: var(--radius-sm); background: #fff; }
         .cup-mouth .teeth { width: 100%; background: repeating-linear-gradient(90deg, #fff 0 4px, #cfd8e3 4px 6px); }
 
         @keyframes donutWiggle {
@@ -455,9 +683,9 @@ export default function MonsterAuth({ onClose, onLoginSuccess }) {
         }
         .donut-hole { width: 24px; height: 24px; border-radius: 50%; background: #ebe6dc; border: 2px solid #8c3b52; position: absolute; }
         .donut-eyes { position: absolute; top: 18px; }
-        .donut-mouth { position: absolute; bottom: 16px; width: 14px; height: 5px; background: #5c1b2c; border-radius: 3px; transition: height .15s ease, border-radius .15s ease; }
-        .donut-mouth.open { height: 12px; border-radius: 6px; }
-        .sprinkle { position: absolute; width: 8px; height: 3.5px; border-radius: 2px; }
+        .donut-mouth { position: absolute; bottom: 16px; width: 14px; height: 5px; background: #5c1b2c; border-radius: var(--radius-sm); transition: height .15s ease, border-radius .15s ease; }
+        .donut-mouth.open { height: 12px; border-radius: var(--radius-sm); }
+        .sprinkle { position: absolute; width: 8px; height: 3.5px; border-radius: var(--radius-sm); }
         .s1 { background: #ffeb3b; top: 12px; left: 24px; transform: rotate(20deg); }
         .s2 { background: #4caf50; top: 18px; right: 20px; transform: rotate(-30deg); }
         .s3 { background: #00bcd4; bottom: 26px; left: 14px; transform: rotate(45deg); }
@@ -492,8 +720,8 @@ export default function MonsterAuth({ onClose, onLoginSuccess }) {
           padding-top: 6px;
           box-shadow: 0 6px 0 rgba(0,0,0,0.1);
         }
-        .popcorn-mouth { width: 22px; height: 8px; background: #3d2b1a; border-radius: 4px; overflow: hidden; transition: height .15s ease; display: flex; }
-        .popcorn-mouth.open { height: 15px; border-radius: 8px; background: #fff; }
+        .popcorn-mouth { width: 22px; height: 8px; background: #3d2b1a; border-radius: var(--radius-sm); overflow: hidden; transition: height .15s ease; display: flex; }
+        .popcorn-mouth.open { height: 15px; border-radius: var(--radius-sm); background: #fff; }
         .popcorn-mouth .teeth { width: 100%; background: repeating-linear-gradient(90deg, #fff 0 4px, #cfd8e3 4px 6px); }
 
         @keyframes sodaFizz {
@@ -534,10 +762,10 @@ export default function MonsterAuth({ onClose, onLoginSuccess }) {
         
         .logo { display: flex; justify-content: flex-start; align-items: center; margin-bottom: 12px; }
         .brand-name {
-          font-family: 'Bebas Neue', sans-serif;
-          font-size: 20px;
-          font-weight: 700;
-          letter-spacing: 0.14em;
+          font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+          font-size: 18px;
+          font-weight: 800;
+          letter-spacing: -0.01em;
           color: #7a4a35;
           background: rgba(122, 74, 53, 0.08);
           padding: 3px 10px;
@@ -560,17 +788,38 @@ export default function MonsterAuth({ onClose, onLoginSuccess }) {
           margin: 0 0 22px;
           line-height: 1.4;
         }
-        .field { margin-bottom: 15px; }
-        .field label { display: block; font-size: 13.5px; font-weight: 700; color: #1e293b; margin-bottom: 6px; }
+        form {
+          width: 100%;
+          box-sizing: border-box;
+          margin: 0;
+          padding: 0;
+        }
+        .field {
+          width: 100%;
+          box-sizing: border-box;
+          margin: 0 0 15px 0;
+          padding: 0;
+        }
+        .field label {
+          display: block;
+          font-size: 13.5px;
+          font-weight: 700;
+          color: #1e293b;
+          margin: 0 0 6px 0;
+          padding: 0;
+          text-align: left;
+        }
         .field-input {
           display: flex;
           align-items: center;
+          width: 100%;
+          box-sizing: border-box;
           background: #f8fafc;
           border: 1.5px solid #cbd5e1;
           border-radius: var(--radius-md);
           padding: 8px 12px;
           min-height: 44px;
-          box-sizing: border-box;
+          margin: 0;
           transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
         }
         .field-input:hover {
@@ -584,12 +833,14 @@ export default function MonsterAuth({ onClose, onLoginSuccess }) {
         }
         .field-input input {
           flex: 1;
+          width: 100%;
           border: none;
           outline: none;
           font-size: 15px;
           color: #0f172a;
           background: transparent;
           padding: 2px 0;
+          margin: 0;
           font-family: inherit;
         }
         .field-input input::placeholder { color: #94a3b8; font-size: 14px; }
@@ -609,6 +860,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess }) {
           color: #64748b;
           display: flex;
           padding: 4px;
+          margin: 0;
           border-radius: var(--radius-sm);
           transition: color 0.15s ease;
         }
@@ -619,7 +871,10 @@ export default function MonsterAuth({ onClose, onLoginSuccess }) {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          margin: 8px 0 20px;
+          width: 100%;
+          box-sizing: border-box;
+          margin: 10px 0 16px 0;
+          padding: 0;
           font-size: 14px;
           color: #475569;
         }
@@ -633,6 +888,8 @@ export default function MonsterAuth({ onClose, onLoginSuccess }) {
           font-size: 14px;
           font-weight: 500;
           user-select: none;
+          margin: 0;
+          padding: 0;
         }
         .remember input[type="checkbox"] {
           width: 18px;
@@ -644,8 +901,12 @@ export default function MonsterAuth({ onClose, onLoginSuccess }) {
           flex-shrink: 0;
         }
         .btn-primary {
+          display: block;
           width: 100%;
-          padding: 13px 0;
+          max-width: 100%;
+          box-sizing: border-box;
+          margin: 16px 0 4px 0;
+          padding: 13px 16px;
           border-radius: var(--radius-md);
           border: none;
           background: #0f172a;
@@ -653,7 +914,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess }) {
           font-size: 15.5px;
           font-weight: 700;
           cursor: pointer;
-          margin-bottom: 4px;
+          text-align: center;
           transition: background 0.15s ease, transform 0.1s ease;
         }
         .btn-primary:hover { background: #1e293b; transform: translateY(-1px); }
@@ -670,6 +931,41 @@ export default function MonsterAuth({ onClose, onLoginSuccess }) {
           text-align: left;
           font-weight: 500;
         }
+        .auth-success-box {
+          background: #dcfce7;
+          border: 1px solid #22c55e;
+          color: #15803d;
+          padding: 10px 14px;
+          border-radius: var(--radius-md);
+          font-size: 13.5px;
+          margin-bottom: 16px;
+          text-align: left;
+          font-weight: 500;
+        }
+        .btn-forgot-pw {
+          background: transparent;
+          border: none;
+          color: #7a4a35;
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+          padding: 0;
+          margin: 0;
+          text-decoration: none;
+          transition: color 0.15s ease;
+        }
+        .btn-forgot-pw:hover {
+          color: #ff8a3d;
+          text-decoration: underline;
+        }
+        .confirm-match-hint {
+          font-size: 12px;
+          margin-top: 5px;
+          text-align: left;
+          font-weight: 600;
+        }
+        .confirm-match-hint .match-ok { color: #16a34a; }
+        .confirm-match-hint .match-err { color: #dc2626; }
 
         .pw-checklist {
           margin-top: 10px;
@@ -724,7 +1020,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess }) {
           .right-panel h1 { font-size: 22px; }
           .right-panel .sub { font-size: 13.5px; margin-bottom: 16px; }
           .field { margin-bottom: 13px; }
-          .btn-primary { padding: 13px 0; font-size: 15px; }
+          .btn-primary { padding: 13px 16px; font-size: 15px; }
         }
 
         @media (max-width: 420px) {
@@ -756,121 +1052,406 @@ export default function MonsterAuth({ onClose, onLoginSuccess }) {
           <div className="logo">
             <span className="brand-name">REELIST</span>
           </div>
+
+          {/* Dedicated Top Segmented Tabs for Instant Mode Switch */}
+          <div className="auth-segmented-switch" role="tablist" aria-label="Sign in or create account">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === "login"}
+              className={`auth-segmented-btn ${mode === "login" ? "is-active" : ""}`}
+              onClick={() => switchMode("login")}
+            >
+              Sign In
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === "signup"}
+              className={`auth-segmented-btn ${mode === "signup" ? "is-active" : ""}`}
+              onClick={() => switchMode("signup")}
+            >
+              Create Account
+            </button>
+          </div>
+
           <div className="form-fade" style={{ opacity: fieldsVisible ? 1 : 0 }}>
-            <h1>{mode === "login" ? "Sign in to your account" : "Create your account"}</h1>
-            <p className="sub">
-              {mode === "login"
-                ? "Sign in to access your cinema marquee"
-                : "Join Reelist to explore movies"}
-            </p>
+            {mode === "forgot" ? (
+              <>
+                {forgotStep === "email" && (
+                  <>
+                    <h1>Reset Password</h1>
+                    <p className="sub">Enter your registered email to receive a 6-digit OTP code.</p>
+                  </>
+                )}
+                {forgotStep === "otp" && (
+                  <>
+                    <h1>Enter Verification Code</h1>
+                    <p className="sub">We sent a 6-digit security code to <strong>{otpEmail}</strong></p>
+                  </>
+                )}
+                {forgotStep === "newpw" && (
+                  <>
+                    <h1>Set New Password</h1>
+                    <p className="sub">Create a strong new password for <strong>{otpEmail}</strong></p>
+                  </>
+                )}
+              </>
+            ) : (
+              <>
+                <h1>{mode === "login" ? "Sign in to your account" : "Create your account"}</h1>
+                <p className="sub">
+                  {mode === "login"
+                    ? "Sign in to access your cinema marquee"
+                    : "Join Reelist to explore movies"}
+                </p>
+              </>
+            )}
 
             {error && <div className="auth-error-box">{error}</div>}
+            {successMsg && <div className="auth-success-box" role="status">{successMsg}</div>}
+            {otpBannerMsg && (
+              <div className="otp-display-banner" role="status">
+                {otpBannerMsg}
+              </div>
+            )}
 
-            <form onSubmit={handleSubmit} autoComplete="off">
-              {mode === "signup" && (
+            {/* --- FORGOT PASSWORD (SAFEHIRE-STYLE OTP FLOW) --- */}
+            {mode === "forgot" ? (
+              <>
+                {forgotStep === "email" && (
+                  <form onSubmit={(e) => { e.preventDefault(); handleSendOtp(); }} autoComplete="off">
+                    <div className="field">
+                      <label>Registered Email</label>
+                      <div className="field-input">
+                        <input
+                          type="email"
+                          name="reelist_otp_email"
+                          autoComplete="off"
+                          autoCorrect="off"
+                          autoCapitalize="none"
+                          spellCheck="false"
+                          value={email}
+                          placeholder="example@cinema.com"
+                          required
+                          autoFocus
+                          onChange={handleEmailChange}
+                        />
+                      </div>
+                    </div>
+                    <button type="submit" className="btn-primary">
+                      Send 6-Digit Verification Code
+                    </button>
+                    <button type="button" className="btn-back-link" onClick={() => switchMode("login")}>
+                      ← Back to Sign In
+                    </button>
+                  </form>
+                )}
+
+                {forgotStep === "otp" && (
+                  <form onSubmit={handleVerifyOtp} autoComplete="off">
+                    <div className="field">
+                      <label>6-Digit Verification Code (OTP)</label>
+                      <div className="field-input otp-input-field">
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          maxLength={6}
+                          value={enteredOtp}
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                            setEnteredOtp(val);
+                            if (error) setError("");
+                          }}
+                          placeholder="······"
+                          required
+                          autoFocus
+                        />
+                      </div>
+                    </div>
+                    <div className="otp-actions-row">
+                      <span>Didn't receive code?</span>
+                      <button
+                        type="button"
+                        className="btn-resend-otp"
+                        disabled={resendTimer > 0}
+                        onClick={() => handleSendOtp(otpEmail)}
+                      >
+                        {resendTimer > 0 ? `Resend Code (${resendTimer}s)` : "Resend OTP Code"}
+                      </button>
+                    </div>
+                    <button type="submit" className="btn-primary">
+                      Verify Code & Continue
+                    </button>
+                    <button type="button" className="btn-back-link" onClick={() => switchMode("login")}>
+                      ← Back to Sign In
+                    </button>
+                  </form>
+                )}
+
+                {forgotStep === "newpw" && (
+                  <form onSubmit={handleResetPassword} autoComplete="off">
+                    <div className="field">
+                      <label>New Password</label>
+                      <div className="field-input">
+                        <input
+                          type={showNewPw ? "text" : "password"}
+                          name="reelist_new_password"
+                          autoComplete="new-password"
+                          value={newPassword}
+                          onChange={(e) => {
+                            setNewPassword(e.target.value);
+                            if (error) setError("");
+                          }}
+                          placeholder="Create strong new password"
+                          required
+                          autoFocus
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowNewPw((s) => !s)}
+                          aria-label="Toggle new password visibility"
+                        >
+                          {showNewPw ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      </div>
+
+                      <div className="pw-checklist">
+                        <div className={`pw-rule-chip ${newPwRules.length ? "met" : ""}`}>
+                          <span>{newPwRules.length ? "✓" : "○"}</span> 8+ Characters
+                        </div>
+                        <div className={`pw-rule-chip ${newPwRules.upper ? "met" : ""}`}>
+                          <span>{newPwRules.upper ? "✓" : "○"}</span> 1 Capital (A-Z)
+                        </div>
+                        <div className={`pw-rule-chip ${newPwRules.number ? "met" : ""}`}>
+                          <span>{newPwRules.number ? "✓" : "○"}</span> 1 Number (0-9)
+                        </div>
+                        <div className={`pw-rule-chip ${newPwRules.special ? "met" : ""}`}>
+                          <span>{newPwRules.special ? "✓" : "○"}</span> 1 Symbol (!@#$)
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="field" style={{ marginTop: 14 }}>
+                      <label>Confirm New Password</label>
+                      <div className="field-input">
+                        <input
+                          type={showConfirmNewPw ? "text" : "password"}
+                          name="reelist_confirm_new_password"
+                          autoComplete="new-password"
+                          value={confirmNewPassword}
+                          onChange={(e) => {
+                            setConfirmNewPassword(e.target.value);
+                            if (error) setError("");
+                          }}
+                          placeholder="Re-enter your new password"
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmNewPw((s) => !s)}
+                          aria-label="Toggle confirm new password visibility"
+                        >
+                          {showConfirmNewPw ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      </div>
+                      {confirmNewPassword && (
+                        <div className="confirm-match-hint">
+                          {newPassword === confirmNewPassword ? (
+                            <span className="match-ok">✓ Passwords match</span>
+                          ) : (
+                            <span className="match-err">✕ Passwords do not match</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    <button type="submit" className="btn-primary">
+                      Save New Password & Sign In
+                    </button>
+                    <button type="button" className="btn-back-link" onClick={() => switchMode("login")}>
+                      ← Back to Sign In
+                    </button>
+                  </form>
+                )}
+              </>
+            ) : (
+              /* --- SIGN IN & SIGN UP FORMS --- */
+              <form onSubmit={handleSubmit} autoComplete="off">
+                {mode === "signup" && (
+                  <div className="field">
+                    <label>Name</label>
+                    <div className="field-input">
+                      <input
+                        type="text"
+                        name="reelist_user_name"
+                        autoComplete="off"
+                        placeholder="Your name"
+                        value={name}
+                        onChange={(e) => {
+                          setName(e.target.value);
+                          if (error) setError("");
+                        }}
+                        required
+                      />
+                    </div>
+                  </div>
+                )}
                 <div className="field">
-                  <label>Name</label>
+                  <label>Email</label>
                   <div className="field-input">
                     <input
-                      type="text"
-                      name="reelist_user_name"
+                      type="email"
+                      name="reelist_account_email"
                       autoComplete="off"
-                      placeholder="Your name"
-                      value={name}
-                      onChange={(e) => {
-                        setName(e.target.value);
-                        if (error) setError("");
-                      }}
+                      autoCorrect="off"
+                      autoCapitalize="none"
+                      spellCheck="false"
+                      value={email}
+                      placeholder="example@cinema.com"
                       required
+                      onChange={handleEmailChange}
                     />
                   </div>
                 </div>
-              )}
-              <div className="field">
-                <label>Email</label>
-                <div className="field-input">
-                  <input
-                    type="email"
-                    name="reelist_account_email"
-                    autoComplete="off"
-                    autoCorrect="off"
-                    autoCapitalize="none"
-                    spellCheck="false"
-                    value={email}
-                    placeholder="example@cinema.com"
-                    required
-                    onChange={handleEmailChange}
-                  />
-                </div>
-              </div>
-              <div className="field" style={{ marginBottom: mode === "signup" ? 14 : 12 }}>
-                <label>Password</label>
-                <div className="field-input">
-                  <input
-                    type={showPw ? "text" : "password"}
-                    name="reelist_account_password"
-                    autoComplete="new-password"
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
-                      if (error) setError("");
-                    }}
-                    placeholder={mode === "signup" ? "Create a secure password" : ""}
-                    required
-                    onFocus={() => setPasswordFocused(true)}
-                    onBlur={() => setPasswordFocused(false)}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPw((s) => !s)}
-                    aria-label="Toggle password visibility"
-                  >
-                    {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
+                <div className="field" style={{ marginBottom: mode === "signup" ? 14 : 12 }}>
+                  <label>Password</label>
+                  <div className="field-input">
+                    <input
+                      type={showPw ? "text" : "password"}
+                      name="reelist_account_password"
+                      autoComplete="new-password"
+                      value={password}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        if (error) setError("");
+                      }}
+                      placeholder={mode === "signup" ? "Create a secure password" : ""}
+                      required
+                      onFocus={() => setPasswordFocused(true)}
+                      onBlur={() => setPasswordFocused(false)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPw((s) => !s)}
+                      aria-label="Toggle password visibility"
+                    >
+                      {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+
+                  {mode === "signup" && (
+                    <div className="pw-checklist">
+                      <div className={`pw-rule-chip ${pwRules.length ? "met" : ""}`}>
+                        <span>{pwRules.length ? "✓" : "○"}</span> 8+ Characters
+                      </div>
+                      <div className={`pw-rule-chip ${pwRules.upper ? "met" : ""}`}>
+                        <span>{pwRules.upper ? "✓" : "○"}</span> 1 Capital (A-Z)
+                      </div>
+                      <div className={`pw-rule-chip ${pwRules.number ? "met" : ""}`}>
+                        <span>{pwRules.number ? "✓" : "○"}</span> 1 Number (0-9)
+                      </div>
+                      <div className={`pw-rule-chip ${pwRules.special ? "met" : ""}`}>
+                        <span>{pwRules.special ? "✓" : "○"}</span> 1 Symbol (!@#$)
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {mode === "signup" && (
-                  <div className="pw-checklist">
-                    <div className={`pw-rule-chip ${pwRules.length ? "met" : ""}`}>
-                      <span>{pwRules.length ? "✓" : "○"}</span> 8+ Characters
+                  <div className="field" style={{ marginBottom: 14 }}>
+                    <label>Confirm Password</label>
+                    <div className="field-input">
+                      <input
+                        type={showConfirmPw ? "text" : "password"}
+                        name="reelist_confirm_password"
+                        autoComplete="new-password"
+                        value={confirmPassword}
+                        onChange={(e) => {
+                          setConfirmPassword(e.target.value);
+                          if (error) setError("");
+                        }}
+                        placeholder="Re-enter your password"
+                        required
+                        onFocus={() => setPasswordFocused(true)}
+                        onBlur={() => setPasswordFocused(false)}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPw((s) => !s)}
+                        aria-label="Toggle confirm password visibility"
+                      >
+                        {showConfirmPw ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
                     </div>
-                    <div className={`pw-rule-chip ${pwRules.upper ? "met" : ""}`}>
-                      <span>{pwRules.upper ? "✓" : "○"}</span> 1 Capital (A-Z)
-                    </div>
-                    <div className={`pw-rule-chip ${pwRules.number ? "met" : ""}`}>
-                      <span>{pwRules.number ? "✓" : "○"}</span> 1 Number (0-9)
-                    </div>
-                    <div className={`pw-rule-chip ${pwRules.special ? "met" : ""}`}>
-                      <span>{pwRules.special ? "✓" : "○"}</span> 1 Symbol (!@#$)
-                    </div>
+                    {confirmPassword && (
+                      <div className="confirm-match-hint">
+                        {password === confirmPassword ? (
+                          <span className="match-ok">✓ Passwords match</span>
+                        ) : (
+                          <span className="match-err">✕ Passwords do not match</span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
-              </div>
 
-              <div className="row-between">
-                {mode === "login" ? (
-                  <label className="remember">
-                    <input type="checkbox" />
-                    Remember me
-                  </label>
-                ) : (
-                  <label className="remember">
-                    <input type="checkbox" required />
-                    I agree to the terms
-                  </label>
-                )}
-              </div>
+                <div className="row-between">
+                  {mode === "login" ? (
+                    <>
+                      <label className="remember">
+                        <input
+                          type="checkbox"
+                          checked={rememberMe}
+                          onChange={(e) => setRememberMe(e.target.checked)}
+                        />
+                        Remember me
+                      </label>
+                      <button
+                        type="button"
+                        className="btn-forgot-pw"
+                        onClick={() => switchMode("forgot")}
+                      >
+                        Forgot password?
+                      </button>
+                    </>
+                  ) : (
+                    <label className="remember">
+                      <input type="checkbox" required />
+                      I agree to the terms
+                    </label>
+                  )}
+                </div>
 
-              <button type="submit" className="btn-primary">
-                {mode === "login" ? "Sign In" : "Create account"}
-              </button>
-            </form>
+                <button type="submit" className="btn-primary">
+                  {mode === "login" ? "Sign In" : "Create account"}
+                </button>
+              </form>
+            )}
 
             <p className="footer-text">
-              {mode === "login" ? "Don't have an account? " : "Already have an account? "}
-              <button type="button" onClick={() => switchMode(mode === "login" ? "signup" : "login")}>
-                {mode === "login" ? "Sign Up" : "Log in"}
-              </button>
+              {mode === "login" && (
+                <>
+                  Don't have an account?{" "}
+                  <button type="button" onClick={() => switchMode("signup")}>
+                    Create Account
+                  </button>
+                </>
+              )}
+              {mode === "signup" && (
+                <>
+                  Already have an account?{" "}
+                  <button type="button" onClick={() => switchMode("login")}>
+                    Sign In
+                  </button>
+                </>
+              )}
+              {mode === "forgot" && (
+                <button type="button" className="btn-back-link" onClick={() => switchMode("login")}>
+                  ← Back to Sign In
+                </button>
+              )}
             </p>
           </div>
         </div>

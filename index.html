@@ -6,7 +6,7 @@
     <title>Reelist — Movie Explorer</title>
     <meta name="description" content="Reelist — Explore trending movies and search titles powered by The Movie Database." />
     <meta name="theme-color" content="#0b0b0f" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://image.tmdb.org https://images.unsplash.com https://i.ytimg.com; connect-src 'self' https://api.themoviedb.org https://image.tmdb.org; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self';" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://image.tmdb.org https://media.themoviedb.org https://upload.wikimedia.org https://images.unsplash.com https://i.ytimg.com https://img.youtube.com; connect-src 'self' https://api.themoviedb.org https://image.tmdb.org https://ipapi.co; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self';" />
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <link
@@ -16,8 +16,37 @@
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="canonical" href="https://dheena70.github.io/Reelist/" />
+
+    <!-- Open Graph Metadata -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Reelist — Movie Explorer" />
+    <meta property="og:description" content="Discover trending movies, watch trailers, view ratings, and check theatrical showtimes powered by The Movie Database." />
+    <meta property="og:url" content="https://dheena70.github.io/Reelist/" />
+    <meta property="og:image" content="https://dheena70.github.io/Reelist/og-image.svg" />
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Reelist — Movie Explorer",
+      "url": "https://dheena70.github.io/Reelist/",
+      "description": "Explore trending movies and search titles powered by The Movie Database.",
+      "applicationCategory": "EntertainmentApplication",
+      "operatingSystem": "All",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://dheena70.github.io/Reelist/?search={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
     <link
-      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap"
       rel="stylesheet"
     />
   </head>

@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" fill="none">
+  <rect width="1200" height="630" fill="#0b0b0f"/>
+  <radialGradient id="bg-radial" cx="50%" cy="20%" r="80%" fx="50%" fy="20%">
+    <stop offset="0%" stop-color="#2a2014"/>
+    <stop offset="60%" stop-color="#0e0e14"/>
+    <stop offset="100%" stop-color="#0b0b0f"/>
+  </radialGradient>
+  <rect width="1200" height="630" fill="url(#bg-radial)"/>
+
+  <!-- Top film sprockets -->
+  <g fill="#2a2a35" opacity="0.6">
+    <rect x="60" y="36" width="30" height="24" rx="4"/>
+    <rect x="120" y="36" width="30" height="24" rx="4"/>
+    <rect x="180" y="36" width="30" height="24" rx="4"/>
+    <rect x="240" y="36" width="30" height="24" rx="4"/>
+    <rect x="300" y="36" width="30" height="24" rx="4"/>
+    <rect x="360" y="36" width="30" height="24" rx="4"/>
+    <rect x="420" y="36" width="30" height="24" rx="4"/>
+    <rect x="480" y="36" width="30" height="24" rx="4"/>
+    <rect x="540" y="36" width="30" height="24" rx="4"/>
+    <rect x="600" y="36" width="30" height="24" rx="4"/>
+    <rect x="660" y="36" width="30" height="24" rx="4"/>
+    <rect x="720" y="36" width="30" height="24" rx="4"/>
+    <rect x="780" y="36" width="30" height="24" rx="4"/>
+    <rect x="840" y="36" width="30" height="24" rx="4"/>
+    <rect x="900" y="36" width="30" height="24" rx="4"/>
+    <rect x="960" y="36" width="30" height="24" rx="4"/>
+    <rect x="1020" y="36" width="30" height="24" rx="4"/>
+    <rect x="1080" y="36" width="30" height="24" rx="4"/>
+  </g>
+
+  <!-- Bottom film sprockets -->
+  <g fill="#2a2a35" opacity="0.6">
+    <rect x="60" y="570" width="30" height="24" rx="4"/>
+    <rect x="120" y="570" width="30" height="24" rx="4"/>
+    <rect x="180" y="570" width="30" height="24" rx="4"/>
+    <rect x="240" y="570" width="30" height="24" rx="4"/>
+    <rect x="300" y="570" width="30" height="24" rx="4"/>
+    <rect x="360" y="570" width="30" height="24" rx="4"/>
+    <rect x="420" y="570" width="30" height="24" rx="4"/>
+    <rect x="480" y="570" width="30" height="24" rx="4"/>
+    <rect x="540" y="570" width="30" height="24" rx="4"/>
+    <rect x="600" y="570" width="30" height="24" rx="4"/>
+    <rect x="660" y="570" width="30" height="24" rx="4"/>
+    <rect x="720" y="570" width="30" height="24" rx="4"/>
+    <rect x="780" y="570" width="30" height="24" rx="4"/>
+    <rect x="840" y="570" width="30" height="24" rx="4"/>
+    <rect x="900" y="570" width="30" height="24" rx="4"/>
+    <rect x="960" y="570" width="30" height="24" rx="4"/>
+    <rect x="1020" y="570" width="30" height="24" rx="4"/>
+    <rect x="1080" y="570" width="30" height="24" rx="4"/>
+  </g>
+
+  <!-- Clapper Icon Badge -->
+  <circle cx="600" cy="180" r="48" fill="#1b1c24" stroke="#e8b54d" stroke-width="2"/>
+  <path d="M584 166l6 8h-6l-4-8h-4l4 8h-6l-4-8h-6l4 8h-4l-3.5-7.5c-.8-.5-1.5-.5-2.5 0-.8.6-1 1.5-1 2.5v28c0 2.2 1.8 4 4 4h36c2.2 0 4-1.8 4-4v-28c0-1.1-.9-2-2-2h-9z" fill="#e8b54d"/>
+
+  <text x="600" y="320" font-family="'Plus Jakarta Sans', 'Inter', Arial, sans-serif" font-size="88" font-weight="900" letter-spacing="-2" fill="#e8b54d" text-anchor="middle">
+    REELIST
+  </text>
+
+  <!-- Tagline -->
+  <text x="600" y="380" font-family="'Inter', -apple-system, sans-serif" font-size="28" font-weight="600" fill="#f3f1ea" text-anchor="middle" letter-spacing="1">
+    Movie Explorer &amp; Theatrical Showcase
+  </text>
+  <text x="600" y="425" font-family="'IBM Plex Mono', monospace" font-size="18" fill="#94a3b8" text-anchor="middle" letter-spacing="2">
+    TRENDING RELEASES • THEATER SHOWTIMES • CINEMATIC TRAILERS
+  </text>
+
+  <!-- Golden Accent Bar -->
+  <rect x="520" y="465" width="160" height="3" fill="#e8b54d" rx="1.5"/>
+</svg>

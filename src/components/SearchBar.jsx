@@ -6,7 +6,8 @@ export default function SearchBar({ value, onChange, onSubmit }) {
       className="marquee-search"
       onSubmit={(e) => {
         e.preventDefault();
-        onSubmit(value);
+        const inputVal = e.target.querySelector('input')?.value;
+        onSubmit(typeof inputVal === 'string' ? inputVal : value);
       }}
       role="search"
     >
@@ -20,12 +21,12 @@ export default function SearchBar({ value, onChange, onSubmit }) {
         onKeyDown={(e) => {
           if (e.key === 'Escape') onChange('');
         }}
-        placeholder="Search a title — Dune, Parasite, Nope…"
-        aria-label="Search movies by title"
+        placeholder="Search a movie, series, and artist"
+        aria-label="Search a movie, series, and artist"
         autoComplete="off"
         maxLength={100}
       />
-      <button type="submit">Search</button>
+      <button type="submit" className="btn-primary marquee-search__btn">Search</button>
     </form>
   );
 }

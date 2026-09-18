@@ -183,11 +183,6 @@ function loadData() {
     const raw = localStorage.getItem(ANALYTICS_STORAGE_KEY);
     if (!raw) return getDefaultData();
     const parsed = JSON.parse(raw);
-    // Sanity purge: If old dummy counts leaked in, force clean
-    if (parsed.totalVisitors >= 100 || parsed.totalSearches >= 40) {
-      localStorage.removeItem(ANALYTICS_STORAGE_KEY);
-      return getDefaultData();
-    }
     return {
       totalVisitors: typeof parsed.totalVisitors === 'number' ? parsed.totalVisitors : 0,
       dailyVisitors: parsed.dailyVisitors && typeof parsed.dailyVisitors === 'object' ? parsed.dailyVisitors : {},
@@ -207,6 +202,25 @@ function saveData(data) {
     localStorage.setItem(ANALYTICS_STORAGE_KEY, JSON.stringify(data));
   } catch {
     // ignore storage quota errors
+  }
+}
+
+function saveSessionUser(user, rememberMe = true) {
+  const serialized = JSON.stringify(user);
+  if (rememberMe) {
+    try {
+      localStorage.setItem(ADMIN_USER_KEY, serialized);
+      sessionStorage.removeItem(ADMIN_USER_KEY);
+    } catch {
+      // ignore
+    }
+  } else {
+    try {
+      sessionStorage.setItem(ADMIN_USER_KEY, serialized);
+      localStorage.removeItem(ADMIN_USER_KEY);
+    } catch {
+      // ignore
+    }
   }
 }
 
@@ -268,7 +282,7 @@ export const analytics = {
     };
   },
 
-  async register(name, email, password) {
+  async register(name, email, password, rememberMe = true) {
     const cleanName = (name || '').trim().slice(0, 100);
     const cleanEmail = (email || '').toLowerCase().trim();
     const cleanPassword = (password || '').trim();
@@ -315,14 +329,14 @@ export const analytics = {
       authenticatedAt: Date.now(),
     };
 
-    sessionStorage.setItem(ADMIN_USER_KEY, JSON.stringify(sessionUser));
+    saveSessionUser(sessionUser, rememberMe);
     if (!isAdmin) {
       this.recordVisit();
     }
     return { success: true, user: sessionUser };
   },
 
-  async login(email, password) {
+  async login(email, password, rememberMe = true) {
     const cleanEmail = (email || '').toLowerCase().trim();
     const cleanPassword = (password || '').trim();
 
@@ -382,7 +396,7 @@ export const analytics = {
         role: 'admin',
         authenticatedAt: Date.now(),
       };
-      sessionStorage.setItem(ADMIN_USER_KEY, JSON.stringify(adminUser));
+      saveSessionUser(adminUser, rememberMe);
       return { success: true, user: adminUser };
     }
 
@@ -420,14 +434,46 @@ export const analytics = {
       role: 'user',
       authenticatedAt: Date.now(),
     };
-    sessionStorage.setItem(ADMIN_USER_KEY, JSON.stringify(regularUser));
+    saveSessionUser(regularUser, rememberMe);
     this.recordVisit();
     return { success: true, user: regularUser };
   },
 
+  async resetPassword(email, newPassword) {
+    const cleanEmail = (email || '').toLowerCase().trim();
+    const cleanPassword = (newPassword || '').trim();
+
+    const pwCheck = validatePasswordComplexity(cleanPassword);
+    if (!pwCheck.valid) {
+      return { success: false, error: pwCheck.error };
+    }
+
+    const users = getRegisteredUsers();
+    let found = users.find((u) => u.email === cleanEmail);
+    const passwordHash = await hashPassword(cleanPassword);
+
+    if (found) {
+      found.passwordHash = passwordHash;
+      delete found.password;
+    } else {
+      const isAdmin = isUserAdmin(cleanEmail);
+      found = {
+        name: cleanEmail.split('@')[0],
+        email: cleanEmail,
+        passwordHash,
+        role: isAdmin ? 'admin' : 'user',
+        createdAt: new Date().toISOString(),
+      };
+      users.push(found);
+    }
+
+    saveRegisteredUsers(users);
+    return { success: true };
+  },
+
   loginGuest() {
-    const guestUser = { email: 'Guest Viewer', role: 'guest', authenticatedAt: Date.now() };
-    sessionStorage.setItem(ADMIN_USER_KEY, JSON.stringify(guestUser));
+    const guestUser = { name: 'Guest Viewer', email: 'guest@reelist.app', role: 'guest', authenticatedAt: Date.now() };
+    saveSessionUser(guestUser, false);
     this.recordVisit();
     return { success: true, user: guestUser };
   },
@@ -442,12 +488,22 @@ export const analytics = {
 
   getCurrentUser() {
     try {
-      const raw = sessionStorage.getItem(ADMIN_USER_KEY);
+      let raw = sessionStorage.getItem(ADMIN_USER_KEY);
+      let isLocal = false;
+      if (!raw) {
+        raw = localStorage.getItem(ADMIN_USER_KEY);
+        isLocal = true;
+      }
       if (!raw) return null;
       const user = JSON.parse(raw);
-      // Session expiry validation (24 hours)
-      if (user.authenticatedAt && Date.now() - user.authenticatedAt > 86400000) {
-        sessionStorage.removeItem(ADMIN_USER_KEY);
+      // Session expiry validation (30 days if rememberMe in localStorage, 24 hours if in sessionStorage)
+      const maxAge = isLocal ? 30 * 86400000 : 86400000;
+      if (user.authenticatedAt && Date.now() - user.authenticatedAt > maxAge) {
+        if (isLocal) {
+          localStorage.removeItem(ADMIN_USER_KEY);
+        } else {
+          sessionStorage.removeItem(ADMIN_USER_KEY);
+        }
         return null;
       }
       if (user && isUserAdmin(user.email)) {
@@ -465,7 +521,12 @@ export const analytics = {
   },
 
   logout() {
-    sessionStorage.removeItem(ADMIN_USER_KEY);
+    try {
+      sessionStorage.removeItem(ADMIN_USER_KEY);
+      localStorage.removeItem(ADMIN_USER_KEY);
+    } catch {
+      // ignore
+    }
   },
 
   logoutAdmin() {

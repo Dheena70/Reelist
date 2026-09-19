@@ -7,20 +7,32 @@ import {
   Film,
   Tv,
   Globe,
+  Ticket,
+  Sparkles,
+  Search,
+  Mail,
 } from 'lucide-react';
 import { tmdb } from './api/tmdb.js';
 import { analytics } from './api/analytics.js';
+import { updatePageMeta } from './utils/meta.js';
 import SearchBar from './components/SearchBar.jsx';
 import MovieGrid from './components/MovieGrid.jsx';
 import MonsterAuth from './components/MonsterAuth.jsx';
 import SearchSpotlight from './components/SearchSpotlight.jsx';
 import ArtistSpotlight from './components/ArtistSpotlight.jsx';
+import CookieBanner from './components/CookieBanner.jsx';
+import Footer from './components/Footer.jsx';
 
 const MovieModal = lazy(() => import('./components/MovieModal.jsx'));
 const ShowtimesModal = lazy(() => import('./components/ShowtimesModal.jsx'));
 const ApiKeyGate = lazy(() => import('./components/ApiKeyGate.jsx'));
 const AdminDashboard = lazy(() => import('./components/AdminDashboard.jsx'));
 const TheaterScreen = lazy(() => import('./components/TheaterScreen.jsx'));
+const NotFound = lazy(() => import('./components/NotFound.jsx'));
+const PrivacyPolicyModal = lazy(() => import('./components/PrivacyPolicyModal.jsx'));
+const TermsModal = lazy(() => import('./components/TermsModal.jsx'));
+const ContactModal = lazy(() => import('./components/ContactModal.jsx'));
+const ThankYouModal = lazy(() => import('./components/ThankYouModal.jsx'));
 
 function getUserInitials(user) {
   if (!user) return 'U';
@@ -71,6 +83,87 @@ export default function App() {
   const [error, setError] = useState(null);
   const [selectedId, setSelectedId] = useState(null);
   const [showtimesMovie, setShowtimesMovie] = useState(null);
+  const [show404Page, setShow404Page] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.location.pathname.includes('404') || window.location.hash.includes('404');
+  });
+  const [activeLegalModal, setActiveLegalModal] = useState(null); // 'privacy' | 'terms' | 'contact' | 'thank-you'
+  const [lastInquiry, setLastInquiry] = useState(null);
+
+  // Synchronize URL hash for routing and SPA fallback navigation
+  useEffect(() => {
+    const handleHash = () => {
+      const hash = window.location.hash;
+      if (hash === '#/404' || hash === '#404') {
+        setShow404Page(true);
+      } else if (hash === '#/privacy' || hash === '#privacy') {
+        setActiveLegalModal('privacy');
+      } else if (hash === '#/terms' || hash === '#terms') {
+        setActiveLegalModal('terms');
+      } else if (hash === '#/contact' || hash === '#contact') {
+        setActiveLegalModal('contact');
+      }
+    };
+    handleHash();
+    window.addEventListener('hashchange', handleHash);
+    return () => window.removeEventListener('hashchange', handleHash);
+  }, []);
+
+  // Synchronize dynamic meta tags and titles per view / modal
+  useEffect(() => {
+    if (show404Page) {
+      updatePageMeta({
+        title: '404 — Scene Not Found',
+        description: 'The requested scene or page was cut from the marquee. Return to our September, August & July 2026 blockbusters.',
+        path: '404',
+      });
+    } else if (activeLegalModal === 'privacy') {
+      updatePageMeta({
+        title: 'Privacy Policy',
+        description: 'Learn how Reelist Cinema Technologies protects your privacy, watchlist storage, and personal credentials.',
+        path: 'privacy',
+      });
+    } else if (activeLegalModal === 'terms') {
+      updatePageMeta({
+        title: 'Terms and Conditions',
+        description: 'Review Reelist service terms, intellectual property standards, cinema ticketing notices, and TMDB attributions.',
+        path: 'terms',
+      });
+    } else if (activeLegalModal === 'contact') {
+      updatePageMeta({
+        title: 'Contact Reelist Cinema Concierge',
+        description: 'Get in touch with Reelist Cinema Technologies headquarters in Chennai for inquiries, movie suggestions, or support.',
+        path: 'contact',
+      });
+    } else if (activeLegalModal === 'thank-you') {
+      updatePageMeta({
+        title: 'Thank You — Message Received',
+        description: 'Thank you for reaching out to Reelist. Our concierge desk will review your inquiry shortly.',
+        path: 'thank-you',
+      });
+    } else if (selectedId) {
+      const activeMovie = movies.find((m) => m.id === selectedId);
+      const title = activeMovie?.title || 'Movie Details';
+      const year = activeMovie?.release_date ? activeMovie.release_date.slice(0, 4) : '2026';
+      updatePageMeta({
+        title: `${title} (${year}) — Official 4K Trailer & Ratings`,
+        description: `Watch the official trailer for ${title} (${year}), view cast, streaming OTT platforms, and cinema showtimes on Reelist.`,
+        path: `movie/${selectedId}`,
+      });
+    } else if (activeQuery) {
+      updatePageMeta({
+        title: `Search: "${activeQuery}"`,
+        description: `Explore search results for "${activeQuery}" across 2026 theatrical releases, cast, and artists on Reelist.`,
+        path: `search?q=${encodeURIComponent(activeQuery)}`,
+      });
+    } else {
+      updatePageMeta({
+        title: 'Reelist — Explore September, August & July 2026 Blockbusters',
+        description: 'Discover the freshest theatrical blockbusters released in September, August & July 2026 across Tamil, Telugu, Hindi, Malayalam, Kannada & Global cinema with official 4K trailers.',
+        path: '',
+      });
+    }
+  }, [show404Page, activeLegalModal, selectedId, activeQuery, movies]);
 
   const displayedCatalogMovies = useMemo(() => {
     let list = movies;
@@ -330,7 +423,26 @@ export default function App() {
         </div>
       </nav>
 
-      {showAdmin && isAdmin ? (
+      {show404Page ? (
+        <Suspense fallback={<div className="container"><p className="state-panel__title">Loading Page…</p></div>}>
+          <NotFound
+            onReturnHome={() => {
+              setShow404Page(false);
+              window.location.hash = '';
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            onSearchClick={() => {
+              setShow404Page(false);
+              window.location.hash = '';
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+              setTimeout(() => {
+                const inp = document.querySelector('.marquee-search input');
+                if (inp) inp.focus();
+              }, 150);
+            }}
+          />
+        </Suspense>
+      ) : showAdmin && isAdmin ? (
         <Suspense fallback={<div className="container"><p className="state-panel__title">Loading Admin Dashboard…</p></div>}>
           <AdminDashboard onSwitchToMovies={() => setShowAdmin(false)} />
         </Suspense>
@@ -345,6 +457,47 @@ export default function App() {
               onChange={setQuery}
               onSubmit={handleSearchSubmit}
             />
+            {!activeQuery && (
+              <div className="hero__cta-group" aria-label="Hero premiere actions">
+                <button
+                  type="button"
+                  className="btn-primary hero__cta-btn hero__cta-btn--explore"
+                  onClick={() => {
+                    const el = document.querySelector('.trending-catalog-section');
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  title="Explore September, August & July 2026 Blockbusters"
+                >
+                  <Film size={15} />
+                  <span>Explore 2026 Blockbusters</span>
+                </button>
+                <button
+                  type="button"
+                  className="btn-outline hero__cta-btn"
+                  onClick={() => {
+                    const topMovie = displayedCatalogMovies[0] || movies[0];
+                    if (topMovie) setShowtimesMovie(topMovie);
+                  }}
+                  title="Check theater showtimes and ticket availability"
+                >
+                  <Ticket size={15} />
+                  <span>Check Showtimes</span>
+                </button>
+                <button
+                  type="button"
+                  className="btn-subtle-outline hero__cta-btn"
+                  onClick={() => {
+                    setCatalogLanguage('ta');
+                    const el = document.querySelector('.trending-catalog-section');
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  title="Filter by Tamil Cinema Releases"
+                >
+                  <Sparkles size={14} />
+                  <span>Tamil Premieres</span>
+                </button>
+              </div>
+            )}
             {activeQuery && (
               <div className="hero__actions">
                 <button
@@ -478,7 +631,112 @@ export default function App() {
               </>
             )}
           </main>
+          <Footer
+            onOpenPrivacy={() => setActiveLegalModal('privacy')}
+            onOpenTerms={() => setActiveLegalModal('terms')}
+            onOpenContact={() => setActiveLegalModal('contact')}
+            onOpen404={() => setShow404Page(true)}
+          />
         </>
+      )}
+
+      {/* Sticky Mobile CTA Navigation Bar */}
+      <nav className="sticky-mobile-cta" aria-label="Mobile quick actions">
+        <button
+          type="button"
+          className="sticky-mobile-cta__item"
+          onClick={() => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            const inp = document.querySelector('.marquee-search input');
+            if (inp) inp.focus();
+          }}
+          title="Search marquee"
+        >
+          <Search size={18} />
+          <span>Search</span>
+        </button>
+        <button
+          type="button"
+          className="sticky-mobile-cta__item"
+          onClick={() => {
+            if (show404Page) setShow404Page(false);
+            setMediaType('movie');
+            if (activeQuery) {
+              setQuery('');
+              setActiveQuery('');
+              setMatchedArtist(null);
+              setSimilarArtists([]);
+            }
+            const el = document.querySelector('.trending-catalog-section');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+          }}
+          title="2026 Premieres"
+        >
+          <Film size={18} />
+          <span>2026 Hits</span>
+        </button>
+        <button
+          type="button"
+          className="sticky-mobile-cta__item"
+          onClick={() => {
+            const topMovie = displayedCatalogMovies[0] || movies[0];
+            if (topMovie) setShowtimesMovie(topMovie);
+          }}
+          title="Check showtimes"
+        >
+          <Ticket size={18} />
+          <span>Showtimes</span>
+        </button>
+        <button
+          type="button"
+          className="sticky-mobile-cta__item"
+          onClick={() => setActiveLegalModal('contact')}
+          title="Contact concierge"
+        >
+          <Mail size={18} />
+          <span>Concierge</span>
+        </button>
+      </nav>
+
+      {/* GDPR / ePrivacy Compliant Cookie Consent Banner */}
+      <CookieBanner onOpenPrivacy={() => setActiveLegalModal('privacy')} />
+
+      {/* Legal & Support Modals */}
+      {activeLegalModal === 'privacy' && (
+        <Suspense fallback={null}>
+          <PrivacyPolicyModal onClose={() => setActiveLegalModal(null)} />
+        </Suspense>
+      )}
+
+      {activeLegalModal === 'terms' && (
+        <Suspense fallback={null}>
+          <TermsModal onClose={() => setActiveLegalModal(null)} />
+        </Suspense>
+      )}
+
+      {activeLegalModal === 'contact' && (
+        <Suspense fallback={null}>
+          <ContactModal
+            onClose={() => setActiveLegalModal(null)}
+            onSuccess={(data) => {
+              setLastInquiry(data);
+              setActiveLegalModal('thank-you');
+            }}
+          />
+        </Suspense>
+      )}
+
+      {activeLegalModal === 'thank-you' && (
+        <Suspense fallback={null}>
+          <ThankYouModal
+            submissionData={lastInquiry}
+            onClose={() => setActiveLegalModal(null)}
+            onReturnHome={() => {
+              setActiveLegalModal(null);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+          />
+        </Suspense>
       )}
 
       {selectedId && (

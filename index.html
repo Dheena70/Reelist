@@ -9,21 +9,33 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://image.tmdb.org https://media.themoviedb.org https://upload.wikimedia.org https://images.unsplash.com https://i.ytimg.com https://img.youtube.com; connect-src 'self' https://api.themoviedb.org https://image.tmdb.org https://ipapi.co; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self';" />
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
-    <link
-      rel="icon"
-      type="image/svg+xml"
-      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23e8b54d'%3E%3Cpath d='M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z'/%3E%3C/svg%3E"
-    />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="canonical" href="https://dheena70.github.io/Reelist/" />
 
     <!-- Open Graph Metadata -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Reelist — Movie Explorer" />
-    <meta property="og:description" content="Discover trending movies, watch trailers, view ratings, and check theatrical showtimes powered by The Movie Database." />
+    <meta property="og:site_name" content="Reelist" />
+    <meta property="og:title" content="Reelist — Cinema Movie Explorer & Theatrical Showcase" />
+    <meta property="og:description" content="Discover trending theatrical blockbusters released in September, August & July 2026, watch official trailers, view IMDb ratings, and check showtimes." />
     <meta property="og:url" content="https://dheena70.github.io/Reelist/" />
-    <meta property="og:image" content="https://dheena70.github.io/Reelist/og-image.svg" />
+    <meta property="og:image" content="https://dheena70.github.io/Reelist/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:alt" content="Reelist — Cinema Movie Explorer & 2026 Theatrical Showcase" />
+
+    <!-- Twitter Card Metadata -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@reelistapp" />
+    <meta name="twitter:title" content="Reelist — Cinema Movie Explorer" />
+    <meta name="twitter:description" content="Discover trending theatrical blockbusters released in September, August & July 2026, watch official trailers, and check showtimes." />
+    <meta name="twitter:image" content="https://dheena70.github.io/Reelist/og-image.png" />
 
     <!-- JSON-LD Structured Data -->
     <script type="application/ld+json">
@@ -44,6 +56,17 @@
         "query-input": "required name=search_term_string"
       }
     }
+    </script>
+
+    <!-- Google Analytics (GA4) Tag with Consent Mode -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('consent', 'default', {
+        'analytics_storage': 'granted'
+      });
+      gtag('js', new Date());
+      gtag('config', 'G-REELIST2026', { send_page_view: false });
     </script>
     <link
       href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap"

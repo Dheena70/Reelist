@@ -1083,7 +1083,7 @@ export default function MovieModal({ movieId, onClose, onSelectMovie }) {
                     {details.poster_path && !imgError ? (
                       <img
                         src={posterUrl(details.poster_path)}
-                        alt={`${details.title} poster`}
+                        alt={`${details.title} official theatrical poster`}
                         width="180"
                         height="270"
                         onError={() => setImgError(true)}
@@ -1524,7 +1524,7 @@ export default function MovieModal({ movieId, onClose, onSelectMovie }) {
                               {actor.profile_path ? (
                                 <img
                                   src={profileUrl(actor.profile_path, 'w185')}
-                                  alt={actor.name}
+                                  alt={`${actor.name}${actor.character ? ` as ${actor.character}` : ' (Cast Member)'}`}
                                   width="185"
                                   height="278"
                                   loading="lazy"
@@ -1602,7 +1602,7 @@ export default function MovieModal({ movieId, onClose, onSelectMovie }) {
                           {p.logo ? (
                             <img
                               src={providerLogoUrl(p.logo)}
-                              alt={p.name}
+                              alt={`${p.name} official streaming platform logo`}
                               width="24"
                               height="24"
                               className="ott-chip__logo"
@@ -1660,7 +1660,7 @@ export default function MovieModal({ movieId, onClose, onSelectMovie }) {
                               {partPoster ? (
                                 <img
                                   src={partPoster}
-                                  alt={part.title}
+                                  alt={`${part.title} franchise chapter poster`}
                                   width="154"
                                   height="231"
                                   className="continuation-card__img"
@@ -1729,7 +1729,7 @@ export default function MovieModal({ movieId, onClose, onSelectMovie }) {
                               {relPoster ? (
                                 <img
                                   src={relPoster}
-                                  alt={rel.title}
+                                  alt={`${rel.title} recommended film poster`}
                                   width="154"
                                   height="231"
                                   className="related-movie-card__img"

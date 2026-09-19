@@ -1,4 +1,4 @@
-﻿import { Film, Play, Ticket, Clock, Calendar, Star, Clapperboard, Globe2, ChevronRight } from 'lucide-react';
+import { Film, Play, Ticket, Clock, Calendar, Star, Clapperboard, Globe2, ChevronRight } from 'lucide-react';
 import { posterUrl } from '../api/tmdb.js';
 
 export default function SearchSpotlight({ movie, onSelectMovie, onOpenShowtimes }) {
@@ -44,7 +44,7 @@ export default function SearchSpotlight({ movie, onSelectMovie, onOpenShowtimes 
           }}
         >
           {poster ? (
-            <img src={poster} alt={`${title} poster`} width="220" height="330" className="search-spotlight__img" />
+            <img src={poster} alt={`${title} official theatrical spotlight poster`} width="220" height="330" className="search-spotlight__img" />
           ) : (
             <div className="search-spotlight__no-poster">
               <Film size={28} />

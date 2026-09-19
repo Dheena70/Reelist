@@ -52,7 +52,7 @@ function MovieCard({
         {poster && !imgError ? (
           <img
             src={poster}
-            alt={`${title} poster`}
+            alt={`${title} official theatrical poster`}
             width="342"
             height="513"
             loading={isAboveFold ? 'eager' : 'lazy'}

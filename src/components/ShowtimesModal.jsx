@@ -236,7 +236,7 @@ export default function ShowtimesModal({
                 {poster ? (
                   <img
                     src={poster}
-                    alt={currentMovie.title}
+                    alt={`${currentMovie.title} theatrical poster`}
                     width="85"
                     height="128"
                     className="showtimes-modal__poster"
@@ -539,7 +539,7 @@ export default function ShowtimesModal({
                           {itemPoster ? (
                             <img
                               src={itemPoster}
-                              alt={m.title}
+                              alt={`${m.title} screening poster`}
                               className="cinema-movie-card__poster"
                               width="50"
                               height="75"

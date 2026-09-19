@@ -138,7 +138,7 @@ export default function ArtistSpotlight({
                     {photo ? (
                       <img
                         src={photo}
-                        alt={sim.name}
+                        alt={`${sim.name} profile portrait`}
                         onError={(e) => {
                           e.currentTarget.style.display = 'none';
                         }}
@@ -179,7 +179,7 @@ export default function ArtistSpotlight({
             {portrait && !imgError ? (
               <img
                 src={portrait}
-                alt={`${artist.name} portrait`}
+                alt={`${artist.name} official portrait`}
                 width="220"
                 height="330"
                 className="artist-portrait-img"

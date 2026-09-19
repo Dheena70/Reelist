@@ -224,10 +224,29 @@ function saveSessionUser(user, rememberMe = true) {
   }
 }
 
+function isTrackingPermitted() {
+  try {
+    const raw = localStorage.getItem('reelist_cookie_consent');
+    if (!raw) return true;
+    const parsed = JSON.parse(raw);
+    return parsed.level !== 'essential';
+  } catch {
+    return true;
+  }
+}
+
+export function trackEvent(eventName, eventParams = {}) {
+  if (typeof window !== 'undefined' && typeof window.gtag === 'function' && isTrackingPermitted()) {
+    try {
+      window.gtag('event', eventName, eventParams);
+    } catch {}
+  }
+}
+
 export const analytics = {
   recordVisit() {
     // Exclude administrators from audience visitor counter
-    if (this.isAdminLoggedIn()) {
+    if (this.isAdminLoggedIn() || !isTrackingPermitted()) {
       return loadData();
     }
 
@@ -246,26 +265,31 @@ export const analytics = {
     data.lastVisit = now;
     if (!data.firstVisit) data.firstVisit = now;
     saveData(data);
+    trackEvent('page_view', { page_title: document.title, page_location: window.location.href });
     return data;
   },
 
   recordSearch(query) {
     // Exclude administrators from audience search telemetry
-    if (this.isAdminLoggedIn()) return;
+    if (this.isAdminLoggedIn() || !isTrackingPermitted()) return;
     const clean = sanitizeQuery(query);
     if (!clean) return;
     const data = loadData();
     data.totalSearches = (data.totalSearches || 0) + 1;
     data.recentSearches = [clean, ...(data.recentSearches || []).filter((s) => s !== clean)].slice(0, 8);
     saveData(data);
+    trackEvent('search', { search_term: clean });
   },
 
-  recordMovieView() {
+  recordMovieView(movieTitle) {
     // Exclude administrators from audience film inspection metrics
-    if (this.isAdminLoggedIn()) return;
+    if (this.isAdminLoggedIn() || !isTrackingPermitted()) return;
     const data = loadData();
     data.moviesViewed = (data.moviesViewed || 0) + 1;
     saveData(data);
+    if (movieTitle) {
+      trackEvent('view_item', { item_name: movieTitle });
+    }
   },
 
   getStats() {

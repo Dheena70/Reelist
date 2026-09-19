@@ -176,7 +176,7 @@ function Monsters({ mouse, passwordFocused, emailTyping }) {
   );
 }
 
-export default function MonsterAuth({ onClose, onLoginSuccess }) {
+export default function MonsterAuth({ onClose, onLoginSuccess, isModal = false, reason = "" }) {
   const [mode, setMode] = useState("login"); // 'login' | 'signup' | 'forgot'
   const [forgotStep, setForgotStep] = useState("email"); // 'email' | 'otp' | 'newpw'
   const [name, setName] = useState("");
@@ -216,6 +216,16 @@ export default function MonsterAuth({ onClose, onLoginSuccess }) {
     }, 1000);
     return () => clearInterval(interval);
   }, [resendTimer]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape" && onClose) {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
 
   const switchMode = (next) => {
     if (next === mode) return;
@@ -1023,6 +1033,49 @@ export default function MonsterAuth({ onClose, onLoginSuccess }) {
           .btn-primary { padding: 13px 16px; font-size: 15px; }
         }
 
+        .auth-close-btn {
+          position: absolute;
+          top: 14px;
+          right: 16px;
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          border: 1.5px solid rgba(148, 163, 184, 0.4);
+          background: #ffffff;
+          color: #0f172a;
+          font-size: 16px;
+          font-weight: 700;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          z-index: 60;
+          transition: all 0.2s ease;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+        .auth-close-btn:hover {
+          background: #e11d48;
+          border-color: #e11d48;
+          color: #ffffff;
+          transform: scale(1.08);
+        }
+        .auth-reason-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 7px;
+          background: #fffbeb;
+          border: 1.5px solid #fde68a;
+          color: #92400e;
+          font-size: 13px;
+          font-weight: 700;
+          padding: 6px 14px;
+          border-radius: var(--radius-full);
+          margin-bottom: 14px;
+          width: fit-content;
+          box-shadow: 0 2px 6px rgba(245, 158, 11, 0.12);
+          text-align: left;
+        }
+
         @media (max-width: 420px) {
           .auth-app { width: 96%; }
           .monsters { transform: scale(0.64); gap: 6px; }
@@ -1052,6 +1105,13 @@ export default function MonsterAuth({ onClose, onLoginSuccess }) {
           <div className="logo">
             <span className="brand-name">REELIST</span>
           </div>
+
+          {reason && (
+            <div className="auth-reason-pill" role="alert">
+              <span aria-hidden="true">🔒</span>
+              <span>{reason}</span>
+            </div>
+          )}
 
           {/* Dedicated Top Segmented Tabs for Instant Mode Switch */}
           <div className="auth-segmented-switch" role="tablist" aria-label="Sign in or create account">

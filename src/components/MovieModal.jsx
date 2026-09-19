@@ -151,7 +151,7 @@ function formatVotes(count) {
   return String(count);
 }
 
-export default function MovieModal({ movieId, onClose, onSelectMovie }) {
+export default function MovieModal({ movieId, onClose, onSelectMovie, currentUser, onRequireAuth }) {
   const [activeId, setActiveId] = useState(movieId);
   const [details, setDetails] = useState(null);
   const [collectionInfo, setCollectionInfo] = useState(null);
@@ -222,6 +222,15 @@ export default function MovieModal({ movieId, onClose, onSelectMovie }) {
   });
 
   const handleRateMovie = (score) => {
+    if (!currentUser && onRequireAuth) {
+      setShowRatingPicker(false);
+      onRequireAuth('Sign in to rate this title', {
+        type: 'rate',
+        movieId: activeId,
+        score,
+      });
+      return;
+    }
     setUserRating(score);
     setShowRatingPicker(false);
     try {
@@ -243,6 +252,13 @@ export default function MovieModal({ movieId, onClose, onSelectMovie }) {
 
   const toggleWatchlist = (e) => {
     e.stopPropagation();
+    if (!currentUser && onRequireAuth) {
+      onRequireAuth('Sign in to save movies to your personal Watchlist', {
+        type: 'watchlist',
+        movieId: activeId,
+      });
+      return;
+    }
     try {
       const list = JSON.parse(localStorage.getItem('reelist_watchlist') || '[]');
       let next;
@@ -260,6 +276,14 @@ export default function MovieModal({ movieId, onClose, onSelectMovie }) {
   };
 
   const toggleReaction = (type) => {
+    if (!currentUser && onRequireAuth) {
+      onRequireAuth('Sign in to react to movie trailers', {
+        type: 'reaction',
+        movieId: activeId,
+        key: type,
+      });
+      return;
+    }
     const isReacted = !!userReactions[type];
     const newReactions = {
       ...reactions,
@@ -998,7 +1022,13 @@ export default function MovieModal({ movieId, onClose, onSelectMovie }) {
                     <button
                       type="button"
                       className={`imdb-rate-btn ${userRating ? 'is-rated' : ''}`}
-                      onClick={() => setShowRatingPicker((prev) => !prev)}
+                      onClick={() => {
+                        if (!currentUser && onRequireAuth) {
+                          onRequireAuth('Sign in to rate this title', { type: 'rate', movieId: activeId });
+                          return;
+                        }
+                        setShowRatingPicker((prev) => !prev);
+                      }}
                       title={userRating ? `You rated this ${userRating}/10. Click to change` : 'Click to rate this movie'}
                     >
                       <span className="rate-star-icon">{userRating ? '★' : '☆'}</span>

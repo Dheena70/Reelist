@@ -379,6 +379,24 @@ body {
   border-color: var(--text-accent);
 }
 
+.top-nav__btn--login {
+  background: linear-gradient(135deg, #e8b54d, #f59e0b) !important;
+  color: #0b0b0f !important;
+  border: 1px solid #f59e0b !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 10px rgba(232, 181, 77, 0.35);
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.top-nav__btn--login:hover {
+  background: linear-gradient(135deg, #fce8bd, #e8b54d) !important;
+  box-shadow: 0 4px 18px rgba(232, 181, 77, 0.55);
+  transform: translateY(-1px);
+}
+
 .top-nav__brand {
   display: flex;
   align-items: center;
@@ -7710,3 +7728,57 @@ body {
     font-size: 0.7rem;
   }
 }
+
+/* ==========================================================================
+   Action-Gated MonsterAuth Modal Dialog Overlay
+   ========================================================================== */
+.auth-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(5, 5, 8, 0.84);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 1.25rem;
+  overflow-y: auto;
+  box-sizing: border-box;
+  animation: authFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes authFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.auth-modal-container {
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: auto;
+  outline: none;
+}
+
+@media (max-width: 860px) {
+  .auth-modal-overlay {
+    padding: 0.75rem;
+    align-items: flex-start;
+  }
+  .auth-modal-container {
+    max-width: 520px;
+    margin-top: 1rem;
+    margin-bottom: 2rem;
+  }
+}
+

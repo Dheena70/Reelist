@@ -89,6 +89,9 @@ export default function App() {
   });
   const [activeLegalModal, setActiveLegalModal] = useState(null); // 'privacy' | 'terms' | 'contact' | 'thank-you'
   const [lastInquiry, setLastInquiry] = useState(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authModalReason, setAuthModalReason] = useState('');
+  const [pendingAction, setPendingAction] = useState(null);
 
   // Synchronize URL hash for routing and SPA fallback navigation
   useEffect(() => {
@@ -247,8 +250,64 @@ export default function App() {
     setReloadTrigger((prev) => prev + 1);
   }, []);
 
+  const requireAuth = useCallback((reason, action = null) => {
+    setAuthModalReason(reason || 'Sign in to your Reelist account');
+    setPendingAction(action);
+    setShowAuthModal(true);
+  }, []);
+
+  const handleAuthSuccess = useCallback((user) => {
+    setCurrentUser(user);
+    const admin = user.role === 'admin' || analytics.isUserAdmin(user.email);
+    setIsAdmin(admin);
+    setShowAdmin(admin);
+    setVisitorCount(analytics.getStats().totalVisitors);
+    setShowAuthModal(false);
+    setShowCurtain(true);
+
+    if (pendingAction) {
+      if (pendingAction.type === 'search' && pendingAction.query) {
+        setQuery(pendingAction.query);
+        setActiveQuery(pendingAction.query);
+        analytics.recordSearch(pendingAction.query);
+      } else if (pendingAction.type === 'rate' && pendingAction.movieId && pendingAction.score) {
+        try {
+          localStorage.setItem(`reelist_rating_${pendingAction.movieId}`, String(pendingAction.score));
+        } catch {
+          // ignore
+        }
+      } else if (pendingAction.type === 'reaction' && pendingAction.movieId && pendingAction.key) {
+        try {
+          const currentMy = JSON.parse(localStorage.getItem(`reelist_my_reactions_${pendingAction.movieId}`) || '{}');
+          currentMy[pendingAction.key] = true;
+          localStorage.setItem(`reelist_my_reactions_${pendingAction.movieId}`, JSON.stringify(currentMy));
+        } catch {
+          // ignore
+        }
+      } else if (pendingAction.type === 'watchlist' && pendingAction.movieId) {
+        try {
+          const list = JSON.parse(localStorage.getItem('reelist_watchlist') || '[]');
+          if (!list.includes(pendingAction.movieId)) {
+            list.push(pendingAction.movieId);
+            localStorage.setItem('reelist_watchlist', JSON.stringify(list));
+          }
+        } catch {
+          // ignore
+        }
+      }
+      setPendingAction(null);
+    }
+  }, [pendingAction]);
+
   const handleSearchSubmit = useCallback((val) => {
     const trimmed = val.trim();
+    if (!currentUser) {
+      requireAuth('Sign in to search for movies, web series, and artists', {
+        type: 'search',
+        query: trimmed,
+      });
+      return;
+    }
     if (trimmed) {
       analytics.recordSearch(trimmed);
     }
@@ -260,7 +319,7 @@ export default function App() {
     } else {
       setActiveQuery(trimmed);
     }
-  }, [activeQuery]);
+  }, [currentUser, activeQuery, requireAuth]);
 
   const handleSelectMovie = useCallback((movie) => {
     analytics.recordMovieView();
@@ -287,7 +346,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (!currentUser || !hasKey) return;
+    if (!hasKey) return;
 
     let cancelled = false;
     setLoading(true);
@@ -320,25 +379,7 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, [activeQuery, hasKey, reloadTrigger, currentUser, mediaType]);
-
-  // Gatekeeper: Website front door MUST be the MonsterAuth login screen
-  if (!currentUser) {
-    return (
-      <div className="auth-landing-screen">
-        <MonsterAuth
-          onLoginSuccess={(user) => {
-            setCurrentUser(user);
-            const admin = user.role === 'admin';
-            setIsAdmin(admin);
-            setShowAdmin(admin);
-            setVisitorCount(analytics.getStats().totalVisitors);
-            setShowCurtain(true);
-          }}
-        />
-      </div>
-    );
-  }
+  }, [activeQuery, hasKey, reloadTrigger, mediaType]);
 
   if (!hasKey || isEditingKey) {
     return (
@@ -380,46 +421,60 @@ export default function App() {
         </div>
 
         <div className="top-nav__actions">
-          {isAdmin && (
+          {currentUser ? (
+            <>
+              {isAdmin && (
+                <button
+                  type="button"
+                  className={`top-nav__btn ${showAdmin ? 'top-nav__btn--active-admin' : 'top-nav__btn--admin'}`}
+                  onClick={() => setShowAdmin((prev) => !prev)}
+                  title={showAdmin ? 'Switch to Movie Marquee' : 'Open Admin Dashboard'}
+                >
+                  {showAdmin ? (
+                    <>
+                      <Clapperboard size={15} />
+                      <span>Movie Marquee</span>
+                    </>
+                  ) : (
+                    <>
+                      <BarChart3 size={15} />
+                      <span>Admin Dashboard</span>
+                    </>
+                  )}
+                </button>
+              )}
+              <div
+                className={`top-nav__user-avatar ${isAdmin ? 'top-nav__user-avatar--admin' : ''}`}
+                title={currentUser.email ? `${isAdmin ? 'Admin: ' : 'User: '}${currentUser.email}` : 'User Profile'}
+              >
+                {isAdmin && (
+                  <span className="top-nav__avatar-crown">
+                    <Crown size={12} />
+                  </span>
+                )}
+                <span className="top-nav__avatar-text">{getUserInitials(currentUser)}</span>
+              </div>
+              <button
+                type="button"
+                className="top-nav__btn top-nav__btn--logout"
+                onClick={handleLogout}
+                title="Log out and return to guest mode"
+              >
+                <DoorOpen size={15} />
+                <span>Log Out</span>
+              </button>
+            </>
+          ) : (
             <button
               type="button"
-              className={`top-nav__btn ${showAdmin ? 'top-nav__btn--active-admin' : 'top-nav__btn--admin'}`}
-              onClick={() => setShowAdmin((prev) => !prev)}
-              title={showAdmin ? 'Switch to Movie Marquee' : 'Open Admin Dashboard'}
+              className="top-nav__btn top-nav__btn--login"
+              onClick={() => requireAuth('Sign in to your Reelist account')}
+              title="Sign in to your Reelist account"
             >
-              {showAdmin ? (
-                <>
-                  <Clapperboard size={15} />
-                  <span>Movie Marquee</span>
-                </>
-              ) : (
-                <>
-                  <BarChart3 size={15} />
-                  <span>Admin Dashboard</span>
-                </>
-              )}
+              <Sparkles size={15} />
+              <span>Sign In</span>
             </button>
           )}
-          <div
-            className={`top-nav__user-avatar ${isAdmin ? 'top-nav__user-avatar--admin' : ''}`}
-            title={currentUser.email ? `${isAdmin ? 'Admin: ' : 'User: '}${currentUser.email}` : 'User Profile'}
-          >
-            {isAdmin && (
-              <span className="top-nav__avatar-crown">
-                <Crown size={12} />
-              </span>
-            )}
-            <span className="top-nav__avatar-text">{getUserInitials(currentUser)}</span>
-          </div>
-          <button
-            type="button"
-            className="top-nav__btn top-nav__btn--logout"
-            onClick={handleLogout}
-            title="Log out and return to login screen"
-          >
-            <DoorOpen size={15} />
-            <span>Log Out</span>
-          </button>
         </div>
       </nav>
 
@@ -456,6 +511,8 @@ export default function App() {
               value={query}
               onChange={setQuery}
               onSubmit={handleSearchSubmit}
+              currentUser={currentUser}
+              onRequireAuth={requireAuth}
             />
             {!activeQuery && (
               <div className="hero__cta-group" aria-label="Hero premiere actions">
@@ -646,6 +703,10 @@ export default function App() {
           type="button"
           className="sticky-mobile-cta__item"
           onClick={() => {
+            if (!currentUser) {
+              requireAuth('Sign in to search for movies, web series, and artists');
+              return;
+            }
             window.scrollTo({ top: 0, behavior: 'smooth' });
             const inp = document.querySelector('.marquee-search input');
             if (inp) inp.focus();
@@ -745,6 +806,8 @@ export default function App() {
             movieId={selectedId}
             onClose={() => setSelectedId(null)}
             onSelectMovie={(movie) => setSelectedId(movie.id)}
+            currentUser={currentUser}
+            onRequireAuth={requireAuth}
           />
         </Suspense>
       )}
@@ -761,6 +824,35 @@ export default function App() {
             }}
           />
         </Suspense>
+      )}
+
+      {showAuthModal && (
+        <div
+          className="auth-modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Sign In"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowAuthModal(false);
+              setPendingAction(null);
+            }
+          }}
+        >
+          <div className="auth-modal-container">
+            <MonsterAuth
+              isModal={true}
+              reason={authModalReason}
+              onClose={() => {
+                setShowAuthModal(false);
+                setPendingAction(null);
+              }}
+              onLoginSuccess={(user) => {
+                handleAuthSuccess(user);
+              }}
+            />
+          </div>
+        </div>
       )}
     </div>
   );

@@ -1,11 +1,27 @@
 import { useState } from 'react';
 import { Search, AlertCircle } from 'lucide-react';
 
-export default function SearchBar({ value, onChange, onSubmit }) {
+export default function SearchBar({ value, onChange, onSubmit, currentUser, onRequireAuth }) {
   const [error, setError] = useState('');
+
+  const handleInputInteraction = () => {
+    if (!currentUser && onRequireAuth) {
+      onRequireAuth('Sign in to search for movies, web series, and artists', {
+        type: 'search',
+        query: (typeof value === 'string' ? value : '').trim(),
+      });
+    }
+  };
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
+    if (!currentUser && onRequireAuth) {
+      onRequireAuth('Sign in to search for movies, web series, and artists', {
+        type: 'search',
+        query: (typeof value === 'string' ? value : '').trim(),
+      });
+      return;
+    }
     const rawVal = typeof value === 'string' ? value : '';
     const trimmed = rawVal.trim();
     if (!trimmed) {
@@ -17,6 +33,13 @@ export default function SearchBar({ value, onChange, onSubmit }) {
   };
 
   const handleChange = (e) => {
+    if (!currentUser && onRequireAuth) {
+      onRequireAuth('Sign in to search for movies, web series, and artists', {
+        type: 'search',
+        query: e.target.value.trim(),
+      });
+      return;
+    }
     if (error) setError('');
     onChange(e.target.value);
   };
@@ -35,6 +58,7 @@ export default function SearchBar({ value, onChange, onSubmit }) {
           type="text"
           value={value}
           onChange={handleChange}
+          onClick={handleInputInteraction}
           onKeyDown={(e) => {
             if (e.key === 'Escape') {
               onChange('');

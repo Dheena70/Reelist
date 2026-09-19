@@ -16,6 +16,8 @@ function sanitizeKey(key) {
   return clean;
 }
 
+const DEMO_FALLBACK_KEY = '54be58836edd177d11bcea54f941744c';
+
 function getApiKey() {
   if (typeof window !== 'undefined' && window.localStorage) {
     const localKey = sanitizeKey(window.localStorage.getItem('tmdb_api_key'));
@@ -29,7 +31,7 @@ function getApiKey() {
     return envKey;
   }
 
-  return '';
+  return DEMO_FALLBACK_KEY;
 }
 
 function setApiKey(key) {

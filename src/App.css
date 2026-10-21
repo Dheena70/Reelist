@@ -7782,3 +7782,289 @@ body {
   }
 }
 
+/* ==========================================================================
+   Live Social Proof & Real-Time Audience Activity System
+   ========================================================================== */
+
+/* Universal Glowing Live Indicator Dot */
+.live-pulse-dot {
+  position: relative;
+  display: inline-block;
+  width: 7.5px;
+  height: 7.5px;
+  background-color: #22c55e;
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.7);
+  flex-shrink: 0;
+}
+
+.live-pulse-dot::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 1.5px solid #22c55e;
+  animation: liveDotPulse 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes liveDotPulse {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.9;
+  }
+  70% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+/* 1. Hero Live Audience Pill */
+.hero__live-audience-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  background: rgba(18, 19, 26, 0.82);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(245, 197, 24, 0.25);
+  border-radius: var(--radius-full);
+  padding: 0.35rem 0.95rem;
+  margin: 0.5rem auto 1.25rem;
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  cursor: default;
+  user-select: none;
+  animation: heroPillFade 0.6s ease-out;
+}
+
+@keyframes heroPillFade {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero__live-audience-count {
+  color: #f5c518;
+  font-family: var(--mono);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.hero__live-audience-text {
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 500;
+}
+
+/* 2. Floating Live Social Proof Activity Toast */
+.live-social-proof-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  max-width: 380px;
+  background: rgba(15, 16, 22, 0.95);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-left: 3.5px solid #f5c518;
+  border-radius: 12px;
+  padding: 0.75rem 0.85rem;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.65), 0 0 20px rgba(245, 197, 24, 0.12);
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.2s cubic-bezier(0.25, 0.8, 0.25, 1), border-color 0.2s ease;
+  animation: socialToastIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes socialToastIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.live-social-proof-toast:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 20px 42px rgba(0, 0, 0, 0.8), 0 0 26px rgba(245, 197, 24, 0.24);
+  border-color: rgba(245, 197, 24, 0.45);
+}
+
+.live-social-proof__poster {
+  position: relative;
+  width: 44px;
+  height: 64px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #111218;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.live-social-proof__poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.live-social-proof__noposter {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  background: #181922;
+}
+
+.live-social-proof__live-dot {
+  position: absolute;
+  bottom: 3px;
+  right: 3px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #22c55e;
+  border: 1.5px solid #0f1016;
+  box-shadow: 0 0 6px #22c55e;
+}
+
+.live-social-proof__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.live-social-proof__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.2rem;
+}
+
+.live-social-proof__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  background: rgba(245, 197, 24, 0.14);
+  border: 1px solid rgba(245, 197, 24, 0.3);
+  color: #f5c518;
+  font-size: 0.64rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.12rem 0.45rem;
+  border-radius: var(--radius-full);
+}
+
+.live-social-proof__emoji {
+  font-size: 0.72rem;
+}
+
+.live-social-proof__time {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  font-family: var(--mono);
+}
+
+.live-social-proof__desc {
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+  line-height: 1.35;
+  margin: 0 0 0.2rem;
+}
+
+.live-social-proof__desc strong {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.live-social-proof__movie-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #f5c518;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.live-social-proof__close-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  padding: 0.3rem;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: -0.2rem;
+  transition: color 0.15s ease, background-color 0.15s ease;
+  flex-shrink: 0;
+  align-self: flex-start;
+}
+
+.live-social-proof__close-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* 3. Trailer Live Viewers Badge inside MovieModal */
+.trailer-live-viewers-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.32);
+  color: #4ade80;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-full);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin-left: 0.5rem;
+}
+
+.trailer-live-viewers-pill strong {
+  color: #ffffff;
+  font-family: var(--mono);
+}
+
+/* Mobile Responsiveness for Social Proof Toast:
+   Position above the sticky mobile CTA (height 60px) so it never collides */
+@media (max-width: 768px) {
+  .live-social-proof-toast {
+    bottom: 74px;
+    left: 14px;
+    right: 14px;
+    max-width: none;
+    padding: 0.65rem 0.75rem;
+  }
+
+  .trailer-live-viewers-pill {
+    margin-left: 0;
+    margin-top: 0.3rem;
+  }
+}
+
+

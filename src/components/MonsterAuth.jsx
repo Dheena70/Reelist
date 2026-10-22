@@ -196,6 +196,18 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
   const [otpBannerMsg, setOtpBannerMsg] = useState("");
   const [resendTimer, setResendTimer] = useState(0);
   const [rememberMe, setRememberMe] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [lockoutTimer, setLockoutTimer] = useState(0);
+
+  // Rate Limiting Countdown Timer (Item 8)
+  useEffect(() => {
+    if (lockoutTimer <= 0) return;
+    const interval = setInterval(() => {
+      setLockoutTimer((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [lockoutTimer]);
 
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
@@ -356,37 +368,58 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (mode === "signup") {
-      if (password !== confirmPassword) {
-        setError("Passwords do not match. Please verify and try again.");
-        return;
+    if (lockoutTimer > 0) {
+      setError(`Security lockout: Please wait ${lockoutTimer}s before attempting again.`);
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      if (mode === "signup") {
+        if (password !== confirmPassword) {
+          setError("Passwords do not match. Please verify and try again.");
+          return;
+        }
+        if (!pwRules.length || !pwRules.upper || !pwRules.number || !pwRules.special) {
+          setError("Password must contain at least 8 characters, 1 uppercase letter (A-Z), 1 number (0-9), and 1 special symbol (!@#$).");
+          return;
+        }
+        const res = await analytics.register(name, email, password, rememberMe);
+        if (res.success) {
+          setError("");
+          setFailedAttempts(0);
+          if (onLoginSuccess) onLoginSuccess(res.user);
+        } else if (res.alreadyExists) {
+          setError("Account already exists with this email. Please sign in.");
+          switchMode("login");
+        } else {
+          setError(res.error || "Registration failed.");
+        }
+      } else if (mode === "login") {
+        const res = await analytics.login(email, password, rememberMe);
+        if (res.success) {
+          setError("");
+          setFailedAttempts(0);
+          setLockoutTimer(0);
+          if (onLoginSuccess) onLoginSuccess(res.user);
+        } else if (res.notFound) {
+          // Account does not exist: redirect directly to Sign Up (Create account) view
+          setError("");
+          switchMode("signup");
+        } else {
+          const nextFailed = failedAttempts + 1;
+          setFailedAttempts(nextFailed);
+          if (nextFailed >= 5) {
+            setLockoutTimer(30);
+            setFailedAttempts(0);
+            setError("Security lockout: 5 consecutive failed attempts. Form locked for 30s.");
+          } else {
+            setError(`${res.error || "Authentication failed."} (${5 - nextFailed} attempts remaining)`);
+          }
+        }
       }
-      if (!pwRules.length || !pwRules.upper || !pwRules.number || !pwRules.special) {
-        setError("Password must contain at least 8 characters, 1 uppercase letter (A-Z), 1 number (0-9), and 1 special symbol (!@#$).");
-        return;
-      }
-      const res = await analytics.register(name, email, password, rememberMe);
-      if (res.success) {
-        setError("");
-        if (onLoginSuccess) onLoginSuccess(res.user);
-      } else if (res.alreadyExists) {
-        setError("Account already exists with this email. Please sign in.");
-        switchMode("login");
-      } else {
-        setError(res.error || "Registration failed.");
-      }
-    } else if (mode === "login") {
-      const res = await analytics.login(email, password, rememberMe);
-      if (res.success) {
-        setError("");
-        if (onLoginSuccess) onLoginSuccess(res.user);
-      } else if (res.notFound) {
-        // Account does not exist: redirect directly to Sign Up (Create account) view
-        setError("");
-        switchMode("signup");
-      } else {
-        setError(res.error || "Authentication failed.");
-      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -1484,8 +1517,18 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
                   )}
                 </div>
 
-                <button type="submit" className="btn-primary">
-                  {mode === "login" ? "Sign In" : "Create account"}
+                <button
+                  type="submit"
+                  className="btn-primary"
+                  disabled={isSubmitting || lockoutTimer > 0}
+                >
+                  {isSubmitting
+                    ? "Authenticating..."
+                    : lockoutTimer > 0
+                    ? `Locked (${lockoutTimer}s)`
+                    : mode === "login"
+                    ? "Sign In"
+                    : "Create Account"}
                 </button>
               </form>
             )}

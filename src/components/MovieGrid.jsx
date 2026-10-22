@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Film, RotateCcw } from 'lucide-react';
 import MovieCard from './MovieCard.jsx';
 
 export default function MovieGrid({ movies, loading, error, emptyLabel, onSelect, onRetry }) {
@@ -36,9 +37,20 @@ export default function MovieGrid({ movies, loading, error, emptyLabel, onSelect
 
   if (!movies.length) {
     return (
-      <div className="state-panel">
+      <div className="state-panel state-panel--empty" role="status">
+        <div className="state-panel__icon" aria-hidden="true">
+          <Film size={36} color="var(--gold)" />
+        </div>
         <p className="state-panel__title">Nothing on this reel yet</p>
-        <p className="state-panel__body">{emptyLabel}</p>
+        <p className="state-panel__body">
+          {emptyLabel || 'No movies or series found matching your active filter. Try exploring our other language channels or clearing your search.'}
+        </p>
+        {onRetry && (
+          <button type="button" className="btn-outline btn-retry" onClick={onRetry}>
+            <RotateCcw size={14} />
+            <span>Reset Search & Filters</span>
+          </button>
+        )}
       </div>
     );
   }

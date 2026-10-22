@@ -29,6 +29,7 @@ const PrivacyPolicyModal = lazy(() => import('./components/PrivacyPolicyModal.js
 const TermsModal = lazy(() => import('./components/TermsModal.jsx'));
 const ContactModal = lazy(() => import('./components/ContactModal.jsx'));
 const ThankYouModal = lazy(() => import('./components/ThankYouModal.jsx'));
+const UserProfileModal = lazy(() => import('./components/UserProfileModal.jsx'));
 
 function getUserInitials(user) {
   if (!user) return 'U';
@@ -81,6 +82,14 @@ export default function App() {
     return window.location.pathname.includes('404') || window.location.hash.includes('404');
   });
   const [activeLegalModal, setActiveLegalModal] = useState(null); // 'privacy' | 'terms' | 'contact' | 'thank-you'
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    try {
+      return !localStorage.getItem('reelist_onboarded_dismissed');
+    } catch {
+      return false;
+    }
+  });
   const [lastInquiry, setLastInquiry] = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authModalReason, setAuthModalReason] = useState('');
@@ -419,12 +428,17 @@ export default function App() {
         <div className="top-nav__actions">
           {currentUser ? (
             <>
-              <div
-                className="top-nav__user-avatar"
-                title={currentUser.email ? `User: ${currentUser.email}` : 'User Profile'}
+              <button
+                type="button"
+                className="top-nav__user-avatar-btn"
+                onClick={() => setShowProfileModal(true)}
+                title={currentUser.email ? `User: ${currentUser.email} (Manage Profile & Data Backups)` : 'User Profile'}
+                aria-label="Open User Profile and Data Backups"
               >
-                <span className="top-nav__avatar-text">{getUserInitials(currentUser)}</span>
-              </div>
+                <div className="top-nav__user-avatar">
+                  <span className="top-nav__avatar-text">{getUserInitials(currentUser)}</span>
+                </div>
+              </button>
               <button
                 type="button"
                 className="top-nav__btn top-nav__btn--logout"
@@ -543,6 +557,34 @@ export default function App() {
             ) : (
               /* Home / Explore View */
               <>
+                {showOnboarding && (
+                  <div className="onboarding-guide-card" role="region" aria-label="Welcome Guide">
+                    <div className="onboarding-guide-content">
+                      <div className="onboarding-guide-badge">
+                        <Sparkles size={14} />
+                        <span>Quick Tour</span>
+                      </div>
+                      <p className="onboarding-guide-text">
+                        <strong>Welcome to Reelist!</strong> 🎬 Browse September, August & July 2026 blockbusters &bull; Filter across 6 languages &bull; Tap any movie poster to stream official HD trailers.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      className="btn-primary onboarding-guide-dismiss"
+                      onClick={() => {
+                        setShowOnboarding(false);
+                        try {
+                          localStorage.setItem('reelist_onboarded_dismissed', 'true');
+                        } catch {
+                          // ignore
+                        }
+                      }}
+                      aria-label="Dismiss quick tour"
+                    >
+                      Got It!
+                    </button>
+                  </div>
+                )}
                 {/* Global Trending & Acclaimed Catalog Section */}
                 <section className="trending-catalog-section" aria-labelledby="trending-heading">
                   <div className="section-header-wrap section-header-wrap--with-toggle">
@@ -724,6 +766,17 @@ export default function App() {
               setActiveLegalModal(null);
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
+          />
+        </Suspense>
+      )}
+
+      {/* User Profile & Security Center Modal */}
+      {showProfileModal && currentUser && (
+        <Suspense fallback={null}>
+          <UserProfileModal
+            currentUser={currentUser}
+            onClose={() => setShowProfileModal(false)}
+            onLogout={handleLogout}
           />
         </Suspense>
       )}

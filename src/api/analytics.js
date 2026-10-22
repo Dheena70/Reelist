@@ -494,6 +494,90 @@ export const analytics = {
     return false;
   },
 
+  getUserWatchlist(email) {
+    try {
+      const key = email ? `reelist_watchlist_${email.toLowerCase().trim()}` : 'reelist_watchlist';
+      const raw = localStorage.getItem(key) || localStorage.getItem('reelist_watchlist') || '[]';
+      return JSON.parse(raw);
+    } catch {
+      return [];
+    }
+  },
+
+  setUserWatchlist(email, list) {
+    try {
+      const key = email ? `reelist_watchlist_${email.toLowerCase().trim()}` : 'reelist_watchlist';
+      localStorage.setItem(key, JSON.stringify(list || []));
+      // Also keep general key in sync
+      localStorage.setItem('reelist_watchlist', JSON.stringify(list || []));
+    } catch {
+      // ignore
+    }
+  },
+
+  exportUserData(email) {
+    try {
+      const user = this.getCurrentUser();
+      const watchlist = this.getUserWatchlist(email);
+      return {
+        exportedAt: new Date().toISOString(),
+        version: '1.0',
+        platform: 'Reelist Cinema Explorer',
+        user: user || { email, role: 'user' },
+        watchlist,
+        reactions: Object.keys(localStorage)
+          .filter((k) => k.startsWith('reelist_reactions_'))
+          .reduce((acc, k) => {
+            acc[k] = localStorage.getItem(k);
+            return acc;
+          }, {}),
+      };
+    } catch (err) {
+      console.error('Export error:', err);
+      return null;
+    }
+  },
+
+  importUserData(backupData) {
+    try {
+      if (!backupData || typeof backupData !== 'object') {
+        return { success: false, error: 'Invalid backup file format.' };
+      }
+      if (Array.isArray(backupData.watchlist)) {
+        const user = this.getCurrentUser();
+        this.setUserWatchlist(user?.email, backupData.watchlist);
+      }
+      if (backupData.reactions && typeof backupData.reactions === 'object') {
+        Object.entries(backupData.reactions).forEach(([k, v]) => {
+          try {
+            localStorage.setItem(k, v);
+          } catch {
+            // ignore
+          }
+        });
+      }
+      return { success: true, count: backupData.watchlist?.length || 0 };
+    } catch (err) {
+      return { success: false, error: err.message || 'Import failed.' };
+    }
+  },
+
+  deleteAccount(email) {
+    try {
+      const cleanEmail = (email || '').toLowerCase().trim();
+      const users = getRegisteredUsers();
+      const remainingUsers = users.filter((u) => u.email !== cleanEmail);
+      saveRegisteredUsers(remainingUsers);
+
+      // Clean up session and user data
+      this.logout();
+      localStorage.removeItem(`reelist_watchlist_${cleanEmail}`);
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err.message || 'Failed to delete account.' };
+    }
+  },
+
   resetStats() {
     try {
       localStorage.removeItem('reelist_analytics_data');

@@ -26,6 +26,7 @@ import {
   ALL_CURATED_MOVIES,
   FRANCHISE_COLLECTIONS,
 } from '../api/tmdb.js';
+import { analytics } from '../api/analytics.js';
 
 function determineRoleBadge(member, index, allCast = []) {
   const char = (member.character || '').toLowerCase();
@@ -187,10 +188,10 @@ export default function MovieModal({ movieId, onClose, onSelectMovie, currentUse
   const [showRatingPicker, setShowRatingPicker] = useState(false);
   const [hoverRating, setHoverRating] = useState(0);
 
-  // Poster Ribbon Watchlist Bookmark state
+  // Poster Ribbon Watchlist Bookmark state (with RLS per-user isolation)
   const [isWatchlisted, setIsWatchlisted] = useState(() => {
     try {
-      const list = JSON.parse(localStorage.getItem('reelist_watchlist') || '[]');
+      const list = analytics.getUserWatchlist(currentUser?.email);
       return list.includes(movieId);
     } catch {
       return false;
@@ -264,7 +265,7 @@ export default function MovieModal({ movieId, onClose, onSelectMovie, currentUse
       return;
     }
     try {
-      const list = JSON.parse(localStorage.getItem('reelist_watchlist') || '[]');
+      const list = analytics.getUserWatchlist(currentUser?.email);
       let next;
       if (list.includes(activeId)) {
         next = list.filter((id) => id !== activeId);
@@ -273,7 +274,7 @@ export default function MovieModal({ movieId, onClose, onSelectMovie, currentUse
         next = [...list, activeId];
         setIsWatchlisted(true);
       }
-      localStorage.setItem('reelist_watchlist', JSON.stringify(next));
+      analytics.setUserWatchlist(currentUser?.email, next);
     } catch {
       // ignore
     }
@@ -318,7 +319,7 @@ export default function MovieModal({ movieId, onClose, onSelectMovie, currentUse
       const savedRating = localStorage.getItem(`reelist_rating_${activeId}`);
       setUserRating(savedRating ? Number(savedRating) : null);
 
-      const list = JSON.parse(localStorage.getItem('reelist_watchlist') || '[]');
+      const list = analytics.getUserWatchlist(currentUser?.email);
       setIsWatchlisted(list.includes(activeId));
 
       const savedReacts = localStorage.getItem(`reelist_reactions_${activeId}`);
@@ -341,7 +342,7 @@ export default function MovieModal({ movieId, onClose, onSelectMovie, currentUse
     } catch {
       // ignore
     }
-  }, [activeId]);
+  }, [activeId, currentUser?.email]);
 
   // Lock body scroll while modal is active
   useEffect(() => {

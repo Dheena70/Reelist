@@ -34,7 +34,7 @@ export default function PrivacyPolicyModal({ onClose }) {
           <section className="legal-section">
             <h3>1. Overview & Commitment</h3>
             <p>
-              Reelist Cinema Technologies Pvt. Ltd. (&ldquo;Reelist&rdquo;, &ldquo;we&rdquo;, &ldquo;our&rdquo;, or &ldquo;us&rdquo;) respects your digital privacy. This Privacy Policy outlines the types of information we collect, how it is used to deliver the cinema explorer experience, and your legal rights under GDPR, CCPA, and Indian Digital Personal Data Protection (DPDP) standards.
+              Reelist, developed by Deena R (&ldquo;Reelist&rdquo;, &ldquo;we&rdquo;, &ldquo;our&rdquo;, or &ldquo;us&rdquo;), respects your digital privacy. This Privacy Policy outlines the types of information we collect, how it is used to deliver the cinema explorer experience, and your legal rights under GDPR, CCPA, and Indian Digital Personal Data Protection (DPDP) standards.
             </p>
           </section>
 
@@ -64,11 +64,11 @@ export default function PrivacyPolicyModal({ onClose }) {
           <section className="legal-section">
             <h3>5. Data Protection Officer & Contact</h3>
             <p>
-              For privacy inquiries, data deletion requests, or GDPR portability assistance, contact our Data Protection Officer:
+              For privacy inquiries, data deletion requests, or portability assistance, contact:
               <br />
-              <strong>Reelist Cinema Technologies Pvt. Ltd.</strong><br />
-              No. 42, Marquee Plaza, 3rd Floor, Anna Salai, Guindy, Chennai, Tamil Nadu 600032, India<br />
-              Email: <code>privacy@reelist.app</code> | Phone: +91 (044) 4826-7090
+              <strong>Deena R</strong><br />
+              Kallakurichi, Tamil Nadu, India<br />
+              Email: <code>safehire20@gmail.com</code> | Phone: +91 9345557673
             </p>
           </section>
         </div>

@@ -19,20 +19,19 @@ export default function Footer({ onOpenPrivacy, onOpenTerms, onOpenContact, onOp
               <div className="footer-address-item">
                 <MapPin size={16} className="footer-icon" />
                 <address className="footer-address-text">
-                  <strong>Reelist Cinema Technologies Pvt. Ltd.</strong><br />
-                  No. 42, Marquee Plaza, 3rd Floor, Anna Salai,<br />
-                  Guindy, Chennai, Tamil Nadu 600032, India
+                  <strong>Deena R</strong><br />
+                  Kallakurichi, Tamil Nadu, India
                 </address>
               </div>
 
               <div className="footer-address-item">
                 <Phone size={15} className="footer-icon" />
-                <span>+91 (044) 4826-7090 / +91 98401 23456</span>
+                <span>+91 9345557673</span>
               </div>
 
               <div className="footer-address-item">
                 <Mail size={15} className="footer-icon" />
-                <span>support@reelist.app</span>
+                <span>safehire20@gmail.com</span>
               </div>
             </div>
           </div>
@@ -70,18 +69,6 @@ export default function Footer({ onOpenPrivacy, onOpenTerms, onOpenContact, onOp
                 </button>
               </li>
               <li>
-                <button type="button" className="footer-link-btn" onClick={() => {
-                  try {
-                    localStorage.removeItem('reelist_cookie_consent');
-                    window.location.reload();
-                  } catch {
-                    // Ignore localStorage access restrictions in private browsing
-                  }
-                }}>
-                  Cookie Preferences
-                </button>
-              </li>
-              <li>
                 <button type="button" className="footer-link-btn" onClick={onOpen404}>
                   404 Missing Scene
                 </button>
@@ -103,7 +90,7 @@ export default function Footer({ onOpenPrivacy, onOpenTerms, onOpenContact, onOp
 
         <div className="site-footer__bottom">
           <p className="footer-copy">
-            © 2026 Reelist Cinema Technologies Pvt. Ltd. All rights reserved.
+            © 2026 Reelist • Developed by Deena R. All rights reserved.
           </p>
           <div className="footer-bottom-links">
             <button type="button" className="footer-bottom-btn" onClick={onOpenPrivacy}>Privacy</button>

@@ -51,41 +51,36 @@ export default function ContactModal({ onClose, onSuccess }) {
         <div className="contact-modal-grid">
           {/* Office Information Column */}
           <div className="contact-info-col">
-            <h3 className="contact-info-title">Headquarters</h3>
+            <h3 className="contact-info-title">Developer & Support</h3>
             <div className="contact-info-item">
               <MapPin size={18} className="contact-info-icon" />
               <div>
-                <strong>Reelist Cinema Technologies Pvt. Ltd.</strong>
-                <p>No. 42, Marquee Plaza, 3rd Floor</p>
-                <p>Anna Salai, Guindy, Chennai</p>
-                <p>Tamil Nadu 600032, India</p>
+                <strong>Deena R</strong>
+                <p>Kallakurichi, Tamil Nadu, India</p>
               </div>
             </div>
 
             <div className="contact-info-item">
               <Phone size={18} className="contact-info-icon" />
               <div>
-                <strong>Customer Care / Concierge</strong>
-                <p>+91 (044) 4826-7090</p>
-                <p>+91 98401 23456</p>
+                <strong>Direct Contact</strong>
+                <p>+91 9345557673</p>
               </div>
             </div>
 
             <div className="contact-info-item">
               <Clock size={18} className="contact-info-icon" />
               <div>
-                <strong>Operating Hours</strong>
+                <strong>Availability</strong>
                 <p>Mon – Sat: 9:00 AM – 9:00 PM IST</p>
-                <p>Sun: 10:00 AM – 6:00 PM IST</p>
               </div>
             </div>
 
             <div className="contact-info-item">
               <Mail size={18} className="contact-info-icon" />
               <div>
-                <strong>Direct Inquiries</strong>
-                <p>support@reelist.app</p>
-                <p>partners@reelist.app</p>
+                <strong>Official Email</strong>
+                <p>safehire20@gmail.com</p>
               </div>
             </div>
           </div>

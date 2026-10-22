@@ -1,8 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import {
-  Film,
-  Ticket,
-  Play,
   Calendar,
   ChevronLeft,
   ChevronRight,
@@ -13,7 +10,6 @@ import {
 import MovieCard from './MovieCard.jsx';
 import {
   tmdb,
-  posterUrl,
   THEATRICAL_NOW_PLAYING,
   THEATRICAL_COMING_SOON,
 } from '../api/tmdb.js';
@@ -34,18 +30,6 @@ const LANGUAGE_FILTERS = [
   { id: 'kn', label: 'Kannada (ಕನ್ನಡ)' },
   { id: 'en', label: 'English / Global' },
 ];
-
-function getLanguageLabel(code) {
-  const map = {
-    ta: 'Tamil',
-    te: 'Telugu',
-    hi: 'Hindi',
-    ml: 'Malayalam',
-    kn: 'Kannada',
-    en: 'English',
-  };
-  return map[code] || (code ? code.toUpperCase() : 'Cinema');
-}
 
 function formatDateBadge(dateStr, label) {
   if (label && /^[A-Z]{3}\s+\d{1,2}$/.test(label.trim())) {
@@ -69,7 +53,7 @@ export default function InTheatersSection({ onSelectMovie, onOpenShowtimes }) {
   const [selectedLang, setSelectedLang] = useState('all');
   const [nowPlayingMovies, setNowPlayingMovies] = useState(THEATRICAL_NOW_PLAYING);
   const [upcomingMovies, setUpcomingMovies] = useState(THEATRICAL_COMING_SOON);
-  const [loading, setLoading] = useState(false);
+  const [_loading, setLoading] = useState(false);
   const [userLocation, setUserLocation] = useState({ city: 'Chennai', country: 'IN', regionName: 'Tamil Nadu' });
   const [selectedCityId, setSelectedCityId] = useState(() => getSavedCity());
   const currentCity = useMemo(() => getCityDetails(selectedCityId), [selectedCityId]);

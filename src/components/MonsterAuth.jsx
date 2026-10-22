@@ -176,7 +176,7 @@ function Monsters({ mouse, passwordFocused, emailTyping }) {
   );
 }
 
-export default function MonsterAuth({ onClose, onLoginSuccess, isModal = false, reason = "" }) {
+export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false, reason = "" }) {
   const [mode, setMode] = useState("login"); // 'login' | 'signup' | 'forgot'
   const [forgotStep, setForgotStep] = useState("email"); // 'email' | 'otp' | 'newpw'
   const [name, setName] = useState("");
@@ -1231,7 +1231,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess, isModal = false, 
                       </div>
                     </div>
                     <div className="otp-actions-row">
-                      <span>Didn't receive code?</span>
+                      <span>Didn&apos;t receive code?</span>
                       <button
                         type="button"
                         className="btn-resend-otp"
@@ -1493,7 +1493,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess, isModal = false, 
             <p className="footer-text">
               {mode === "login" && (
                 <>
-                  Don't have an account?{" "}
+                  Don&apos;t have an account?{" "}
                   <button type="button" onClick={() => switchMode("signup")}>
                     Create Account
                   </button>

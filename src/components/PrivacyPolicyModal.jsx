@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Shield, X, Lock, Eye, Database, Globe, Calendar } from 'lucide-react';
+import { Shield, X } from 'lucide-react';
 
 export default function PrivacyPolicyModal({ onClose }) {
   const modalRef = useRef(null);
@@ -34,7 +34,7 @@ export default function PrivacyPolicyModal({ onClose }) {
           <section className="legal-section">
             <h3>1. Overview & Commitment</h3>
             <p>
-              Reelist Cinema Technologies Pvt. Ltd. ("Reelist", "we", "our", or "us") respects your digital privacy. This Privacy Policy outlines the types of information we collect, how it is used to deliver the cinema explorer experience, and your legal rights under GDPR, CCPA, and Indian Digital Personal Data Protection (DPDP) standards.
+              Reelist Cinema Technologies Pvt. Ltd. (&ldquo;Reelist&rdquo;, &ldquo;we&rdquo;, &ldquo;our&rdquo;, or &ldquo;us&rdquo;) respects your digital privacy. This Privacy Policy outlines the types of information we collect, how it is used to deliver the cinema explorer experience, and your legal rights under GDPR, CCPA, and Indian Digital Personal Data Protection (DPDP) standards.
             </p>
           </section>
 

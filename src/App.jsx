@@ -1,8 +1,5 @@
 import { useEffect, useMemo, useState, useRef, useCallback, lazy, Suspense } from 'react';
 import {
-  Clapperboard,
-  BarChart3,
-  Crown,
   DoorOpen,
   Film,
   Tv,
@@ -27,7 +24,6 @@ import LiveSocialProof from './components/LiveSocialProof.jsx';
 const MovieModal = lazy(() => import('./components/MovieModal.jsx'));
 const ShowtimesModal = lazy(() => import('./components/ShowtimesModal.jsx'));
 const ApiKeyGate = lazy(() => import('./components/ApiKeyGate.jsx'));
-const AdminDashboard = lazy(() => import('./components/AdminDashboard.jsx'));
 const TheaterScreen = lazy(() => import('./components/TheaterScreen.jsx'));
 const NotFound = lazy(() => import('./components/NotFound.jsx'));
 const PrivacyPolicyModal = lazy(() => import('./components/PrivacyPolicyModal.jsx'));
@@ -68,9 +64,6 @@ export default function App() {
   const [showCurtain, setShowCurtain] = useState(false);
   const [hasKey, setHasKey] = useState(!!tmdb.getApiKey());
   const [isEditingKey, setIsEditingKey] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(() => analytics.isAdminLoggedIn());
-  const [showAdmin, setShowAdmin] = useState(() => analytics.isAdminLoggedIn());
-  const [visitorCount, setVisitorCount] = useState(() => analytics.getStats().totalVisitors);
   const [keyError, setKeyError] = useState('');
   const [query, setQuery] = useState('');
   const [activeQuery, setActiveQuery] = useState('');
@@ -191,29 +184,24 @@ export default function App() {
     return [...list].sort((a, b) => (b.release_date || '').localeCompare(a.release_date || ''));
   }, [movies, catalogLanguage]);
 
-  const syncAdminState = () => {
+  const syncUserState = () => {
     const user = analytics.getCurrentUser();
     setCurrentUser(user);
-    const admin = analytics.isAdminLoggedIn();
-    setIsAdmin(admin);
-    setVisitorCount(analytics.getStats().totalVisitors);
   };
 
   const handleLogout = useCallback(() => {
     analytics.logout();
     setCurrentUser(null);
-    setIsAdmin(false);
-    setShowAdmin(false);
     setShowCurtain(false);
   }, []);
 
-  // Track visitor on mount (exclude administrators)
+  // Track visitor on mount
   useEffect(() => {
     const user = analytics.getCurrentUser();
-    if (user && !analytics.isAdminLoggedIn()) {
+    if (user) {
       analytics.recordVisit();
     }
-    syncAdminState();
+    syncUserState();
   }, []);
 
   // Smart auto-hiding navbar on scroll ("vanthu pora maari")
@@ -272,10 +260,6 @@ export default function App() {
 
   const handleAuthSuccess = useCallback((user) => {
     setCurrentUser(user);
-    const admin = user.role === 'admin' || analytics.isUserAdmin(user.email);
-    setIsAdmin(admin);
-    setShowAdmin(admin);
-    setVisitorCount(analytics.getStats().totalVisitors);
     setShowAuthModal(false);
     setShowCurtain(true);
 
@@ -412,7 +396,6 @@ export default function App() {
             setIsEditingKey(false);
             setReloadTrigger((prev) => prev + 1);
           }}
-          onOpenAdmin={isAdmin ? () => setShowAdmin(true) : null}
         />
       </Suspense>
     );
@@ -437,35 +420,10 @@ export default function App() {
         <div className="top-nav__actions">
           {currentUser ? (
             <>
-              {isAdmin && (
-                <button
-                  type="button"
-                  className={`top-nav__btn ${showAdmin ? 'top-nav__btn--active-admin' : 'top-nav__btn--admin'}`}
-                  onClick={() => setShowAdmin((prev) => !prev)}
-                  title={showAdmin ? 'Switch to Movie Marquee' : 'Open Admin Dashboard'}
-                >
-                  {showAdmin ? (
-                    <>
-                      <Clapperboard size={15} />
-                      <span>Movie Marquee</span>
-                    </>
-                  ) : (
-                    <>
-                      <BarChart3 size={15} />
-                      <span>Admin Dashboard</span>
-                    </>
-                  )}
-                </button>
-              )}
               <div
-                className={`top-nav__user-avatar ${isAdmin ? 'top-nav__user-avatar--admin' : ''}`}
-                title={currentUser.email ? `${isAdmin ? 'Admin: ' : 'User: '}${currentUser.email}` : 'User Profile'}
+                className="top-nav__user-avatar"
+                title={currentUser.email ? `User: ${currentUser.email}` : 'User Profile'}
               >
-                {isAdmin && (
-                  <span className="top-nav__avatar-crown">
-                    <Crown size={12} />
-                  </span>
-                )}
                 <span className="top-nav__avatar-text">{getUserInitials(currentUser)}</span>
               </div>
               <button
@@ -511,16 +469,12 @@ export default function App() {
             }}
           />
         </Suspense>
-      ) : showAdmin && isAdmin ? (
-        <Suspense fallback={<div className="container"><p className="state-panel__title">Loading Admin Dashboard…</p></div>}>
-          <AdminDashboard onSwitchToMovies={() => setShowAdmin(false)} />
-        </Suspense>
       ) : (
         <>
           <header className="hero">
             <p className="hero__eyebrow">Now screening</p>
             <h1 className="hero__title">Explore Cinema</h1>
-            <p className="hero__subtitle">Find what's trending, or search the whole marquee.</p>
+            <p className="hero__subtitle">Find what&apos;s trending, or search the whole marquee.</p>
             <div className="hero__live-audience-pill" title="Live active cinephiles on Reelist right now">
               <span className="live-pulse-dot" />
               <strong className="hero__live-audience-count">{liveViewersCount.toLocaleString()}</strong>
@@ -549,19 +503,7 @@ export default function App() {
                 </button>
                 <button
                   type="button"
-                  className="btn-outline hero__cta-btn"
-                  onClick={() => {
-                    const topMovie = displayedCatalogMovies[0] || movies[0];
-                    if (topMovie) setShowtimesMovie(topMovie);
-                  }}
-                  title="Check theater showtimes and ticket availability"
-                >
-                  <Ticket size={15} />
-                  <span>Check Showtimes</span>
-                </button>
-                <button
-                  type="button"
-                  className="btn-subtle-outline hero__cta-btn"
+                  className="btn-outline hero__cta-btn hero__cta-btn--tamil"
                   onClick={() => {
                     setCatalogLanguage('ta');
                     const el = document.querySelector('.trending-catalog-section');

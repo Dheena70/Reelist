@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { tmdb } from '../api/tmdb.js';
 
-export default function ApiKeyGate({ onSaved, errorMessage, canCancel, onCancel, onOpenAdmin }) {
+export default function ApiKeyGate({ onSaved, errorMessage, canCancel, onCancel }) {
   const [key, setKey] = useState('');
   const [validationError, setValidationError] = useState('');
 
@@ -64,18 +64,6 @@ export default function ApiKeyGate({ onSaved, errorMessage, canCancel, onCancel,
             )}
           </div>
         </form>
-
-        {onOpenAdmin && (
-          <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid #2a2a33' }}>
-            <button
-              type="button"
-              className="hero__action-btn hero__action-btn--secondary"
-              onClick={onOpenAdmin}
-            >
-              🔒 Admin Login (Monster Auth)
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );

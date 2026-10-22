@@ -5811,17 +5811,30 @@ body {
 /* --------------------------------------------------------------------------
    Media Format Switcher (Movies vs TV Shows / Web Series - IMDb Parity)
    -------------------------------------------------------------------------- */
+.trending-catalog-section {
+  padding-top: 1.5rem;
+  margin-top: 0.5rem;
+}
+
 .section-header-wrap--with-toggle {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  gap: 1.25rem;
+  align-items: flex-end;
+  gap: 1.5rem;
   flex-wrap: wrap;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.25rem;
+}
+
+.section-header-wrap--with-toggle .section-heading {
+  margin-bottom: 0.35rem;
 }
 
 .section-header-wrap--with-toggle .section-subheading {
-  margin-bottom: 0;
+  margin: 0 0 0 0.75rem;
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+  line-height: 1.45;
 }
 
 .media-format-switcher {
@@ -5873,11 +5886,12 @@ body {
 .catalog-language-bar-wrap {
   display: flex;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-top: 0.25rem;
+  margin-bottom: 2rem;
   overflow-x: auto;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
-  padding: 2px 0 6px;
+  padding: 4px 0 8px;
 }
 
 .catalog-language-bar-wrap::-webkit-scrollbar {
@@ -6756,6 +6770,20 @@ body {
 .hero__cta-btn--explore:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 22px rgba(245, 197, 24, 0.55);
+}
+
+.hero__cta-btn--tamil {
+  border: 1.5px solid rgba(245, 197, 24, 0.45);
+  color: #f5c518;
+  background: rgba(245, 197, 24, 0.08);
+}
+
+.hero__cta-btn--tamil:hover {
+  background: rgba(245, 197, 24, 0.18);
+  border-color: #f5c518;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 18px rgba(245, 197, 24, 0.3);
 }
 
 /* 2. Search Bar Error & Validation Feedback */

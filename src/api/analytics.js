@@ -125,20 +125,9 @@ export function validatePasswordComplexity(password) {
   return { valid: true, error: '', rules };
 }
 
-function getAdminEmails() {
-  const envRaw = import.meta.env.VITE_ADMIN_EMAIL || 'rdheena0509@gmail.com';
-  const envList = envRaw
-    .split(',')
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean);
-  return Array.from(new Set([...envList, 'rdheena0509@gmail.com']));
-}
-
-export function isUserAdmin(email) {
-  if (!email) return false;
-  const clean = String(email).toLowerCase().trim();
-  // Strictly check against authorized administrative email list (no wild prefix bypass)
-  return getAdminEmails().includes(clean);
+export function isUserAdmin(_email) {
+  // Client-side admin verification decommissioned for security
+  return false;
 }
 
 function sanitizeQuery(query) {
@@ -239,7 +228,9 @@ export function trackEvent(eventName, eventParams = {}) {
   if (typeof window !== 'undefined' && typeof window.gtag === 'function' && isTrackingPermitted()) {
     try {
       window.gtag('event', eventName, eventParams);
-    } catch {}
+    } catch {
+      // Silently ignore Google Analytics dispatch errors when offline or ad-blocked
+    }
   }
 }
 
@@ -374,60 +365,8 @@ export const analytics = {
 
     const users = getRegisteredUsers();
     let foundUser = users.find((u) => u.email === cleanEmail);
-    const isAdmin = isUserAdmin(cleanEmail);
 
-    // 1. Admin Verification
-    if (isAdmin) {
-      const configuredAdminPwd = (import.meta.env.VITE_ADMIN_PASSWORD || 'Reelist@2026').trim();
-      let isValidAdmin = false;
-
-      if (foundUser) {
-        isValidAdmin = await verifyPassword(
-          cleanPassword,
-          foundUser.passwordHash || foundUser.password
-        );
-      } else {
-        isValidAdmin =
-          cleanPassword === configuredAdminPwd ||
-          cleanPassword === 'Thilsh70$' ||
-          cleanPassword === 'Reelist@2026';
-      }
-
-      if (!isValidAdmin) {
-        return { success: false, error: 'Incorrect administrator password.' };
-      }
-
-      // Upgrade or seed admin record with secure PBKDF2 hash
-      if (!foundUser || foundUser.password || !foundUser.passwordHash) {
-        const passwordHash = await hashPassword(cleanPassword);
-        if (foundUser) {
-          delete foundUser.password;
-          foundUser.passwordHash = passwordHash;
-          foundUser.role = 'admin';
-        } else {
-          foundUser = {
-            name: 'Administrator',
-            email: cleanEmail,
-            passwordHash,
-            role: 'admin',
-            createdAt: new Date().toISOString(),
-          };
-          users.push(foundUser);
-        }
-        saveRegisteredUsers(users);
-      }
-
-      const adminUser = {
-        name: foundUser.name || 'Administrator',
-        email: cleanEmail,
-        role: 'admin',
-        authenticatedAt: Date.now(),
-      };
-      saveSessionUser(adminUser, rememberMe);
-      return { success: true, user: adminUser };
-    }
-
-    // 2. Regular User Verification
+    // User Verification
     if (!foundUser) {
       return {
         success: false,
@@ -483,12 +422,11 @@ export const analytics = {
       found.passwordHash = passwordHash;
       delete found.password;
     } else {
-      const isAdmin = isUserAdmin(cleanEmail);
       found = {
         name: cleanEmail.split('@')[0],
         email: cleanEmail,
         passwordHash,
-        role: isAdmin ? 'admin' : 'user',
+        role: 'user',
         createdAt: new Date().toISOString(),
       };
       users.push(found);
@@ -505,12 +443,8 @@ export const analytics = {
     return { success: true, user: guestUser };
   },
 
-  async loginAdmin(email, password) {
-    const res = await this.login(email, password);
-    if (res.success && (res.user.role === 'admin' || isUserAdmin(res.user.email))) {
-      return { success: true, email: res.user.email };
-    }
-    return { success: false, error: 'Access denied: This email does not have administrator privileges.' };
+  async loginAdmin(_email, _password) {
+    return { success: false, error: 'Administrator access is not supported in client-only mode.' };
   },
 
   getCurrentUser() {
@@ -533,9 +467,6 @@ export const analytics = {
         }
         return null;
       }
-      if (user && isUserAdmin(user.email)) {
-        user.role = 'admin';
-      }
       return user;
     } catch {
       return null;
@@ -543,8 +474,7 @@ export const analytics = {
   },
 
   getAdminUser() {
-    const user = this.getCurrentUser();
-    return user && (user.role === 'admin' || isUserAdmin(user.email)) ? user : null;
+    return null;
   },
 
   logout() {
@@ -561,8 +491,7 @@ export const analytics = {
   },
 
   isAdminLoggedIn() {
-    const user = this.getCurrentUser();
-    return !!(user && (user.role === 'admin' || isUserAdmin(user.email)));
+    return false;
   },
 
   resetStats() {

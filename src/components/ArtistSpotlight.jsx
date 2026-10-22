@@ -16,7 +16,7 @@ import {
 import { profileUrl } from '../api/tmdb.js';
 import MovieCard from './MovieCard.jsx';
 
-export default function ArtistSpotlight({
+function ArtistSpotlightInner({
   artist,
   similarArtists = [],
   onSelectArtist,
@@ -27,8 +27,6 @@ export default function ArtistSpotlight({
   const [filterQuery, setFilterQuery] = useState('');
   const [bioExpanded, setBioExpanded] = useState(false);
   const [imgError, setImgError] = useState(false);
-
-  if (!artist) return null;
 
   const portrait = profileUrl(artist.profile_path, 'h632');
 
@@ -354,7 +352,7 @@ export default function ArtistSpotlight({
           <Film size={36} className="state-panel__icon" />
           <h3 className="state-panel__title">No titles found</h3>
           <p className="state-panel__sub">
-            No films matching "{filterQuery}" were found in {activeLangName}.
+            No films matching &ldquo;{filterQuery}&rdquo; were found in {activeLangName}.
           </p>
           <button
             type="button"
@@ -370,4 +368,9 @@ export default function ArtistSpotlight({
       )}
     </section>
   );
+}
+
+export default function ArtistSpotlight(props) {
+  if (!props || !props.artist) return null;
+  return <ArtistSpotlightInner {...props} />;
 }

@@ -8,25 +8,13 @@ import {
   Users,
   User,
   ExternalLink,
-  Star,
   Sparkles,
   Volume2,
   VolumeX,
   Maximize2,
   Minimize2,
   Clapperboard,
-  Calendar,
-  ChevronRight,
-  Clock,
-  Music,
-  Award,
   Globe2,
-  Bookmark,
-  Check,
-  TrendingUp,
-  TrendingDown,
-  ThumbsUp,
-  Heart,
 } from 'lucide-react';
 import {
   backdropUrl,
@@ -38,7 +26,6 @@ import {
   ALL_CURATED_MOVIES,
   FRANCHISE_COLLECTIONS,
 } from '../api/tmdb.js';
-import RatingBadge from './RatingBadge.jsx';
 
 function determineRoleBadge(member, index, allCast = []) {
   const char = (member.character || '').toLowerCase();
@@ -449,6 +436,9 @@ export default function MovieModal({ movieId, onClose, onSelectMovie, currentUse
 
   const handleSwitchMovie = (newId) => {
     setActiveId(newId);
+    if (onSelectMovie) {
+      onSelectMovie({ id: newId });
+    }
     setShowTrailer(true);
     setIsMuted(true);
     if (modalRef.current) {
@@ -684,48 +674,6 @@ export default function MovieModal({ movieId, onClose, onSelectMovie, currentUse
     return details.credits.cast.slice(0, 8);
   }, [details]);
 
-  // Convert 10-point scale to 5-star scale
-  const fiveStarRating = details?.vote_average ? (details.vote_average / 2).toFixed(1) : null;
-  const renderStars = (rating) => {
-    if (!rating) return null;
-    const num = parseFloat(rating);
-    const fullStars = Math.floor(num);
-    const remainder = num - fullStars;
-    const hasHalf = remainder >= 0.25 && remainder < 0.75;
-    const hasExtraFull = remainder >= 0.75;
-    const stars = [];
-
-    for (let i = 1; i <= 5; i++) {
-      if (i <= fullStars || (i === fullStars + 1 && hasExtraFull)) {
-        stars.push(
-          <Star key={i} size={14} className="star-icon star-icon--full" fill="#ffc759" color="#ffc759" />
-        );
-      } else if (i === fullStars + 1 && hasHalf) {
-        stars.push(
-          <svg key={i} width="14" height="14" viewBox="0 0 24 24" className="star-icon star-icon--half">
-            <defs>
-              <linearGradient id={`halfStar-${movieId}-${i}`}>
-                <stop offset="50%" stopColor="#ffc759" />
-                <stop offset="50%" stopColor="#3d3d4c" />
-              </linearGradient>
-            </defs>
-            <path
-              fill={`url(#halfStar-${movieId}-${i})`}
-              stroke="#ffc759"
-              strokeWidth="1.2"
-              d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-            />
-          </svg>
-        );
-      } else {
-        stars.push(
-          <Star key={i} size={14} className="star-icon star-icon--empty" color="#4a4a58" />
-        );
-      }
-    }
-    return stars;
-  };
-
   // Resolve Franchise Continuation & Sequels
   const franchiseSaga = useMemo(() => {
     if (collectionInfo?.parts?.length > 0) {
@@ -860,19 +808,6 @@ export default function MovieModal({ movieId, onClose, onSelectMovie, currentUse
       it: 'Italian',
     };
     return map[code] || details.spoken_languages?.[0]?.english_name || code.toUpperCase();
-  }, [details]);
-
-  const ratingsTrio = useMemo(() => {
-    if (details?.ratings) return details.ratings;
-    const avg = details?.vote_average ? Number(details.vote_average) : 6.0;
-    const imdbScore = avg.toFixed(1);
-    const rtFreshness = Math.min(99, Math.max(28, Math.round(avg * 10 - 15)));
-    const primeScore = Math.max(4.0, Number((avg - 0.1).toFixed(1)));
-    return {
-      imdb: `${imdbScore}/10`,
-      prime: `${primeScore}/10`,
-      rottenTomatoes: `${rtFreshness}%`,
-    };
   }, [details]);
 
   const censorRating = useMemo(() => {

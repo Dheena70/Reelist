@@ -11744,7 +11744,9 @@ export function getSavedCity() {
     if (saved && CITY_THEATERS[saved]) {
       return saved;
     }
-  } catch (e) {}
+  } catch {
+    // Ignore localStorage read errors in private browsing
+  }
   return 'kallakurichi'; // Defaults to user hometown!
 }
 
@@ -11753,7 +11755,9 @@ export function saveCity(cityId) {
     if (CITY_THEATERS[cityId]) {
       localStorage.setItem('reelist_user_city', cityId);
     }
-  } catch (e) {}
+  } catch {
+    // Ignore localStorage write errors in private browsing
+  }
 }
 
 export function getCityDetails(cityId) {

@@ -1,4 +1,4 @@
-import { MapPin, Phone, Mail, Clock, Heart, Shield, Scale, HelpCircle } from 'lucide-react';
+import { MapPin, Phone, Mail } from 'lucide-react';
 
 export default function Footer({ onOpenPrivacy, onOpenTerms, onOpenContact, onOpen404 }) {
   return (
@@ -74,7 +74,9 @@ export default function Footer({ onOpenPrivacy, onOpenTerms, onOpenContact, onOp
                   try {
                     localStorage.removeItem('reelist_cookie_consent');
                     window.location.reload();
-                  } catch {}
+                  } catch {
+                    // Ignore localStorage access restrictions in private browsing
+                  }
                 }}>
                   Cookie Preferences
                 </button>

@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Mail, Phone, MapPin, Send, X, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
+import { useState } from 'react';
+import { Mail, Phone, MapPin, Send, X, Clock, AlertCircle } from 'lucide-react';
 
 export default function ContactModal({ onClose, onSuccess }) {
   const [name, setName] = useState('');

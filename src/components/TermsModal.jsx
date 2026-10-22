@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { FileText, X, Scale, ShieldAlert, Award } from 'lucide-react';
+import { X, Scale } from 'lucide-react';
 
 export default function TermsModal({ onClose }) {
   const modalRef = useRef(null);
@@ -34,7 +34,7 @@ export default function TermsModal({ onClose }) {
           <section className="legal-section">
             <h3>1. Acceptance of Terms</h3>
             <p>
-              By accessing, browsing, or utilizing Reelist — Movie Explorer ("the Application"), you agree to be bound by these Terms and Conditions. If you do not agree to these terms, please discontinue use of the platform immediately.
+              By accessing, browsing, or utilizing Reelist — Movie Explorer (&ldquo;the Application&rdquo;), you agree to be bound by these Terms and Conditions. If you do not agree to these terms, please discontinue use of the platform immediately.
             </p>
           </section>
 

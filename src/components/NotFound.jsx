@@ -12,7 +12,7 @@ export default function NotFound({ onReturnHome, onSearchClick }) {
         <p className="not-found-eyebrow">Scene Missing from Marquee</p>
         <h1 id="not-found-title" className="not-found-title">Cut from the Reel (404)</h1>
         <p className="not-found-desc">
-          The frame or scene you requested was either archived, relocated, or left on the cutting room floor. Don't worry—our September, August & July 2026 premiere is screening right now!
+          The frame or scene you requested was either archived, relocated, or left on the cutting room floor. Don&apos;t worry—our September, August &amp; July 2026 premiere is screening right now!
         </p>
 
         <div className="not-found-actions">

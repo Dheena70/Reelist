@@ -1,4 +1,4 @@
-import { CheckCircle2, Film, Heart, Home, ArrowRight } from 'lucide-react';
+import { CheckCircle2, Home } from 'lucide-react';
 
 export default function ThankYouModal({ submissionData, onClose, onReturnHome }) {
   const refCode = 'RL-' + Math.floor(100000 + Math.random() * 900000);
@@ -10,10 +10,10 @@ export default function ThankYouModal({ submissionData, onClose, onReturnHome })
           <CheckCircle2 size={48} className="thank-you-check-icon" />
         </div>
 
-        <p className="thank-you-eyebrow">Popcorn's Ready!</p>
+        <p className="thank-you-eyebrow">Popcorn&apos;s Ready!</p>
         <h2 id="thank-you-title" className="thank-you-title">Thank You for Reaching Out!</h2>
         <p className="thank-you-desc">
-          We've received your note{submissionData?.name ? `, ${submissionData.name}` : ''}. Our cinema desk will review your message and reply to <strong>{submissionData?.email || 'your email'}</strong> within 24 business hours.
+          We&apos;ve received your note{submissionData?.name ? `, ${submissionData.name}` : ''}. Our cinema desk will review your message and reply to <strong>{submissionData?.email || 'your email'}</strong> within 24 business hours.
         </p>
 
         <div className="thank-you-ref-box">

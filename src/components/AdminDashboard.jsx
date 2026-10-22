@@ -147,7 +147,7 @@ export default function AdminDashboard({ onSwitchToMovies }) {
             <div className="admin-metric-card__glow" />
             <div className="admin-metric-card__top">
               <div>
-                <span className="admin-metric-card__label">Today's Visits</span>
+                <span className="admin-metric-card__label">Today&apos;s Visits</span>
                 <div className="admin-metric-card__value">
                   {stats.todayVisitors.toLocaleString()}
                 </div>
@@ -161,7 +161,7 @@ export default function AdminDashboard({ onSwitchToMovies }) {
             </p>
             <div className="admin-metric-card__footer">
               <span className="admin-status-dot admin-status-dot--live" />
-              <span>Today's Screening Traffic</span>
+              <span>Today&apos;s Screening Traffic</span>
             </div>
           </div>
 

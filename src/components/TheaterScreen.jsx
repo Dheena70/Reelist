@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 
 const REELIST_LETTERS = ['R', 'E', 'E', 'L', 'I', 'S', 'T'];
 
@@ -125,7 +125,7 @@ export default function TheaterScreen({ onEnter }) {
     }
   };
 
-  const handleOpenCurtain = () => {
+  const handleOpenCurtain = useCallback(() => {
     if (isOpen) return;
     playCinematicAudio();
     setIsOpen(true);
@@ -139,7 +139,7 @@ export default function TheaterScreen({ onEnter }) {
     setTimeout(() => {
       if (onEnter) onEnter();
     }, 2450);
-  };
+  }, [isOpen, onEnter]);
 
   useEffect(() => {
     // Automatically trigger curtain open after 350ms so user is never stuck
@@ -156,7 +156,7 @@ export default function TheaterScreen({ onEnter }) {
       clearTimeout(openTimer);
       clearTimeout(safetyTimer);
     };
-  }, []);
+  }, [handleOpenCurtain, onEnter]);
 
   return (
     <div

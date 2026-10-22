@@ -13,6 +13,8 @@ with rating, overview, genres, and cast.
 - Loading skeletons and empty/error states
 - Cinema-marquee visual theme (film-sprocket borders, stamped rating badges)
 
+> **Note on Visitor Stats & Analytics**: Telemetry and visitor counts are stored strictly in client-side `localStorage` within each user's own browser. They reflect individual local sessions rather than a centralized global server counter.
+
 ## Tech
 
 React 18, Vite, Bootstrap 5, TMDB API, CSS.
@@ -32,6 +34,8 @@ React 18, Vite, Bootstrap 5, TMDB API, CSS.
    ```
    VITE_TMDB_API_KEY=your_key_here
    ```
+   > **Security Note**: Never put secrets in VITE_ variables. They are public.
+
    No `.env`? No problem — the app will prompt you to paste a key on first
    load and remember it in your browser instead.
 4. Run it:

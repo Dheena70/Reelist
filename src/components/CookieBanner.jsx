@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Cookie, ShieldCheck, Check, X } from 'lucide-react';
+import { Cookie, Check } from 'lucide-react';
 
 export default function CookieBanner({ onOpenPrivacy }) {
   const [visible, setVisible] = useState(false);

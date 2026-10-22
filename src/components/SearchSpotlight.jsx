@@ -1,4 +1,4 @@
-import { Film, Play, Ticket, Clock, Calendar, Star, Clapperboard, Globe2, ChevronRight } from 'lucide-react';
+import { Film, Play, Ticket, Clock, Calendar, Globe2 } from 'lucide-react';
 import { posterUrl } from '../api/tmdb.js';
 
 export default function SearchSpotlight({ movie, onSelectMovie, onOpenShowtimes }) {

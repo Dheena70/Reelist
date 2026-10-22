@@ -36,20 +36,7 @@ export default function Footer({ onOpenPrivacy, onOpenTerms, onOpenContact, onOp
             </div>
           </div>
 
-          {/* Column 2: Navigation & Quick Filters */}
-          <div className="footer-col">
-            <h4 className="footer-heading">Marquee Premiere</h4>
-            <ul className="footer-links">
-              <li><a href="#september-2026">September 2026 Releases</a></li>
-              <li><a href="#august-2026">August 2026 Blockbusters</a></li>
-              <li><a href="#july-2026">July 2026 Premieres</a></li>
-              <li><a href="#tamil">Tamil Cinema (Kollywood)</a></li>
-              <li><a href="#telugu">Telugu Cinema (Tollywood)</a></li>
-              <li><a href="#hindi">Hindi Cinema (Bollywood)</a></li>
-            </ul>
-          </div>
-
-          {/* Column 3: Legal & Support */}
+          {/* Column 2: Legal & Support */}
           <div className="footer-col">
             <h4 className="footer-heading">Support & Legal</h4>
             <ul className="footer-links">

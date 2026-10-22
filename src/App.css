@@ -6840,8 +6840,8 @@ body {
 
 .site-footer__grid {
   display: grid;
-  grid-template-columns: 2fr 1.2fr 1.2fr 1.6fr;
-  gap: 3rem;
+  grid-template-columns: 2fr 1.2fr 1.5fr;
+  gap: 3.5rem;
 }
 
 .footer-col--brand {
@@ -7022,7 +7022,7 @@ body {
   font-size: 0.7rem;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 860px) {
   .site-footer__grid {
     grid-template-columns: 1fr 1fr;
     gap: 2.5rem;

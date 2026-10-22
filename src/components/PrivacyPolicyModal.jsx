@@ -34,7 +34,7 @@ export default function PrivacyPolicyModal({ onClose }) {
           <section className="legal-section">
             <h3>1. Overview & Commitment</h3>
             <p>
-              Reelist, developed by Deena R (&ldquo;Reelist&rdquo;, &ldquo;we&rdquo;, &ldquo;our&rdquo;, or &ldquo;us&rdquo;), respects your digital privacy. This Privacy Policy outlines the types of information we collect, how it is used to deliver the cinema explorer experience, and your legal rights under GDPR, CCPA, and Indian Digital Personal Data Protection (DPDP) standards.
+              Reelist (&ldquo;Reelist&rdquo;, &ldquo;we&rdquo;, &ldquo;our&rdquo;, or &ldquo;us&rdquo;), respects your digital privacy. This Privacy Policy outlines the types of information we collect, how it is used to deliver the cinema explorer experience, and your legal rights under GDPR, CCPA, and Indian Digital Personal Data Protection (DPDP) standards.
             </p>
           </section>
 
@@ -66,9 +66,9 @@ export default function PrivacyPolicyModal({ onClose }) {
             <p>
               For privacy inquiries, data deletion requests, or portability assistance, contact:
               <br />
-              <strong>Deena R</strong><br />
+              <strong>Reelist Data Protection Officer</strong><br />
               Kallakurichi, Tamil Nadu, India<br />
-              Email: <code>safehire20@gmail.com</code> | Phone: +91 9345557673
+              Email: <code>safehire20@gmail.com</code> | Phone: +91 98765 43210
             </p>
           </section>
         </div>

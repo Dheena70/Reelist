@@ -75,7 +75,7 @@ export default function AdminDashboard({ onSwitchToMovies }) {
             <div className="admin-page__user-meta">
               <span className="admin-pill admin-pill--gold">
                 <Crown size={13} />
-                <span>Super Admin:</span> <strong>{adminUser?.email || 'rdheena0509@gmail.com'}</strong>
+                <span>Super Admin:</span> <strong>{adminUser?.email || 'admin@reelist.cinema'}</strong>
               </span>
               <span className="admin-pill admin-pill--muted">
                 <Clock size={13} />
@@ -271,7 +271,7 @@ export default function AdminDashboard({ onSwitchToMovies }) {
               <li className="admin-audit-item">
                 <span className="admin-audit-item__label">Admin Account Email</span>
                 <span className="admin-audit-item__value font-mono">
-                  {adminUser?.email || 'rdheena0509@gmail.com'}
+                  {adminUser?.email || 'admin@reelist.cinema'}
                 </span>
               </li>
               <li className="admin-audit-item">

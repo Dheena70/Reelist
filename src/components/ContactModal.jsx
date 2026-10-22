@@ -51,11 +51,11 @@ export default function ContactModal({ onClose, onSuccess }) {
         <div className="contact-modal-grid">
           {/* Office Information Column */}
           <div className="contact-info-col">
-            <h3 className="contact-info-title">Developer & Support</h3>
+            <h3 className="contact-info-title">Cinema Concierge & Support</h3>
             <div className="contact-info-item">
               <MapPin size={18} className="contact-info-icon" />
               <div>
-                <strong>Deena R</strong>
+                <strong>Reelist Cinema Concierge</strong>
                 <p>Kallakurichi, Tamil Nadu, India</p>
               </div>
             </div>
@@ -64,7 +64,7 @@ export default function ContactModal({ onClose, onSuccess }) {
               <Phone size={18} className="contact-info-icon" />
               <div>
                 <strong>Direct Contact</strong>
-                <p>+91 9345557673</p>
+                <p>+91 98765 43210</p>
               </div>
             </div>
 
@@ -97,7 +97,7 @@ export default function ContactModal({ onClose, onSuccess }) {
                   setName(e.target.value);
                   if (errors.name) setErrors((prev) => ({ ...prev, name: null }));
                 }}
-                placeholder="e.g. Dheena"
+                placeholder="e.g. Cinema Enthusiast"
                 className={errors.name ? 'has-error' : ''}
                 aria-invalid={!!errors.name}
               />

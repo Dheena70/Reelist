@@ -42,20 +42,12 @@ function getUserInitials(user) {
       ? name
       : (email.includes('@') ? email.split('@')[0] : email);
 
-  const clean = raw.toLowerCase().trim();
-
-  // Handle specific cases requested by user: e.g. "rdheena" -> "RD"
-  if (clean.startsWith('rdheena') || clean.startsWith('rd')) {
-    return 'RD';
-  }
-
-  // Handle multi-word names: e.g. "R Dheena" -> "RD"
   const parts = raw.split(/[\s._-]+/).filter(Boolean);
-  if (parts.length >= 2 && parts[0].length === 1 && parts[1].length >= 1) {
+  if (parts.length >= 2) {
     return (parts[0][0] + parts[1][0]).toUpperCase();
   }
 
-  // Single letter initial: e.g. "deepa" -> "D"
+  // Single letter initial
   return (raw.charAt(0) || 'U').toUpperCase();
 }
 

@@ -19,14 +19,14 @@ export default function Footer({ onOpenPrivacy, onOpenTerms, onOpenContact, onOp
               <div className="footer-address-item">
                 <MapPin size={16} className="footer-icon" />
                 <address className="footer-address-text">
-                  <strong>Deena R</strong><br />
+                  <strong>Reelist Cinema Concierge</strong><br />
                   Kallakurichi, Tamil Nadu, India
                 </address>
               </div>
 
               <div className="footer-address-item">
                 <Phone size={15} className="footer-icon" />
-                <span>+91 9345557673</span>
+                <span>+91 98765 43210</span>
               </div>
 
               <div className="footer-address-item">
@@ -77,7 +77,7 @@ export default function Footer({ onOpenPrivacy, onOpenTerms, onOpenContact, onOp
 
         <div className="site-footer__bottom">
           <p className="footer-copy">
-            © 2026 Reelist • Developed by Deena R. All rights reserved.
+            © 2026 Reelist Cinema. All rights reserved.
           </p>
           <div className="footer-bottom-links">
             <button type="button" className="footer-bottom-btn" onClick={onOpenPrivacy}>Privacy</button>

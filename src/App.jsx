@@ -486,35 +486,6 @@ export default function App() {
               currentUser={currentUser}
               onRequireAuth={requireAuth}
             />
-            {!activeQuery && (
-              <div className="hero__cta-group" aria-label="Hero premiere actions">
-                <button
-                  type="button"
-                  className="btn-primary hero__cta-btn hero__cta-btn--explore"
-                  onClick={() => {
-                    const el = document.querySelector('.trending-catalog-section');
-                    if (el) el.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                  title="Explore September, August & July 2026 Blockbusters"
-                >
-                  <Film size={15} />
-                  <span>Explore 2026 Blockbusters</span>
-                </button>
-                <button
-                  type="button"
-                  className="btn-outline hero__cta-btn hero__cta-btn--tamil"
-                  onClick={() => {
-                    setCatalogLanguage('ta');
-                    const el = document.querySelector('.trending-catalog-section');
-                    if (el) el.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                  title="Filter by Tamil Cinema Releases"
-                >
-                  <Sparkles size={14} />
-                  <span>Tamil Premieres</span>
-                </button>
-              </div>
-            )}
             {activeQuery && (
               <div className="hero__actions">
                 <button

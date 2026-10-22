@@ -6735,57 +6735,6 @@ body {
    PRODUCTION READINESS STYLES (CHECKLIST ITEMS 1, 4, 10, 11, 13, 14, 15, 16, 17, 19)
    ========================================================================== */
 
-/* 1. Above-The-Fold Hero CTA Buttons */
-.hero__cta-group {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  margin-top: 1.25rem;
-  flex-wrap: wrap;
-  width: 100%;
-}
-
-.hero__cta-btn {
-  height: 40px;
-  padding: 0 1.25rem;
-  font-size: var(--fs-sm);
-  font-weight: 700;
-  border-radius: var(--radius-full);
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.hero__cta-btn--explore {
-  background: linear-gradient(135deg, #f5c518 0%, #e5a910 100%);
-  color: #0b0c10;
-  border: none;
-  box-shadow: 0 4px 16px rgba(245, 197, 24, 0.35);
-}
-
-.hero__cta-btn--explore:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 22px rgba(245, 197, 24, 0.55);
-}
-
-.hero__cta-btn--tamil {
-  border: 1.5px solid rgba(245, 197, 24, 0.45);
-  color: #f5c518;
-  background: rgba(245, 197, 24, 0.08);
-}
-
-.hero__cta-btn--tamil:hover {
-  background: rgba(245, 197, 24, 0.18);
-  border-color: #f5c518;
-  color: #ffffff;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 18px rgba(245, 197, 24, 0.3);
-}
-
 /* 2. Search Bar Error & Validation Feedback */
 .search-bar-container {
   display: flex;

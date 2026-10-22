@@ -17,7 +17,6 @@ import MovieGrid from './components/MovieGrid.jsx';
 import MonsterAuth from './components/MonsterAuth.jsx';
 import SearchSpotlight from './components/SearchSpotlight.jsx';
 import ArtistSpotlight from './components/ArtistSpotlight.jsx';
-import CookieBanner from './components/CookieBanner.jsx';
 import Footer from './components/Footer.jsx';
 import LiveSocialProof from './components/LiveSocialProof.jsx';
 
@@ -719,9 +718,6 @@ export default function App() {
           <span>Concierge</span>
         </button>
       </nav>
-
-      {/* GDPR / ePrivacy Compliant Cookie Consent Banner */}
-      <CookieBanner onOpenPrivacy={() => setActiveLegalModal('privacy')} />
 
       {/* Legal & Support Modals */}
       {activeLegalModal === 'privacy' && (

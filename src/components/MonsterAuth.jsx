@@ -1,191 +1,24 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { User, Mail, Eye, EyeOff, AlertCircle, CheckCircle2, ArrowLeft, Loader2 } from "lucide-react";
 import { analytics } from "../api/analytics.js";
 
-function useEyeOffset(ref, mouse, maxOffset, lookAway) {
-  const [rect, setRect] = useState(null);
-
-  useEffect(() => {
-    const measure = () => ref.current && setRect(ref.current.getBoundingClientRect());
-    measure();
-    window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
-  }, [ref]);
-
-  if (lookAway) return { x: -maxOffset * 0.5, y: -maxOffset * 0.9 };
-  if (!mouse || !rect) return { x: 0, y: 0 };
-
-  const cx = rect.left + rect.width / 2;
-  const cy = rect.top + rect.height / 2;
-  const dx = mouse.x - cx;
-  const dy = mouse.y - cy;
-  const dist = Math.min(Math.hypot(dx, dy), 120) / 120;
-  const angle = Math.atan2(dy, dx);
-  return { x: Math.cos(angle) * maxOffset * dist, y: Math.sin(angle) * maxOffset * dist };
-}
-
-function Eye_({ size = 22, pupil = 9, offset }) {
-  return (
-    <div
-      style={{
-        width: size,
-        height: size,
-        borderRadius: "50%",
-        background: "#fff",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        flexShrink: 0,
-      }}
-    >
-      <div
-        style={{
-          width: pupil,
-          height: pupil,
-          borderRadius: "50%",
-          background: "#232323",
-          transform: `translate(${offset.x}px, ${offset.y}px)`,
-          transition: "transform .05s linear",
-        }}
-      />
-    </div>
-  );
-}
-
-function CoffeeCup({ mouse, lookAway, mouthOpen }) {
-  const ref = useRef(null);
-  const offset = useEyeOffset(ref, mouse, 5, lookAway);
-  return (
-    <div ref={ref} className="mon mon-cup">
-      <div className="cup-steam">
-        <span /><span /><span />
-      </div>
-      <div className="cup-handle" />
-      <div className="cup-sleeve" />
-      <div className="cup-body">
-        <div className="eyes-row">
-          <Eye_ offset={offset} size={22} pupil={9} />
-          <Eye_ offset={offset} size={22} pupil={9} />
-        </div>
-        <div className={`cup-mouth ${mouthOpen ? "open" : ""}`}>
-          <div className="teeth" />
-        </div>
-      </div>
-      <div className="snack-legs">
-        <div className="leg cup" />
-        <div className="leg cup" />
-      </div>
-    </div>
-  );
-}
-
-function Donut({ mouse, lookAway, mouthOpen }) {
-  const ref = useRef(null);
-  const offset = useEyeOffset(ref, mouse, 4, lookAway);
-  return (
-    <div ref={ref} className="mon mon-donut">
-      <div className="donut-ring">
-        <span className="sprinkle s1" />
-        <span className="sprinkle s2" />
-        <span className="sprinkle s3" />
-        <span className="sprinkle s4" />
-        <span className="sprinkle s5" />
-        <div className="donut-hole" />
-        <div className="eyes-row donut-eyes">
-          <Eye_ offset={offset} size={20} pupil={8} />
-          <Eye_ offset={offset} size={20} pupil={8} />
-        </div>
-        <div className={`donut-mouth ${mouthOpen ? "open" : ""}`} />
-      </div>
-      <div className="snack-legs">
-        <div className="leg donut" />
-        <div className="leg donut" />
-      </div>
-    </div>
-  );
-}
-
-function Popcorn({ mouse, lookAway, mouthOpen }) {
-  const ref = useRef(null);
-  const offset = useEyeOffset(ref, mouse, 6, lookAway);
-  return (
-    <div ref={ref} className="mon mon-popcorn">
-      <div className="popcorn-top">
-        <div className="kernel-row row-top"><span /></div>
-        <div className="kernel-row row-mid"><span /><span /><span /></div>
-        <div className="kernel-row row-bottom"><span /><span /><span /><span /></div>
-      </div>
-      <div className="popcorn-bucket">
-        <div className="eyes-row">
-          <Eye_ offset={offset} size={22} pupil={9} />
-          <Eye_ offset={offset} size={22} pupil={9} />
-        </div>
-        <div className={`popcorn-mouth ${mouthOpen ? "open" : ""}`}>
-          <div className="teeth" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Soda({ mouse, lookAway, mouthOpen }) {
-  const ref = useRef(null);
-  const offset = useEyeOffset(ref, mouse, 7, lookAway);
-  return (
-    <div ref={ref} className="mon mon-soda">
-      <div className="soda-tab" />
-      <div className="soda-can">
-        <div className="soda-label" />
-        <div className="eyes-row">
-          <Eye_ offset={offset} size={19} pupil={8} />
-          <Eye_ offset={offset} size={19} pupil={8} />
-        </div>
-        <div className={`soda-mouth ${mouthOpen ? "open" : ""}`} />
-      </div>
-      <div className="snack-legs">
-        <div className="leg soda" />
-        <div className="leg soda" />
-      </div>
-    </div>
-  );
-}
-
-function Monsters({ mouse, passwordFocused, emailTyping }) {
-  return (
-    <div className="monsters-wrapper">
-      <div className="stage-banner">
-        <span className="stage-badge">🍿 Concession Squad 🥤</span>
-        <p className="stage-tagline">We keep watch while you pick your movie!</p>
-      </div>
-      <div className="monsters">
-        <div className="mon-slot slot-popcorn">
-          <Popcorn mouse={mouse} lookAway={passwordFocused} mouthOpen={emailTyping} />
-        </div>
-        <div className="mon-slot slot-donut">
-          <Donut mouse={mouse} lookAway={passwordFocused} mouthOpen={emailTyping} />
-        </div>
-        <div className="mon-slot slot-cup">
-          <CoffeeCup mouse={mouse} lookAway={passwordFocused} mouthOpen={emailTyping} />
-        </div>
-        <div className="mon-slot slot-soda">
-          <Soda mouse={mouse} lookAway={passwordFocused} mouthOpen={emailTyping} />
-        </div>
-      </div>
-      <div className="stage-ground" />
-    </div>
-  );
-}
-
 export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false, reason = "" }) {
-  const [mode, setMode] = useState("login"); // 'login' | 'signup' | 'forgot'
-  const [forgotStep, setForgotStep] = useState("email"); // 'email' | 'otp' | 'newpw'
+  // mode: 'login' | 'signup' | 'forgot'
+  const [mode, setMode] = useState("login");
+  const [animClass, setAnimClass] = useState(""); // 'sweep-to-left' | 'sweep-to-right' | ''
+  const [displayedBladeMode, setDisplayedBladeMode] = useState("login");
+
+  // Form Fields
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [showConfirmPw, setShowConfirmPw] = useState(false);
-  
-  // SafeHire-style OTP Password Reset States
+  const [rememberMe, setRememberMe] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // SafeHire-style 3-Step OTP Password Reset States
+  const [forgotStep, setForgotStep] = useState("email"); // 'email' | 'otp' | 'newpw'
   const [otpEmail, setOtpEmail] = useState("");
   const [generatedOtp, setGeneratedOtp] = useState("");
   const [enteredOtp, setEnteredOtp] = useState("");
@@ -195,12 +28,17 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
   const [showConfirmNewPw, setShowConfirmNewPw] = useState(false);
   const [otpBannerMsg, setOtpBannerMsg] = useState("");
   const [resendTimer, setResendTimer] = useState(0);
-  const [rememberMe, setRememberMe] = useState(true);
+
+  // Feedback, Loading & Rate Limiting States
+  const [error, setError] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [lockoutTimer, setLockoutTimer] = useState(0);
 
-  // Rate Limiting Countdown Timer (Item 8)
+  const switchTimer = useRef(null);
+
+  // Rate Limiting Countdown (Item 8)
   useEffect(() => {
     if (lockoutTimer <= 0) return;
     const interval = setInterval(() => {
@@ -209,18 +47,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
     return () => clearInterval(interval);
   }, [lockoutTimer]);
 
-  const [error, setError] = useState("");
-  const [successMsg, setSuccessMsg] = useState("");
-  const [mouse, setMouse] = useState(null);
-  const [passwordFocused, setPasswordFocused] = useState(false);
-  const [emailTyping, setEmailTyping] = useState(false);
-  const [showPw, setShowPw] = useState(false);
-  const [fieldsVisible, setFieldsVisible] = useState(true);
-  const rafRef = useRef(null);
-  const typingTimeout = useRef(null);
-  const switchTimeout = useRef(null);
-
-  // Resend Countdown Timer for SafeHire OTP
+  // Resend OTP Countdown (Item 2)
   useEffect(() => {
     if (resendTimer <= 0) return;
     const interval = setInterval(() => {
@@ -229,6 +56,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
     return () => clearInterval(interval);
   }, [resendTimer]);
 
+  // Close on Escape Key
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === "Escape" && onClose) {
@@ -239,54 +67,38 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
 
-  const switchMode = (next) => {
-    if (next === mode) return;
-    setFieldsVisible(false);
+  // Trigger the Sliding Blade Animation
+  const switchMode = (targetMode) => {
+    if (targetMode === mode) return;
     setError("");
-    setEmail("");
-    setPassword("");
-    setConfirmPassword("");
-    setName("");
-    setEnteredOtp("");
-    setNewPassword("");
-    setConfirmNewPassword("");
-    if (next === "forgot") {
+    setSuccessMsg("");
+    clearTimeout(switchTimer.current);
+
+    if (targetMode === "signup" && mode === "login") {
+      // Sweep blade from right to left
+      setAnimClass("sweep-to-left");
+      // Mid-travel update blade content under dark cover
+      switchTimer.current = setTimeout(() => {
+        setDisplayedBladeMode("signup");
+        setMode("signup");
+      }, 260);
+    } else if (targetMode === "login" && mode === "signup") {
+      // Sweep blade from left to right
+      setAnimClass("sweep-to-right");
+      // Mid-travel update blade content under dark cover
+      switchTimer.current = setTimeout(() => {
+        setDisplayedBladeMode("login");
+        setMode("login");
+      }, 260);
+    } else if (targetMode === "forgot") {
+      setMode("forgot");
       setForgotStep("email");
+    } else if (targetMode === "login" && mode === "forgot") {
+      setMode("login");
     }
-    clearTimeout(switchTimeout.current);
-    switchTimeout.current = setTimeout(() => {
-      setMode(next);
-      setTimeout(() => setFieldsVisible(true), 300);
-    }, 200);
   };
 
-  useEffect(() => {
-    setEmail("");
-    setPassword("");
-    setName("");
-  }, []);
-
-  const onMouseMove = useCallback((e) => {
-    if (rafRef.current) return;
-    rafRef.current = requestAnimationFrame(() => {
-      setMouse({ x: e.clientX, y: e.clientY });
-      rafRef.current = null;
-    });
-  }, []);
-
-  useEffect(() => {
-    window.addEventListener("mousemove", onMouseMove);
-    return () => window.removeEventListener("mousemove", onMouseMove);
-  }, [onMouseMove]);
-
-  const handleEmailChange = (e) => {
-    setEmail(e.target.value);
-    if (error) setError("");
-    setEmailTyping(true);
-    clearTimeout(typingTimeout.current);
-    typingTimeout.current = setTimeout(() => setEmailTyping(false), 600);
-  };
-
+  // Password rules validation
   const pwRules = {
     length: (password || "").length >= 8,
     upper: /[A-Z]/.test(password || ""),
@@ -349,23 +161,29 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
       return;
     }
 
-    const res = await analytics.resetPassword(otpEmail, newPassword);
-    if (res.success) {
-      setError("");
-      setSuccessMsg("✓ Password reset successfully! Please sign in with your new password.");
-      setMode("login");
-      setEmail(otpEmail);
-      setPassword("");
-      setConfirmPassword("");
-      setNewPassword("");
-      setConfirmNewPassword("");
-      setForgotStep("email");
-      setOtpBannerMsg("");
-    } else {
-      setError(res.error || "Failed to update password. Please try again.");
+    setIsSubmitting(true);
+    try {
+      const res = await analytics.resetPassword(otpEmail, newPassword);
+      if (res.success) {
+        setError("");
+        setSuccessMsg("✓ Password reset successfully! Please sign in with your new password.");
+        setMode("login");
+        setEmail(otpEmail);
+        setPassword("");
+        setConfirmPassword("");
+        setNewPassword("");
+        setConfirmNewPassword("");
+        setForgotStep("email");
+        setOtpBannerMsg("");
+      } else {
+        setError(res.error || "Failed to update password. Please try again.");
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
+  // Handle Form Submission (Sign In or Sign Up)
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (lockoutTimer > 0) {
@@ -374,26 +192,39 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
     }
 
     setIsSubmitting(true);
+    setError("");
+    setSuccessMsg("");
+
     try {
       if (mode === "signup") {
-        if (password !== confirmPassword) {
-          setError("Passwords do not match. Please verify and try again.");
+        if (!name.trim()) {
+          setError("Please enter your full name.");
           return;
         }
-        if (!pwRules.length || !pwRules.upper || !pwRules.number || !pwRules.special) {
-          setError("Password must contain at least 8 characters, 1 uppercase letter (A-Z), 1 number (0-9), and 1 special symbol (!@#$).");
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email.trim())) {
+          setError("Please enter a valid email address.");
           return;
         }
+        if (password.length < 8) {
+          setError("Password must be at least 8 characters long.");
+          return;
+        }
+        if (confirmPassword && password !== confirmPassword) {
+          setError("Passwords do not match.");
+          return;
+        }
+
         const res = await analytics.register(name, email, password, rememberMe);
         if (res.success) {
           setError("");
           setFailedAttempts(0);
           if (onLoginSuccess) onLoginSuccess(res.user);
         } else if (res.alreadyExists) {
-          setError("Account already exists with this email. Please sign in.");
+          setError("An account already exists with this email. Please sign in.");
           switchMode("login");
         } else {
-          setError(res.error || "Registration failed.");
+          setError(res.error || "Registration failed. Please try again.");
         }
       } else if (mode === "login") {
         const res = await analytics.login(email, password, rememberMe);
@@ -403,8 +234,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
           setLockoutTimer(0);
           if (onLoginSuccess) onLoginSuccess(res.user);
         } else if (res.notFound) {
-          // Account does not exist: redirect directly to Sign Up (Create account) view
-          setError("");
+          setError("No account found with this email. Creating a new one...");
           switchMode("signup");
         } else {
           const nextFailed = failedAttempts + 1;
@@ -414,7 +244,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
             setFailedAttempts(0);
             setError("Security lockout: 5 consecutive failed attempts. Form locked for 30s.");
           } else {
-            setError(`${res.error || "Authentication failed."} (${5 - nextFailed} attempts remaining)`);
+            setError(`${res.error || "Invalid email or password."} (${5 - nextFailed} attempts remaining)`);
           }
         }
       }
@@ -424,1138 +254,919 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
   };
 
   return (
-    <div className="auth-app">
+    <div className="verso-auth-wrapper">
       <style>{`
-        .auth-app {
-          --coffee: #c98a4b;
-          --coffee-dark: #3d2b1a;
-          --donut-glaze: #ff8fab;
-          --donut-base: #e8a24a;
-          --popcorn-cream: #fff2d6;
-          --popcorn-red: #e63946;
-          --soda-can: #4ecdc4;
-          --radius-full: 999px;
-          --radius-lg: 16px;
-          --radius-md: 10px;
-          --radius-sm: 6px;
-          font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        /* ==========================================================================
+           VERSO-STYLE SLIDING BLADE AUTHENTICATION ANIMATION
+           ========================================================================== */
+        .verso-auth-wrapper {
           position: relative;
-          max-width: 960px;
           width: 100%;
+          max-width: 890px;
           margin: 0 auto;
           box-sizing: border-box;
+          font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
-        .auth-close-btn {
+
+        .verso-card {
+          position: relative;
+          width: 100%;
+          min-height: 560px;
+          background: #f7f5ee;
+          border-radius: 26px;
+          overflow: hidden;
+          box-shadow: 0 30px 70px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.12);
+          display: flex;
+        }
+
+        /* Close Floating Button */
+        .verso-close-btn {
           position: absolute;
-          top: 16px;
-          right: 16px;
-          background: rgba(0, 0, 0, 0.45);
-          border: 1px solid rgba(255, 255, 255, 0.25);
-          color: #fff;
-          border-radius: var(--radius-full);
+          top: 18px;
+          right: 20px;
           width: 36px;
           height: 36px;
+          border-radius: 50%;
+          border: 1px solid rgba(0, 0, 0, 0.08);
+          background: rgba(255, 255, 255, 0.9);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+          color: #1e293b;
+          font-size: 15px;
+          font-weight: 700;
           cursor: pointer;
-          z-index: 10;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 16px;
-          transition: background 0.15s ease;
+          z-index: 60;
+          transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         }
-        .auth-close-btn:hover {
-          background: rgba(0, 0, 0, 0.8);
+        .verso-close-btn:hover {
+          background: #e11d48;
+          color: #ffffff;
+          border-color: #e11d48;
+          transform: scale(1.08);
         }
-        .auth-card {
-          position: relative;
-          background: #ffffff;
-          border-radius: var(--radius-lg);
-          overflow: hidden;
-          min-height: 620px;
-          max-height: 94vh;
-          box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.15);
-          display: flex;
-        }
-        .left-panel {
-          position: absolute;
-          top: 0;
-          width: 50%;
-          height: 100%;
-          display: flex;
+
+        /* Action Reason Banner */
+        .verso-reason-pill {
+          display: inline-flex;
           align-items: center;
-          justify-content: center;
-          padding: 36px 24px 28px;
-          box-sizing: border-box;
-          background: radial-gradient(circle at 50% 50%, #f9f8f4 0%, #ebe6dc 100%);
-          transition: left .6s cubic-bezier(.65,0,.35,1);
+          gap: 6px;
+          background: #fffbeb;
+          border: 1px solid #fde68a;
+          color: #92400e;
+          font-size: 12px;
+          font-weight: 600;
+          padding: 4px 12px;
+          border-radius: 9999px;
+          margin-bottom: 14px;
+          width: fit-content;
         }
-        .left-panel.at-left { left: 0; }
-        .left-panel.at-right { left: 50%; }
-        .right-panel {
+
+        /* ==========================================================================
+           TWO DUAL PANES (SIGN IN ON LEFT, SIGN UP ON RIGHT)
+           ========================================================================== */
+        .verso-pane {
           position: absolute;
           top: 0;
-          width: 50%;
           height: 100%;
-          background: #ffffff;
-          padding: 28px 36px 28px;
+          width: 50%;
+          padding: 46px 42px;
           display: flex;
           flex-direction: column;
-          justify-content: flex-start;
+          justify-content: center;
           box-sizing: border-box;
+          z-index: 2;
           overflow-y: auto;
-          scrollbar-width: thin;
-          scrollbar-color: #cbd5e1 transparent;
-          transition: left .6s cubic-bezier(.65,0,.35,1);
         }
-        .right-panel::-webkit-scrollbar {
-          width: 5px;
+        .verso-pane::-webkit-scrollbar {
+          width: 4px;
         }
-        .right-panel::-webkit-scrollbar-thumb {
-          background: #cbd5e1;
-          border-radius: var(--radius-full);
+        .verso-pane::-webkit-scrollbar-thumb {
+          background: rgba(0, 0, 0, 0.15);
+          border-radius: 4px;
         }
-        .right-panel.at-left { left: 0; }
-        .right-panel.at-right { left: 50%; }
 
-        /* Top Segmented Mode Switcher (Sign In vs Create Account) */
-        .auth-segmented-switch {
-          display: flex;
-          background: #f1f5f9;
-          border: 1.5px solid #e2e8f0;
-          border-radius: var(--radius-md);
-          padding: 3px;
-          margin-bottom: 16px;
+        .verso-pane--left {
+          left: 0;
+        }
+        .verso-pane--right {
+          right: 0;
+        }
+
+        /* Form Visibility Transitions Underneath */
+        .verso-pane-content {
           width: 100%;
+          max-width: 350px;
+          margin: 0 auto;
+          transition: opacity 0.35s ease 0.15s, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.15s;
+        }
+        .verso-pane--left .verso-pane-content {
+          opacity: ${mode === "login" || mode === "forgot" ? "1" : "0"};
+          transform: ${mode === "login" || mode === "forgot" ? "translateX(0)" : "translateX(-24px)"};
+          pointer-events: ${mode === "login" || mode === "forgot" ? "auto" : "none"};
+        }
+        .verso-pane--right .verso-pane-content {
+          opacity: ${mode === "signup" ? "1" : "0"};
+          transform: ${mode === "signup" ? "translateX(0)" : "translateX(24px)"};
+          pointer-events: ${mode === "signup" ? "auto" : "none"};
+        }
+
+        /* Typography & Underline Accent */
+        .verso-heading {
+          font-size: 27px;
+          font-weight: 800;
+          color: #0f172a;
+          margin: 0;
+          letter-spacing: -0.02em;
+        }
+        .verso-accent-bar {
+          width: 38px;
+          height: 3px;
+          background: #c59b4c;
+          border-radius: 2px;
+          margin: 8px 0 22px;
+        }
+
+        /* Underline Form Fields */
+        .verso-field {
+          position: relative;
+          margin-bottom: 20px;
+        }
+        .verso-input-wrap {
+          position: relative;
+          display: flex;
+          align-items: center;
+        }
+        .verso-input {
+          width: 100%;
+          border: none;
+          border-bottom: 1.5px solid #d5cebf;
+          background: transparent;
+          padding: 10px 32px 10px 0;
+          font-size: 15px;
+          font-family: inherit;
+          color: #0f172a;
+          border-radius: 0;
+          transition: border-color 0.2s ease, box-shadow 0.2s ease;
           box-sizing: border-box;
         }
-        .auth-segmented-btn {
-          flex: 1;
-          border: none;
+        .verso-input:focus {
+          outline: none;
+          border-bottom-color: #17382c;
+        }
+        .verso-input::placeholder {
+          color: #8c8273;
+          font-size: 14.5px;
+        }
+        .verso-input-icon {
+          position: absolute;
+          right: 2px;
+          color: #8c8273;
+          pointer-events: none;
+        }
+        .verso-toggle-pw-btn {
+          position: absolute;
+          right: 2px;
           background: transparent;
-          padding: 8px 12px;
-          font-size: 13.5px;
-          font-weight: 700;
-          color: #64748b;
-          border-radius: calc(var(--radius-md) - 3px);
+          border: none;
+          color: #8c8273;
           cursor: pointer;
-          transition: all 0.15s ease;
-          text-align: center;
+          padding: 4px;
+          display: flex;
+          align-items: center;
+          transition: color 0.15s ease;
         }
-        .auth-segmented-btn:hover {
+        .verso-toggle-pw-btn:hover {
           color: #0f172a;
-        }
-        .auth-segmented-btn.is-active {
-          background: #ffffff;
-          color: #0f172a;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
 
-        /* SafeHire-style OTP Verification Elements */
-        .otp-display-banner {
+        /* Options Row (Keep signed in & Forgot Password) */
+        .verso-options-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin: 8px 0 20px;
+          font-size: 13.5px;
+          color: #475569;
+        }
+        .verso-checkbox-label {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          cursor: pointer;
+          user-select: none;
+        }
+        .verso-checkbox {
+          accent-color: #17382c;
+          width: 16px;
+          height: 16px;
+          cursor: pointer;
+        }
+        .verso-forgot-btn {
+          background: transparent;
+          border: none;
+          color: #855d24;
+          font-weight: 600;
+          font-size: 13px;
+          cursor: pointer;
+          padding: 0;
+          text-decoration: underline;
+          text-underline-offset: 3px;
+          transition: color 0.15s ease;
+        }
+        .verso-forgot-btn:hover {
+          color: #17382c;
+        }
+
+        /* Password Strength Bar & Dots */
+        .verso-pw-checklist {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin-top: 6px;
+          font-size: 12px;
+          color: #64748b;
+        }
+        .verso-pw-bars {
+          display: flex;
+          gap: 3px;
+        }
+        .verso-pw-bar {
+          width: 14px;
+          height: 3px;
+          border-radius: 2px;
+          background: #d5cebf;
+          transition: background 0.2s ease;
+        }
+        .verso-pw-bar.is-valid {
+          background: #16a34a;
+        }
+
+        /* Pill Submit Button */
+        .verso-submit-btn {
+          width: 100%;
+          background: #17382c;
+          color: #ffffff;
+          border: none;
+          border-radius: 9999px;
+          padding: 13px 24px;
+          font-size: 15px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+          box-shadow: 0 4px 14px rgba(23, 56, 44, 0.25);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          box-sizing: border-box;
+          margin-top: 4px;
+        }
+        .verso-submit-btn:hover:not(:disabled) {
+          background: #0f261e;
+          transform: translateY(-1.5px);
+          box-shadow: 0 6px 20px rgba(23, 56, 44, 0.35);
+        }
+        .verso-submit-btn:active:not(:disabled) {
+          transform: translateY(0);
+        }
+        .verso-submit-btn:disabled {
+          opacity: 0.65;
+          cursor: not-allowed;
+          box-shadow: none;
+        }
+
+        /* Switch Mode Footer Links */
+        .verso-switch-footer {
+          margin-top: 18px;
+          text-align: left;
+          font-size: 13.5px;
+          color: #64748b;
+        }
+        .verso-switch-trigger {
+          background: transparent;
+          border: none;
+          color: #0f172a;
+          font-weight: 700;
+          font-size: 13.5px;
+          cursor: pointer;
+          padding: 0 2px;
+          text-decoration: underline;
+          text-decoration-thickness: 1.5px;
+          text-underline-offset: 3px;
+          transition: color 0.15s ease;
+        }
+        .verso-switch-trigger:hover {
+          color: #17382c;
+        }
+
+        /* Alerts & OTP Banner */
+        .verso-alert {
+          padding: 10px 14px;
+          border-radius: 8px;
+          font-size: 13px;
+          line-height: 1.4;
+          margin-bottom: 14px;
+          display: flex;
+          align-items: flex-start;
+          gap: 8px;
+          text-align: left;
+        }
+        .verso-alert--error {
+          background: #fef2f2;
+          border: 1px solid #fecaca;
+          color: #991b1b;
+        }
+        .verso-alert--success {
+          background: #f0fdf4;
+          border: 1px solid #bbf7d0;
+          color: #166534;
+        }
+        .verso-otp-banner {
           background: #f0fdf4;
           border: 1.5px solid #22c55e;
           color: #15803d;
-          padding: 12px 14px;
-          border-radius: var(--radius-md);
-          font-size: 13px;
-          line-height: 1.45;
+          padding: 10px 12px;
+          border-radius: 8px;
+          font-size: 12.5px;
           margin-bottom: 16px;
-          text-align: left;
           font-weight: 500;
-          box-shadow: 0 2px 10px rgba(34, 197, 94, 0.1);
         }
-        .otp-code-highlight {
-          display: inline-block;
-          background: #16a34a;
-          color: #ffffff;
-          font-family: monospace;
-          font-size: 16px;
-          font-weight: 800;
-          letter-spacing: 3px;
-          padding: 2px 10px;
-          border-radius: var(--radius-sm);
-          margin: 4px 0 2px;
-        }
-        .otp-input-field input {
-          text-align: center;
-          font-size: 26px !important;
-          letter-spacing: 8px !important;
+        .verso-otp-input input {
+          letter-spacing: 6px !important;
           font-family: monospace !important;
+          font-size: 22px !important;
           font-weight: 800 !important;
-        }
-        .otp-actions-row {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          margin: 12px 0;
-          font-size: 13px;
-        }
-        .btn-resend-otp {
-          background: transparent;
-          border: none;
-          color: #7a4a35;
-          font-weight: 700;
-          font-size: 13px;
-          cursor: pointer;
-          padding: 4px 0;
-          text-decoration: underline;
-          transition: color 0.15s ease;
-        }
-        .btn-resend-otp:disabled {
-          color: #94a3b8;
-          cursor: not-allowed;
-          text-decoration: none;
-        }
-        .btn-back-link {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          background: transparent;
-          border: none;
-          color: #64748b;
-          font-size: 13.5px;
-          font-weight: 600;
-          cursor: pointer;
-          margin-top: 14px;
-          padding: 4px 0;
-          transition: color 0.15s ease;
-        }
-        .btn-back-link:hover {
-          color: #0f172a;
-          text-decoration: underline;
+          text-align: center;
         }
 
-        .form-fade { transition: opacity .25s ease; }
-        .monsters-wrapper {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: space-between;
+        /* ==========================================================================
+           THE SLIDING BLADE (ANIMATED RECTANGLE WITH DIAGONAL SKEW & LIT SEAMS)
+           ========================================================================== */
+        .verso-band {
+          position: absolute;
+          top: 0;
+          height: 100%;
+          width: 54%;
+          z-index: 10;
+          background: linear-gradient(145deg, #123126 0%, #091e17 55%, #05130e 100%);
+          overflow: hidden;
+          box-shadow: 0 0 50px rgba(0, 0, 0, 0.4);
+          transform-origin: center center;
+          /* Default state based on mode */
+          left: ${mode === "signup" ? "-4%" : "48%"};
+          transform: skewX(-10deg);
+        }
+
+        /* Sweeping Animation When Transitioning Modes */
+        @keyframes sweepToLeft {
+          0% {
+            left: 48%;
+            width: 54%;
+          }
+          45% {
+            left: -2%;
+            width: 104%;
+          }
+          100% {
+            left: -4%;
+            width: 54%;
+          }
+        }
+
+        @keyframes sweepToRight {
+          0% {
+            left: -4%;
+            width: 54%;
+          }
+          45% {
+            left: -2%;
+            width: 104%;
+          }
+          100% {
+            left: 48%;
+            width: 54%;
+          }
+        }
+
+        .verso-band.sweep-to-left {
+          animation: sweepToLeft 0.72s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+        }
+        .verso-band.sweep-to-right {
+          animation: sweepToRight 0.72s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+        }
+
+        /* Lit Seams (One Blade, Two Lit Seams) */
+        .verso-band-edge {
+          position: absolute;
+          top: -15%;
+          bottom: -15%;
+          width: 2px;
+          pointer-events: none;
+          z-index: 12;
+        }
+        .verso-band-edge--lead {
+          left: 0;
+          background: linear-gradient(180deg, rgba(212,175,55,0) 0%, rgba(212,175,55,0.9) 30%, rgba(255,255,255,0.95) 50%, rgba(212,175,55,0.9) 70%, rgba(212,175,55,0) 100%);
+          box-shadow: 0 0 12px rgba(212, 175, 55, 0.8), 0 0 24px rgba(34, 197, 94, 0.4);
+        }
+        .verso-band-edge--trail {
+          right: 0;
+          background: linear-gradient(180deg, rgba(212,175,55,0) 0%, rgba(212,175,55,0.9) 30%, rgba(255,255,255,0.95) 50%, rgba(212,175,55,0.9) 70%, rgba(212,175,55,0) 100%);
+          box-shadow: 0 0 12px rgba(212, 175, 55, 0.8), 0 0 24px rgba(34, 197, 94, 0.4);
+        }
+
+        /* Ambient Emerald Glow Inside Blade */
+        .verso-band-glow {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: radial-gradient(circle at ${displayedBladeMode === "login" ? "80% 25%" : "20% 25%"}, rgba(34, 197, 94, 0.14) 0%, transparent 65%);
+          pointer-events: none;
+        }
+
+        /* Counter-Skew Inner Container (Prevents Text Distortion) */
+        .verso-band-inner {
+          position: relative;
           width: 100%;
           height: 100%;
-        }
-        .stage-banner {
-          text-align: center;
-          padding-top: 8px;
-        }
-        .stage-badge {
-          display: inline-block;
-          font-family: 'Inter', system-ui, -apple-system, sans-serif;
-          font-size: 14px;
-          font-weight: 700;
-          letter-spacing: 0.03em;
-          color: #7a4a35;
-          background: rgba(122, 74, 53, 0.1);
-          padding: 5px 16px;
-          border-radius: var(--radius-full);
-          border: 1px solid rgba(122, 74, 53, 0.2);
-        }
-        .stage-tagline {
-          margin: 8px 0 0;
-          font-size: 14px;
-          font-weight: 600;
-          color: #8c7d70;
-        }
-        .monsters {
-          position: relative;
+          transform: skewX(10deg); /* Exact inverse of outer -10deg skew */
           display: flex;
-          align-items: flex-end;
+          flex-direction: column;
           justify-content: center;
-          gap: 16px;
-          transform: scale(1.08);
-          transform-origin: center bottom;
-          margin-bottom: 6px;
+          padding: 48px 56px;
+          box-sizing: border-box;
+          z-index: 11;
         }
-        .stage-ground {
-          width: 320px;
-          height: 14px;
-          border-radius: 50%;
-          background: radial-gradient(ellipse at center, rgba(61, 43, 26, 0.22) 0%, rgba(61, 43, 26, 0) 70%);
-          margin-top: -6px;
-        }
-        .mon-slot { display: flex; flex-direction: column; align-items: center; }
-        .slot-popcorn { margin-bottom: 24px; }
-        .slot-donut { margin-bottom: 0px; }
-        .slot-cup { margin-bottom: 38px; margin-right: 14px; }
-        .slot-soda { margin-bottom: 12px; margin-left: 4px; }
-        .mon { position: relative; display: flex; flex-direction: column; align-items: center; }
-        .eyes-row { display: flex; gap: 6px; z-index: 3; position: relative; }
-        .snack-legs { display: flex; gap: 20px; margin-top: -4px; }
-        .leg { width: 8px; height: 34px; border-radius: var(--radius-sm); }
-        .leg.cup { background: var(--coffee-dark); opacity: 0.5; }
-        .leg.donut { background: #b5762f; opacity: 0.5; }
-        .leg.soda { background: #7a1620; opacity: 0.6; }
 
-        .mon-cup { width: 98px; position: relative; }
-        .cup-steam { position: relative; height: 20px; display: flex; justify-content: center; gap: 8px; margin-bottom: 2px; }
-        .cup-steam span { width: 3px; height: 16px; border-radius: var(--radius-sm); background: #c9a876; opacity: 0.6; transform: rotate(8deg); }
-        .cup-steam span:nth-child(2) { transform: rotate(-6deg); height: 20px; }
-        .cup-handle {
-          position: absolute; right: -12px; top: 40px;
-          width: 22px; height: 22px; border-radius: 50%;
-          border: 5px solid var(--coffee-dark); border-left-color: transparent; border-bottom-color: transparent;
-          transform: rotate(45deg);
-        }
-        .cup-sleeve { width: 100%; height: 16px; background: var(--coffee); border-radius: var(--radius-sm) var(--radius-sm) 0 0; border: 2.5px solid var(--coffee-dark); border-bottom: none; }
-        .cup-body {
-          width: 100%; height: 92px;
-          background: #fff;
-          border: 2.5px solid var(--coffee-dark);
-          border-radius: 0 0 var(--radius-lg) var(--radius-lg);
-          display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
-          box-shadow: 0 6px 0 rgba(0,0,0,0.08);
-        }
-        .cup-mouth { width: 22px; height: 6px; background: var(--coffee-dark); border-radius: var(--radius-sm); overflow: hidden; transition: height .15s ease; display: flex; }
-        .cup-mouth.open { height: 14px; border-radius: var(--radius-sm); background: #fff; }
-        .cup-mouth .teeth { width: 100%; background: repeating-linear-gradient(90deg, #fff 0 4px, #cfd8e3 4px 6px); }
-
-        @keyframes donutWiggle {
-          0%, 100% { transform: rotate(0deg); }
-          30% { transform: rotate(4deg); }
-          70% { transform: rotate(-4deg); }
-        }
-        .mon-donut { width: 94px; animation: donutWiggle 3.2s ease-in-out infinite; transform-origin: bottom center; }
-        .donut-ring {
-          width: 94px; height: 94px;
-          background: radial-gradient(circle at 35% 35%, var(--donut-glaze) 0%, #e06085 100%);
-          border-radius: 50%;
-          position: relative;
-          display: flex; align-items: center; justify-content: center;
-          box-shadow: inset 0 -6px 0 rgba(0,0,0,0.15), 0 6px 0 rgba(0,0,0,0.08);
-          border: 2.5px solid #8c3b52;
-        }
-        .donut-hole { width: 24px; height: 24px; border-radius: 50%; background: #ebe6dc; border: 2px solid #8c3b52; position: absolute; }
-        .donut-eyes { position: absolute; top: 18px; }
-        .donut-mouth { position: absolute; bottom: 16px; width: 14px; height: 5px; background: #5c1b2c; border-radius: var(--radius-sm); transition: height .15s ease, border-radius .15s ease; }
-        .donut-mouth.open { height: 12px; border-radius: var(--radius-sm); }
-        .sprinkle { position: absolute; width: 8px; height: 3.5px; border-radius: var(--radius-sm); }
-        .s1 { background: #ffeb3b; top: 12px; left: 24px; transform: rotate(20deg); }
-        .s2 { background: #4caf50; top: 18px; right: 20px; transform: rotate(-30deg); }
-        .s3 { background: #00bcd4; bottom: 26px; left: 14px; transform: rotate(45deg); }
-        .s4 { background: #ff9800; bottom: 18px; right: 20px; transform: rotate(-15deg); }
-        .s5 { background: #fff; top: 40px; left: 12px; transform: rotate(60deg); }
-
-        .mon-popcorn { width: 104px; }
-        .popcorn-top { position: relative; height: 56px; width: 100%; display: flex; flex-direction: column; align-items: center; box-sizing: border-box; }
-        .kernel-row { display: flex; justify-content: center; }
-        .kernel-row span {
-          width: 25px; height: 25px; border-radius: 50%; flex-shrink: 0;
-          background: #fff2d6; border: 2px solid #3d2b1a;
-          margin-left: -7px;
-          box-shadow: inset -2px -2px 0 rgba(230, 180, 80, 0.4);
-        }
-        .kernel-row span:first-child { margin-left: 0; }
-        .kernel-row.row-top { margin-bottom: -9px; z-index: 3; }
-        .kernel-row.row-mid { margin-bottom: -9px; z-index: 2; }
-        .kernel-row.row-bottom { z-index: 1; }
-        @keyframes popcornWiggle {
-          0%, 100% { transform: rotate(0deg); }
-          30% { transform: rotate(-2deg); }
-          60% { transform: rotate(2deg); }
-        }
-        .mon-popcorn { animation: popcornWiggle 2.8s ease-in-out infinite; transform-origin: bottom center; }
-        .popcorn-bucket {
-          width: 104px; height: 104px;
-          background: repeating-linear-gradient(90deg, #fff6ec 0 13px, var(--popcorn-red) 13px 23px);
-          border: 2.5px solid #3d2b1a;
-          clip-path: polygon(4% 0%, 96% 0%, 75% 100%, 25% 100%);
-          display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
-          padding-top: 6px;
-          box-shadow: 0 6px 0 rgba(0,0,0,0.1);
-        }
-        .popcorn-mouth { width: 22px; height: 8px; background: #3d2b1a; border-radius: var(--radius-sm); overflow: hidden; transition: height .15s ease; display: flex; }
-        .popcorn-mouth.open { height: 15px; border-radius: var(--radius-sm); background: #fff; }
-        .popcorn-mouth .teeth { width: 100%; background: repeating-linear-gradient(90deg, #fff 0 4px, #cfd8e3 4px 6px); }
-
-        @keyframes sodaFizz {
-          0%, 100% { transform: translateY(0) rotate(0deg); }
-          25% { transform: translateY(-7px) rotate(-3deg); }
-          55% { transform: translateY(1px) rotate(0deg); }
-          80% { transform: translateY(-3px) rotate(3deg); }
-        }
-        .mon-soda { width: 74px; animation: sodaFizz 2.6s ease-in-out infinite; transform-origin: bottom center; }
-        .soda-tab { width: 18px; height: 9px; border-radius: var(--radius-sm); background: linear-gradient(180deg, #e8e8e8, #a8a8a8); border: 2px solid #3d2b1a; margin: 0 auto -2px; position: relative; z-index: 3; }
-        .soda-can {
-          width: 74px; height: 124px;
-          background: linear-gradient(180deg, #e6314a 0%, #c8102e 100%);
-          border: 2.5px solid #3d2b1a;
-          border-radius: var(--radius-md);
-          display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
-          position: relative;
-          overflow: hidden;
-          box-shadow: 0 6px 0 rgba(0,0,0,0.12);
-        }
-        .soda-can::before {
-          content: "";
-          position: absolute; top: 0; left: 0; right: 0; height: 16px;
-          background: linear-gradient(180deg, #f0f0f0, #b0b0b0);
-          border-bottom: 2px solid #3d2b1a;
-          z-index: 1;
-        }
-        .soda-can::after {
-          content: "";
-          position: absolute; bottom: 0; left: 0; right: 0; height: 10px;
-          background: linear-gradient(180deg, #b0b0b0, #8a8a8a);
-          border-top: 2px solid #3d2b1a;
-          z-index: 1;
-        }
-        .soda-label { position: absolute; top: 42%; left: -25%; right: -25%; height: 26%; background: #fff; opacity: 0.92; transform: rotate(-9deg); z-index: 1; }
-        .soda-mouth { width: 18px; height: 7px; background: #1c1c1c; border-radius: var(--radius-sm); z-index: 2; position: relative; transition: height .15s ease, width .15s ease; }
-        .soda-mouth.open { height: 16px; width: 16px; border-radius: 50%; }
-        
-        .logo { display: flex; justify-content: flex-start; align-items: center; margin-bottom: 12px; }
-        .brand-name {
-          font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
-          font-size: 18px;
-          font-weight: 800;
-          letter-spacing: -0.01em;
-          color: #7a4a35;
-          background: rgba(122, 74, 53, 0.08);
-          padding: 3px 10px;
-          border-radius: var(--radius-sm);
-          border: 1px solid rgba(122, 74, 53, 0.16);
+        /* Blade Content & Typography */
+        .verso-brand-tag {
           display: inline-block;
-        }
-        .right-panel h1 {
-          text-align: left;
-          font-size: 24px;
-          font-weight: 800;
-          margin: 0 0 6px;
-          color: #0f172a;
-          letter-spacing: -0.02em;
-        }
-        .right-panel .sub {
-          text-align: left;
-          font-size: 14.5px;
-          color: #64748b;
-          margin: 0 0 22px;
-          line-height: 1.4;
-        }
-        form {
-          width: 100%;
-          box-sizing: border-box;
-          margin: 0;
-          padding: 0;
-        }
-        .field {
-          width: 100%;
-          box-sizing: border-box;
-          margin: 0 0 15px 0;
-          padding: 0;
-        }
-        .field label {
-          display: block;
-          font-size: 13.5px;
-          font-weight: 700;
-          color: #1e293b;
-          margin: 0 0 6px 0;
-          padding: 0;
-          text-align: left;
-        }
-        .field-input {
-          display: flex;
-          align-items: center;
-          width: 100%;
-          box-sizing: border-box;
-          background: #f8fafc;
-          border: 1.5px solid #cbd5e1;
-          border-radius: var(--radius-md);
-          padding: 8px 12px;
-          min-height: 44px;
-          margin: 0;
-          transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-        }
-        .field-input:hover {
-          border-color: #94a3b8;
-          background: #f1f5f9;
-        }
-        .field-input:focus-within {
-          border-color: #ff8a3d;
-          background: #ffffff;
-          box-shadow: 0 0 0 3px rgba(255, 138, 61, 0.22);
-        }
-        .field-input input {
-          flex: 1;
-          width: 100%;
-          border: none;
-          outline: none;
-          font-size: 15px;
-          color: #0f172a;
-          background: transparent;
-          padding: 2px 0;
-          margin: 0;
-          font-family: inherit;
-        }
-        .field-input input::placeholder { color: #94a3b8; font-size: 14px; }
-        .field-input input:-webkit-autofill,
-        .field-input input:-webkit-autofill:hover, 
-        .field-input input:-webkit-autofill:focus, 
-        .field-input input:-webkit-autofill:active {
-          -webkit-box-shadow: 0 0 0 30px #ffffff inset !important;
-          -webkit-text-fill-color: #0f172a !important;
-          box-shadow: 0 0 0 30px #ffffff inset !important;
-          transition: background-color 5000s ease-in-out 0s;
-        }
-        .field-input button {
-          border: none;
-          background: transparent;
-          cursor: pointer;
-          color: #64748b;
-          display: flex;
-          padding: 4px;
-          margin: 0;
-          border-radius: var(--radius-sm);
-          transition: color 0.15s ease;
-        }
-        .field-input button:hover {
-          color: #0f172a;
-        }
-        .row-between {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          width: 100%;
-          box-sizing: border-box;
-          margin: 10px 0 16px 0;
-          padding: 0;
-          font-size: 14px;
-          color: #475569;
-        }
-        .row-between a { color: #7a4a35; text-decoration: none; font-weight: 600; }
-        .row-between a:hover { text-decoration: underline; }
-        .remember {
-          display: inline-flex;
-          align-items: center;
-          gap: 10px;
-          cursor: pointer;
-          font-size: 14px;
-          font-weight: 500;
-          user-select: none;
-          margin: 0;
-          padding: 0;
-        }
-        .remember input[type="checkbox"] {
-          width: 18px;
-          height: 18px;
-          cursor: pointer;
-          accent-color: #ff8a3d;
-          border-radius: var(--radius-sm);
-          margin: 0;
-          flex-shrink: 0;
-        }
-        .btn-primary {
-          display: block;
-          width: 100%;
-          max-width: 100%;
-          box-sizing: border-box;
-          margin: 16px 0 4px 0;
-          padding: 13px 16px;
-          border-radius: var(--radius-md);
-          border: none;
-          background: #0f172a;
-          color: #fff;
-          font-size: 15.5px;
-          font-weight: 700;
-          cursor: pointer;
-          text-align: center;
-          transition: background 0.15s ease, transform 0.1s ease;
-        }
-        .btn-primary:hover { background: #1e293b; transform: translateY(-1px); }
-        .footer-text { text-align: left; font-size: 14px; color: #64748b; margin-top: 20px; }
-        .footer-text button { border: none; background: transparent; color: #0f172a; font-weight: 700; cursor: pointer; font-size: 14px; text-decoration: underline; margin-left: 4px; }
-        .auth-error-box {
-          background: #fee2e2;
-          border: 1px solid #ef4444;
-          color: #b91c1c;
-          padding: 10px 14px;
-          border-radius: var(--radius-md);
-          font-size: 13.5px;
-          margin-bottom: 16px;
-          text-align: left;
-          font-weight: 500;
-        }
-        .auth-success-box {
-          background: #dcfce7;
-          border: 1px solid #22c55e;
-          color: #15803d;
-          padding: 10px 14px;
-          border-radius: var(--radius-md);
-          font-size: 13.5px;
-          margin-bottom: 16px;
-          text-align: left;
-          font-weight: 500;
-        }
-        .btn-forgot-pw {
-          background: transparent;
-          border: none;
-          color: #7a4a35;
-          font-size: 13px;
-          font-weight: 600;
-          cursor: pointer;
-          padding: 0;
-          margin: 0;
-          text-decoration: none;
-          transition: color 0.15s ease;
-        }
-        .btn-forgot-pw:hover {
-          color: #ff8a3d;
-          text-decoration: underline;
-        }
-        .confirm-match-hint {
-          font-size: 12px;
-          margin-top: 5px;
-          text-align: left;
-          font-weight: 600;
-        }
-        .confirm-match-hint .match-ok { color: #16a34a; }
-        .confirm-match-hint .match-err { color: #dc2626; }
-
-        .pw-checklist {
-          margin-top: 10px;
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 6px 8px;
-          background: #f8fafc;
-          border: 1px solid #e2e8f0;
-          border-radius: var(--radius-md);
-          padding: 8px 12px;
           font-size: 11.5px;
-          text-align: left;
-        }
-        .pw-rule-chip {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          color: #94a3b8;
-          font-weight: 500;
-          transition: all 0.15s ease;
-        }
-        .pw-rule-chip.met {
-          color: #16a34a;
           font-weight: 700;
+          letter-spacing: 0.28em;
+          text-transform: uppercase;
+          color: #a4beae;
+          margin-bottom: 22px;
         }
-        .pw-rule-chip span {
-          font-size: 11px;
-          font-weight: 800;
+        .verso-welcome-title {
+          font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+          font-size: 38px;
+          line-height: 1.15;
+          font-weight: 400;
+          color: #fbfbf9;
+          margin: 0;
+          letter-spacing: -0.01em;
         }
-
-        /* --- RESPONSIVE ADAPTATIONS: TV, LAPTOP, TABLET, MOBILE --- */
-        @media (min-width: 1920px) {
-          .auth-app { max-width: 1060px; }
-          .auth-card { min-height: 640px; }
-          .monsters { transform: scale(1.2); gap: 20px; }
-          .brand-name { font-size: 24px; }
-          .right-panel h1 { font-size: 28px; }
+        .verso-welcome-title em {
+          font-style: italic;
+          font-weight: 400;
+          color: #e8dcc4;
         }
-
-        @media (max-width: 860px) {
-          .auth-app { width: 94%; max-width: 520px; }
-          .auth-card { flex-direction: column; min-height: auto; border-radius: var(--radius-lg); }
-          .left-panel, .right-panel { position: relative !important; width: 100% !important; left: 0 !important; }
-          .left-panel { min-height: 230px; padding: 22px 16px 14px; }
-          .stage-banner { padding-top: 0; }
-          .stage-badge { font-size: 13px; padding: 4px 12px; }
-          .stage-tagline { font-size: 12.5px; margin-top: 4px; }
-          .monsters { transform: scale(0.74); transform-origin: center bottom; margin-bottom: 0; gap: 10px; }
-          .stage-ground { width: 260px; height: 10px; margin-top: -4px; }
-          .right-panel { padding: 28px 24px 34px; }
-          .brand-name { font-size: 18px; }
-          .right-panel h1 { font-size: 22px; }
-          .right-panel .sub { font-size: 13.5px; margin-bottom: 16px; }
-          .field { margin-bottom: 13px; }
-          .btn-primary { padding: 13px 16px; font-size: 15px; }
+        .verso-welcome-desc {
+          font-size: 14px;
+          line-height: 1.6;
+          color: rgba(240, 245, 242, 0.72);
+          margin-top: 18px;
+          margin-bottom: 0;
+          max-width: 310px;
         }
 
-        .auth-close-btn {
-          position: absolute;
-          top: 14px;
-          right: 16px;
-          width: 36px;
-          height: 36px;
-          border-radius: 50%;
-          border: 1.5px solid rgba(148, 163, 184, 0.4);
-          background: #ffffff;
-          color: #0f172a;
-          font-size: 16px;
-          font-weight: 700;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          z-index: 60;
-          transition: all 0.2s ease;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-        }
-        .auth-close-btn:hover {
-          background: #e11d48;
-          border-color: #e11d48;
-          color: #ffffff;
-          transform: scale(1.08);
-        }
-        .auth-reason-pill {
-          display: inline-flex;
-          align-items: center;
-          gap: 7px;
-          background: #fffbeb;
-          border: 1.5px solid #fde68a;
-          color: #92400e;
-          font-size: 13px;
-          font-weight: 700;
-          padding: 6px 14px;
-          border-radius: var(--radius-full);
-          margin-bottom: 14px;
-          width: fit-content;
-          box-shadow: 0 2px 6px rgba(245, 158, 11, 0.12);
-          text-align: left;
-        }
-
-        @media (max-width: 420px) {
-          .auth-app { width: 96%; }
-          .monsters { transform: scale(0.64); gap: 6px; }
-          .right-panel { padding: 22px 18px 28px; }
-          .field-input input { font-size: 15px; }
-          .pw-checklist { grid-template-columns: 1fr; gap: 4px; }
+        /* Mobile Responsiveness */
+        @media (max-width: 780px) {
+          .verso-auth-wrapper {
+            max-width: 480px;
+          }
+          .verso-card {
+            flex-direction: column;
+            min-height: auto;
+          }
+          .verso-band {
+            display: none; /* Hide desktop sliding blade on mobile */
+          }
+          .verso-pane {
+            position: relative !important;
+            width: 100% !important;
+            left: 0 !important;
+            right: 0 !important;
+            padding: 36px 26px;
+          }
+          .verso-pane-content {
+            opacity: 1 !important;
+            transform: none !important;
+            pointer-events: auto !important;
+          }
         }
       `}</style>
 
       {onClose && (
         <button
           type="button"
-          className="auth-close-btn"
+          className="verso-close-btn"
           onClick={onClose}
-          aria-label="Close modal"
+          aria-label="Close authentication modal"
         >
           ✕
         </button>
       )}
 
-      <div className="auth-card">
-        <div className={`left-panel ${mode === "login" ? "at-left" : "at-right"}`}>
-          <Monsters mouse={mouse} passwordFocused={passwordFocused} emailTyping={emailTyping} />
-        </div>
-
-        <div className={`right-panel ${mode === "login" ? "at-right" : "at-left"}`}>
-          <div className="logo">
-            <span className="brand-name">REELIST</span>
-          </div>
-
-          {reason && (
-            <div className="auth-reason-pill" role="alert">
-              <span aria-hidden="true">🔒</span>
-              <span>{reason}</span>
-            </div>
-          )}
-
-          {/* Dedicated Top Segmented Tabs for Instant Mode Switch */}
-          <div className="auth-segmented-switch" role="tablist" aria-label="Sign in or create account">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={mode === "login"}
-              className={`auth-segmented-btn ${mode === "login" ? "is-active" : ""}`}
-              onClick={() => switchMode("login")}
-            >
-              Sign In
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={mode === "signup"}
-              className={`auth-segmented-btn ${mode === "signup" ? "is-active" : ""}`}
-              onClick={() => switchMode("signup")}
-            >
-              Create Account
-            </button>
-          </div>
-
-          <div className="form-fade" style={{ opacity: fieldsVisible ? 1 : 0 }}>
-            {mode === "forgot" ? (
-              <>
-                {forgotStep === "email" && (
-                  <>
-                    <h1>Reset Password</h1>
-                    <p className="sub">Enter your registered email to receive a 6-digit OTP code.</p>
-                  </>
-                )}
-                {forgotStep === "otp" && (
-                  <>
-                    <h1>Enter Verification Code</h1>
-                    <p className="sub">We sent a 6-digit security code to <strong>{otpEmail}</strong></p>
-                  </>
-                )}
-                {forgotStep === "newpw" && (
-                  <>
-                    <h1>Set New Password</h1>
-                    <p className="sub">Create a strong new password for <strong>{otpEmail}</strong></p>
-                  </>
-                )}
-              </>
-            ) : (
-              <>
-                <h1>{mode === "login" ? "Sign in to your account" : "Create your account"}</h1>
-                <p className="sub">
-                  {mode === "login"
-                    ? "Sign in to access your cinema marquee"
-                    : "Join Reelist to explore movies"}
-                </p>
-              </>
+      <div className="verso-card" data-mode={mode}>
+        {/* ==================================================================
+            LEFT PANE: SIGN IN & FORGOT PASSWORD FLOW
+            ================================================================== */}
+        <div className="verso-pane verso-pane--left">
+          <div className="verso-pane-content">
+            {reason && (
+              <div className="verso-reason-pill" role="alert">
+                <span aria-hidden="true">🔒</span>
+                <span>{reason}</span>
+              </div>
             )}
 
-            {error && <div className="auth-error-box">{error}</div>}
-            {successMsg && <div className="auth-success-box" role="status">{successMsg}</div>}
+            {error && mode !== "signup" && (
+              <div className="verso-alert verso-alert--error" role="alert">
+                <AlertCircle size={16} style={{ flexShrink: 0, marginTop: "2px" }} />
+                <span>{error}</span>
+              </div>
+            )}
+
+            {successMsg && mode !== "signup" && (
+              <div className="verso-alert verso-alert--success" role="status">
+                <CheckCircle2 size={16} style={{ flexShrink: 0, marginTop: "2px" }} />
+                <span>{successMsg}</span>
+              </div>
+            )}
+
             {otpBannerMsg && (
-              <div className="otp-display-banner" role="status">
+              <div className="verso-otp-banner" role="status">
                 {otpBannerMsg}
               </div>
             )}
 
-            {/* --- FORGOT PASSWORD (SAFEHIRE-STYLE OTP FLOW) --- */}
-            {mode === "forgot" ? (
-              <>
+            {/* --- SIGN IN FORM --- */}
+            {mode === "login" && (
+              <form onSubmit={handleSubmit} noValidate autoComplete="off">
+                <h2 className="verso-heading">Sign in</h2>
+                <div className="verso-accent-bar" />
+
+                <div className="verso-field">
+                  <div className="verso-input-wrap">
+                    <input
+                      type="email"
+                      id="signin-email"
+                      className="verso-input"
+                      placeholder="Username or email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                    <User size={18} className="verso-input-icon" aria-hidden="true" />
+                  </div>
+                </div>
+
+                <div className="verso-field">
+                  <div className="verso-input-wrap">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      id="signin-password"
+                      className="verso-input"
+                      placeholder="Password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="verso-toggle-pw-btn"
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="verso-options-row">
+                  <label className="verso-checkbox-label">
+                    <input
+                      type="checkbox"
+                      className="verso-checkbox"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                    />
+                    <span>Keep me signed in</span>
+                  </label>
+
+                  <button
+                    type="button"
+                    className="verso-forgot-btn"
+                    onClick={() => switchMode("forgot")}
+                  >
+                    Forgot password?
+                  </button>
+                </div>
+
+                <button
+                  type="submit"
+                  className="verso-submit-btn"
+                  disabled={isSubmitting || lockoutTimer > 0}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      <span>Signing in...</span>
+                    </>
+                  ) : lockoutTimer > 0 ? (
+                    `Locked (${lockoutTimer}s)`
+                  ) : (
+                    "Sign in"
+                  )}
+                </button>
+
+                <div className="verso-switch-footer">
+                  <span>New to REELIST? </span>
+                  <button
+                    type="button"
+                    className="verso-switch-trigger"
+                    onClick={() => switchMode("signup")}
+                  >
+                    Create an account
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* --- FORGOT PASSWORD 3-STEP FLOW --- */}
+            {mode === "forgot" && (
+              <div>
+                <h2 className="verso-heading">
+                  {forgotStep === "email" && "Reset Password"}
+                  {forgotStep === "otp" && "Enter OTP"}
+                  {forgotStep === "newpw" && "Set Password"}
+                </h2>
+                <div className="verso-accent-bar" />
+
                 {forgotStep === "email" && (
-                  <form onSubmit={(e) => { e.preventDefault(); handleSendOtp(); }} autoComplete="off">
-                    <div className="field">
-                      <label>Registered Email</label>
-                      <div className="field-input">
+                  <form onSubmit={(e) => { e.preventDefault(); handleSendOtp(); }}>
+                    <div className="verso-field">
+                      <div className="verso-input-wrap">
                         <input
                           type="email"
-                          name="reelist_otp_email"
-                          autoComplete="off"
-                          autoCorrect="off"
-                          autoCapitalize="none"
-                          spellCheck="false"
+                          className="verso-input"
+                          placeholder="Registered email address"
                           value={email}
-                          placeholder="example@cinema.com"
+                          onChange={(e) => setEmail(e.target.value)}
                           required
                           autoFocus
-                          onChange={handleEmailChange}
                         />
+                        <Mail size={18} className="verso-input-icon" />
                       </div>
                     </div>
-                    <button type="submit" className="btn-primary">
-                      Send 6-Digit Verification Code
-                    </button>
-                    <button type="button" className="btn-back-link" onClick={() => switchMode("login")}>
-                      ← Back to Sign In
+                    <button type="submit" className="verso-submit-btn">
+                      Send 6-Digit Code
                     </button>
                   </form>
                 )}
 
                 {forgotStep === "otp" && (
-                  <form onSubmit={handleVerifyOtp} autoComplete="off">
-                    <div className="field">
-                      <label>6-Digit Verification Code (OTP)</label>
-                      <div className="field-input otp-input-field">
+                  <form onSubmit={handleVerifyOtp}>
+                    <div className="verso-field verso-otp-input">
+                      <div className="verso-input-wrap">
                         <input
                           type="text"
-                          inputMode="numeric"
-                          pattern="[0-9]*"
+                          className="verso-input"
+                          placeholder="••••••"
                           maxLength={6}
                           value={enteredOtp}
-                          onChange={(e) => {
-                            const val = e.target.value.replace(/\D/g, '').slice(0, 6);
-                            setEnteredOtp(val);
-                            if (error) setError("");
-                          }}
-                          placeholder="······"
+                          onChange={(e) => setEnteredOtp(e.target.value)}
                           required
                           autoFocus
                         />
                       </div>
                     </div>
-                    <div className="otp-actions-row">
-                      <span>Didn&apos;t receive code?</span>
+                    <button type="submit" className="verso-submit-btn">
+                      Verify Code
+                    </button>
+                    <div style={{ marginTop: "12px", textAlign: "center" }}>
                       <button
                         type="button"
-                        className="btn-resend-otp"
+                        className="verso-forgot-btn"
                         disabled={resendTimer > 0}
                         onClick={() => handleSendOtp(otpEmail)}
                       >
-                        {resendTimer > 0 ? `Resend Code (${resendTimer}s)` : "Resend OTP Code"}
+                        {resendTimer > 0 ? `Resend code in ${resendTimer}s` : "Resend OTP code"}
                       </button>
                     </div>
-                    <button type="submit" className="btn-primary">
-                      Verify Code & Continue
-                    </button>
-                    <button type="button" className="btn-back-link" onClick={() => switchMode("login")}>
-                      ← Back to Sign In
-                    </button>
                   </form>
                 )}
 
                 {forgotStep === "newpw" && (
-                  <form onSubmit={handleResetPassword} autoComplete="off">
-                    <div className="field">
-                      <label>New Password</label>
-                      <div className="field-input">
+                  <form onSubmit={handleResetPassword}>
+                    <div className="verso-field">
+                      <div className="verso-input-wrap">
                         <input
                           type={showNewPw ? "text" : "password"}
-                          name="reelist_new_password"
-                          autoComplete="new-password"
+                          className="verso-input"
+                          placeholder="New password (min 8 chars)"
                           value={newPassword}
-                          onChange={(e) => {
-                            setNewPassword(e.target.value);
-                            if (error) setError("");
-                          }}
-                          placeholder="Create strong new password"
+                          onChange={(e) => setNewPassword(e.target.value)}
                           required
-                          autoFocus
                         />
                         <button
                           type="button"
-                          onClick={() => setShowNewPw((s) => !s)}
-                          aria-label="Toggle new password visibility"
+                          className="verso-toggle-pw-btn"
+                          onClick={() => setShowNewPw(!showNewPw)}
                         >
                           {showNewPw ? <EyeOff size={18} /> : <Eye size={18} />}
                         </button>
                       </div>
-
-                      <div className="pw-checklist">
-                        <div className={`pw-rule-chip ${newPwRules.length ? "met" : ""}`}>
-                          <span>{newPwRules.length ? "✓" : "○"}</span> 8+ Characters
-                        </div>
-                        <div className={`pw-rule-chip ${newPwRules.upper ? "met" : ""}`}>
-                          <span>{newPwRules.upper ? "✓" : "○"}</span> 1 Capital (A-Z)
-                        </div>
-                        <div className={`pw-rule-chip ${newPwRules.number ? "met" : ""}`}>
-                          <span>{newPwRules.number ? "✓" : "○"}</span> 1 Number (0-9)
-                        </div>
-                        <div className={`pw-rule-chip ${newPwRules.special ? "met" : ""}`}>
-                          <span>{newPwRules.special ? "✓" : "○"}</span> 1 Symbol (!@#$)
-                        </div>
-                      </div>
                     </div>
 
-                    <div className="field" style={{ marginTop: 14 }}>
-                      <label>Confirm New Password</label>
-                      <div className="field-input">
+                    <div className="verso-field">
+                      <div className="verso-input-wrap">
                         <input
                           type={showConfirmNewPw ? "text" : "password"}
-                          name="reelist_confirm_new_password"
-                          autoComplete="new-password"
+                          className="verso-input"
+                          placeholder="Confirm new password"
                           value={confirmNewPassword}
-                          onChange={(e) => {
-                            setConfirmNewPassword(e.target.value);
-                            if (error) setError("");
-                          }}
-                          placeholder="Re-enter your new password"
+                          onChange={(e) => setConfirmNewPassword(e.target.value)}
                           required
                         />
                         <button
                           type="button"
-                          onClick={() => setShowConfirmNewPw((s) => !s)}
-                          aria-label="Toggle confirm new password visibility"
+                          className="verso-toggle-pw-btn"
+                          onClick={() => setShowConfirmNewPw(!showConfirmNewPw)}
                         >
                           {showConfirmNewPw ? <EyeOff size={18} /> : <Eye size={18} />}
                         </button>
                       </div>
-                      {confirmNewPassword && (
-                        <div className="confirm-match-hint">
-                          {newPassword === confirmNewPassword ? (
-                            <span className="match-ok">✓ Passwords match</span>
-                          ) : (
-                            <span className="match-err">✕ Passwords do not match</span>
-                          )}
-                        </div>
-                      )}
                     </div>
 
-                    <button type="submit" className="btn-primary">
-                      Save New Password & Sign In
-                    </button>
-                    <button type="button" className="btn-back-link" onClick={() => switchMode("login")}>
-                      ← Back to Sign In
+                    <button type="submit" className="verso-submit-btn" disabled={isSubmitting}>
+                      {isSubmitting ? "Updating..." : "Save New Password"}
                     </button>
                   </form>
                 )}
-              </>
-            ) : (
-              /* --- SIGN IN & SIGN UP FORMS --- */
-              <form onSubmit={handleSubmit} autoComplete="off">
-                {mode === "signup" && (
-                  <div className="field">
-                    <label>Name</label>
-                    <div className="field-input">
-                      <input
-                        type="text"
-                        name="reelist_user_name"
-                        autoComplete="off"
-                        placeholder="Your name"
-                        value={name}
-                        onChange={(e) => {
-                          setName(e.target.value);
-                          if (error) setError("");
-                        }}
-                        required
-                      />
-                    </div>
-                  </div>
-                )}
-                <div className="field">
-                  <label>Email</label>
-                  <div className="field-input">
-                    <input
-                      type="email"
-                      name="reelist_account_email"
-                      autoComplete="off"
-                      autoCorrect="off"
-                      autoCapitalize="none"
-                      spellCheck="false"
-                      value={email}
-                      placeholder="example@cinema.com"
-                      required
-                      onChange={handleEmailChange}
-                    />
-                  </div>
+
+                <div style={{ marginTop: "16px" }}>
+                  <button
+                    type="button"
+                    className="verso-forgot-btn"
+                    style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}
+                    onClick={() => switchMode("login")}
+                  >
+                    <ArrowLeft size={14} /> Back to Sign In
+                  </button>
                 </div>
-                <div className="field" style={{ marginBottom: mode === "signup" ? 14 : 12 }}>
-                  <label>Password</label>
-                  <div className="field-input">
-                    <input
-                      type={showPw ? "text" : "password"}
-                      name="reelist_account_password"
-                      autoComplete="new-password"
-                      value={password}
-                      onChange={(e) => {
-                        setPassword(e.target.value);
-                        if (error) setError("");
-                      }}
-                      placeholder={mode === "signup" ? "Create a secure password" : ""}
-                      required
-                      onFocus={() => setPasswordFocused(true)}
-                      onBlur={() => setPasswordFocused(false)}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPw((s) => !s)}
-                      aria-label="Toggle password visibility"
-                    >
-                      {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
-                  </div>
+              </div>
+            )}
+          </div>
+        </div>
 
-                  {mode === "signup" && (
-                    <div className="pw-checklist">
-                      <div className={`pw-rule-chip ${pwRules.length ? "met" : ""}`}>
-                        <span>{pwRules.length ? "✓" : "○"}</span> 8+ Characters
-                      </div>
-                      <div className={`pw-rule-chip ${pwRules.upper ? "met" : ""}`}>
-                        <span>{pwRules.upper ? "✓" : "○"}</span> 1 Capital (A-Z)
-                      </div>
-                      <div className={`pw-rule-chip ${pwRules.number ? "met" : ""}`}>
-                        <span>{pwRules.number ? "✓" : "○"}</span> 1 Number (0-9)
-                      </div>
-                      <div className={`pw-rule-chip ${pwRules.special ? "met" : ""}`}>
-                        <span>{pwRules.special ? "✓" : "○"}</span> 1 Symbol (!@#$)
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {mode === "signup" && (
-                  <div className="field" style={{ marginBottom: 14 }}>
-                    <label>Confirm Password</label>
-                    <div className="field-input">
-                      <input
-                        type={showConfirmPw ? "text" : "password"}
-                        name="reelist_confirm_password"
-                        autoComplete="new-password"
-                        value={confirmPassword}
-                        onChange={(e) => {
-                          setConfirmPassword(e.target.value);
-                          if (error) setError("");
-                        }}
-                        placeholder="Re-enter your password"
-                        required
-                        onFocus={() => setPasswordFocused(true)}
-                        onBlur={() => setPasswordFocused(false)}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowConfirmPw((s) => !s)}
-                        aria-label="Toggle confirm password visibility"
-                      >
-                        {showConfirmPw ? <EyeOff size={18} /> : <Eye size={18} />}
-                      </button>
-                    </div>
-                    {confirmPassword && (
-                      <div className="confirm-match-hint">
-                        {password === confirmPassword ? (
-                          <span className="match-ok">✓ Passwords match</span>
-                        ) : (
-                          <span className="match-err">✕ Passwords do not match</span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                <div className="row-between">
-                  {mode === "login" ? (
-                    <>
-                      <label className="remember">
-                        <input
-                          type="checkbox"
-                          checked={rememberMe}
-                          onChange={(e) => setRememberMe(e.target.checked)}
-                        />
-                        Remember me
-                      </label>
-                      <button
-                        type="button"
-                        className="btn-forgot-pw"
-                        onClick={() => switchMode("forgot")}
-                      >
-                        Forgot password?
-                      </button>
-                    </>
-                  ) : (
-                    <label className="remember">
-                      <input type="checkbox" required />
-                      I agree to the terms
-                    </label>
-                  )}
-                </div>
-
-                <button
-                  type="submit"
-                  className="btn-primary"
-                  disabled={isSubmitting || lockoutTimer > 0}
-                >
-                  {isSubmitting
-                    ? "Authenticating..."
-                    : lockoutTimer > 0
-                    ? `Locked (${lockoutTimer}s)`
-                    : mode === "login"
-                    ? "Sign In"
-                    : "Create Account"}
-                </button>
-              </form>
+        {/* ==================================================================
+            RIGHT PANE: CREATE ACCOUNT (SIGN UP) FORM
+            ================================================================== */}
+        <div className="verso-pane verso-pane--right">
+          <div className="verso-pane-content">
+            {error && mode === "signup" && (
+              <div className="verso-alert verso-alert--error" role="alert">
+                <AlertCircle size={16} style={{ flexShrink: 0, marginTop: "2px" }} />
+                <span>{error}</span>
+              </div>
             )}
 
-            <p className="footer-text">
-              {mode === "login" && (
-                <>
-                  Don&apos;t have an account?{" "}
-                  <button type="button" onClick={() => switchMode("signup")}>
-                    Create Account
+            <form onSubmit={handleSubmit} noValidate autoComplete="off">
+              <h2 className="verso-heading">Create account</h2>
+              <div className="verso-accent-bar" />
+
+              <div className="verso-field">
+                <div className="verso-input-wrap">
+                  <input
+                    type="text"
+                    id="signup-name"
+                    className="verso-input"
+                    placeholder="Full name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                  />
+                  <User size={18} className="verso-input-icon" aria-hidden="true" />
+                </div>
+              </div>
+
+              <div className="verso-field">
+                <div className="verso-input-wrap">
+                  <input
+                    type="email"
+                    id="signup-email"
+                    className="verso-input"
+                    placeholder="Email address"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                  <Mail size={18} className="verso-input-icon" aria-hidden="true" />
+                </div>
+              </div>
+
+              <div className="verso-field">
+                <div className="verso-input-wrap">
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    id="signup-password"
+                    className="verso-input"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="verso-toggle-pw-btn"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                  >
+                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
-                </>
-              )}
-              {mode === "signup" && (
-                <>
-                  Already have an account?{" "}
-                  <button type="button" onClick={() => switchMode("login")}>
-                    Sign In
-                  </button>
-                </>
-              )}
-              {mode === "forgot" && (
-                <button type="button" className="btn-back-link" onClick={() => switchMode("login")}>
-                  ← Back to Sign In
+                </div>
+
+                <div className="verso-pw-checklist">
+                  <div className="verso-pw-bars">
+                    <span className={`verso-pw-bar ${pwRules.length ? "is-valid" : ""}`} />
+                    <span className={`verso-pw-bar ${pwRules.upper ? "is-valid" : ""}`} />
+                    <span className={`verso-pw-bar ${pwRules.number ? "is-valid" : ""}`} />
+                    <span className={`verso-pw-bar ${pwRules.special ? "is-valid" : ""}`} />
+                  </div>
+                  <span>Use 8 characters or more.</span>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="verso-submit-btn"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    <span>Creating account...</span>
+                  </>
+                ) : (
+                  "Create account"
+                )}
+              </button>
+
+              <div className="verso-switch-footer">
+                <span>Already have an account? </span>
+                <button
+                  type="button"
+                  className="verso-switch-trigger"
+                  onClick={() => switchMode("login")}
+                >
+                  Sign in
                 </button>
-              )}
-            </p>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        {/* ==================================================================
+            THE SLIDING BLADE (ANIMATED RECTANGLE WITH DIAGONAL SKEW & LIT SEAMS)
+            ================================================================== */}
+        <div className={`verso-band ${animClass}`}>
+          <span className="verso-band-edge verso-band-edge--lead" aria-hidden="true" />
+          <span className="verso-band-edge verso-band-edge--trail" aria-hidden="true" />
+          <div className="verso-band-glow" aria-hidden="true" />
+
+          <div className="verso-band-inner">
+            <span className="verso-brand-tag">REELIST</span>
+            
+            {displayedBladeMode === "login" ? (
+              <>
+                <h3 className="verso-welcome-title">
+                  Welcome<br />
+                  <em>back.</em>
+                </h3>
+                <p className="verso-welcome-desc">
+                  Your watchlist, your ratings and your people are exactly where you left them.
+                </p>
+              </>
+            ) : (
+              <>
+                <h3 className="verso-welcome-title">
+                  Start the<br />
+                  <em>first page.</em>
+                </h3>
+                <p className="verso-welcome-desc">
+                  One account for every premiere, every trailer and every device you own.
+                </p>
+              </>
+            )}
           </div>
         </div>
       </div>

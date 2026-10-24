@@ -1,12 +1,188 @@
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { User, Mail, Eye, EyeOff, AlertCircle, CheckCircle2, ArrowLeft, Loader2 } from "lucide-react";
 import { analytics } from "../api/analytics.js";
+
+// Eye tracking offset calculation hook
+function useEyeOffset(ref, mouse, maxOffset, lookAway) {
+  const [rect, setRect] = useState(null);
+
+  useEffect(() => {
+    const measure = () => ref.current && setRect(ref.current.getBoundingClientRect());
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [ref]);
+
+  if (lookAway) return { x: -maxOffset * 0.5, y: -maxOffset * 0.9 };
+  if (!mouse || !rect) return { x: 0, y: 0 };
+
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+  const dx = mouse.x - cx;
+  const dy = mouse.y - cy;
+  const dist = Math.min(Math.hypot(dx, dy), 120) / 120;
+  const angle = Math.atan2(dy, dx);
+  return { x: Math.cos(angle) * maxOffset * dist, y: Math.sin(angle) * maxOffset * dist };
+}
+
+// Single eye component with moving pupil
+function Eye_({ size = 20, pupil = 8, offset }) {
+  return (
+    <div
+      style={{
+        width: size,
+        height: size,
+        borderRadius: "50%",
+        background: "#ffffff",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0,
+        boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
+      }}
+    >
+      <div
+        style={{
+          width: pupil,
+          height: pupil,
+          borderRadius: "50%",
+          background: "#1f2937",
+          transform: `translate(${offset.x}px, ${offset.y}px)`,
+          transition: "transform .05s linear",
+        }}
+      />
+    </div>
+  );
+}
+
+// Animated Coffee Cup Snack
+function CoffeeCup({ mouse, lookAway, mouthOpen }) {
+  const ref = useRef(null);
+  const offset = useEyeOffset(ref, mouse, 5, lookAway);
+  return (
+    <div ref={ref} className="mon mon-cup">
+      <div className="cup-steam">
+        <span /><span /><span />
+      </div>
+      <div className="cup-handle" />
+      <div className="cup-sleeve" />
+      <div className="cup-body">
+        <div className="eyes-row">
+          <Eye_ offset={offset} size={20} pupil={8} />
+          <Eye_ offset={offset} size={20} pupil={8} />
+        </div>
+        <div className={`cup-mouth ${mouthOpen ? "open" : ""}`}>
+          <div className="teeth" />
+        </div>
+      </div>
+      <div className="snack-legs">
+        <div className="leg cup" />
+        <div className="leg cup" />
+      </div>
+    </div>
+  );
+}
+
+// Animated Donut Snack
+function Donut({ mouse, lookAway, mouthOpen }) {
+  const ref = useRef(null);
+  const offset = useEyeOffset(ref, mouse, 4, lookAway);
+  return (
+    <div ref={ref} className="mon mon-donut">
+      <div className="donut-ring">
+        <span className="sprinkle s1" />
+        <span className="sprinkle s2" />
+        <span className="sprinkle s3" />
+        <span className="sprinkle s4" />
+        <span className="sprinkle s5" />
+        <div className="donut-hole" />
+        <div className="eyes-row donut-eyes">
+          <Eye_ offset={offset} size={18} pupil={7} />
+          <Eye_ offset={offset} size={18} pupil={7} />
+        </div>
+        <div className={`donut-mouth ${mouthOpen ? "open" : ""}`} />
+      </div>
+      <div className="snack-legs">
+        <div className="leg donut" />
+        <div className="leg donut" />
+      </div>
+    </div>
+  );
+}
+
+// Animated Popcorn Bucket Snack
+function Popcorn({ mouse, lookAway, mouthOpen }) {
+  const ref = useRef(null);
+  const offset = useEyeOffset(ref, mouse, 6, lookAway);
+  return (
+    <div ref={ref} className="mon mon-popcorn">
+      <div className="popcorn-top">
+        <div className="kernel-row row-top"><span /></div>
+        <div className="kernel-row row-mid"><span /><span /><span /></div>
+        <div className="kernel-row row-bottom"><span /><span /><span /><span /></div>
+      </div>
+      <div className="popcorn-bucket">
+        <div className="eyes-row">
+          <Eye_ offset={offset} size={20} pupil={8} />
+          <Eye_ offset={offset} size={20} pupil={8} />
+        </div>
+        <div className={`popcorn-mouth ${mouthOpen ? "open" : ""}`}>
+          <div className="teeth" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Animated Soda Can Snack
+function Soda({ mouse, lookAway, mouthOpen }) {
+  const ref = useRef(null);
+  const offset = useEyeOffset(ref, mouse, 6, lookAway);
+  return (
+    <div ref={ref} className="mon mon-soda">
+      <div className="soda-tab" />
+      <div className="soda-can">
+        <div className="soda-label" />
+        <div className="eyes-row">
+          <Eye_ offset={offset} size={18} pupil={7} />
+          <Eye_ offset={offset} size={18} pupil={7} />
+        </div>
+        <div className={`soda-mouth ${mouthOpen ? "open" : ""}`} />
+      </div>
+      <div className="snack-legs">
+        <div className="leg soda" />
+        <div className="leg soda" />
+      </div>
+    </div>
+  );
+}
+
+// The Concession Squad Stage Component
+function ConcessionSquad({ mouse, passwordFocused, emailTyping }) {
+  return (
+    <div className="concession-squad-stage">
+      <div className="monsters">
+        <div className="mon-slot slot-popcorn">
+          <Popcorn mouse={mouse} lookAway={passwordFocused} mouthOpen={emailTyping} />
+        </div>
+        <div className="mon-slot slot-donut">
+          <Donut mouse={mouse} lookAway={passwordFocused} mouthOpen={emailTyping} />
+        </div>
+        <div className="mon-slot slot-cup">
+          <CoffeeCup mouse={mouse} lookAway={passwordFocused} mouthOpen={emailTyping} />
+        </div>
+        <div className="mon-slot slot-soda">
+          <Soda mouse={mouse} lookAway={passwordFocused} mouthOpen={emailTyping} />
+        </div>
+      </div>
+      <div className="stage-ground" />
+    </div>
+  );
+}
 
 export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false, reason = "" }) {
   // mode: 'login' | 'signup' | 'forgot'
   const [mode, setMode] = useState("login");
-  const [animClass, setAnimClass] = useState(""); // 'sweep-to-left' | 'sweep-to-right' | ''
-  const [displayedBladeMode, setDisplayedBladeMode] = useState("login");
 
   // Form Fields
   const [name, setName] = useState("");
@@ -16,6 +192,13 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
   const [rememberMe, setRememberMe] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Interactive Eye-Tracking & Reaction States
+  const [mouse, setMouse] = useState(null);
+  const [passwordFocused, setPasswordFocused] = useState(false);
+  const [emailTyping, setEmailTyping] = useState(false);
+  const rafRef = useRef(null);
+  const typingTimeout = useRef(null);
 
   // SafeHire-style 3-Step OTP Password Reset States
   const [forgotStep, setForgotStep] = useState("email"); // 'email' | 'otp' | 'newpw'
@@ -36,7 +219,19 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [lockoutTimer, setLockoutTimer] = useState(0);
 
-  const switchTimer = useRef(null);
+  // Mouse move listener for reactive pupil tracking
+  const onMouseMove = useCallback((e) => {
+    if (rafRef.current) return;
+    rafRef.current = requestAnimationFrame(() => {
+      setMouse({ x: e.clientX, y: e.clientY });
+      rafRef.current = null;
+    });
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("mousemove", onMouseMove);
+    return () => window.removeEventListener("mousemove", onMouseMove);
+  }, [onMouseMove]);
 
   // Rate Limiting Countdown (Item 8)
   useEffect(() => {
@@ -67,35 +262,13 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
 
-  // Trigger the Sliding Blade Animation
-  const switchMode = (targetMode) => {
-    if (targetMode === mode) return;
-    setError("");
-    setSuccessMsg("");
-    clearTimeout(switchTimer.current);
-
-    if (targetMode === "signup" && mode === "login") {
-      // Sweep blade from right to left
-      setAnimClass("sweep-to-left");
-      // Mid-travel update blade content under dark cover
-      switchTimer.current = setTimeout(() => {
-        setDisplayedBladeMode("signup");
-        setMode("signup");
-      }, 260);
-    } else if (targetMode === "login" && mode === "signup") {
-      // Sweep blade from left to right
-      setAnimClass("sweep-to-right");
-      // Mid-travel update blade content under dark cover
-      switchTimer.current = setTimeout(() => {
-        setDisplayedBladeMode("login");
-        setMode("login");
-      }, 260);
-    } else if (targetMode === "forgot") {
-      setMode("forgot");
-      setForgotStep("email");
-    } else if (targetMode === "login" && mode === "forgot") {
-      setMode("login");
-    }
+  // Handle typing reaction for snack mouths
+  const handleEmailInput = (val) => {
+    setEmail(val);
+    if (error) setError("");
+    setEmailTyping(true);
+    clearTimeout(typingTimeout.current);
+    typingTimeout.current = setTimeout(() => setEmailTyping(false), 550);
   };
 
   // Password rules validation
@@ -222,7 +395,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
           if (onLoginSuccess) onLoginSuccess(res.user);
         } else if (res.alreadyExists) {
           setError("An account already exists with this email. Please sign in.");
-          switchMode("login");
+          setMode("login");
         } else {
           setError(res.error || "Registration failed. Please try again.");
         }
@@ -234,8 +407,8 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
           setLockoutTimer(0);
           if (onLoginSuccess) onLoginSuccess(res.user);
         } else if (res.notFound) {
-          setError("No account found with this email. Creating a new one...");
-          switchMode("signup");
+          setError("No account found with this email. Switching to registration...");
+          setMode("signup");
         } else {
           const nextFailed = failedAttempts + 1;
           setFailedAttempts(nextFailed);
@@ -257,12 +430,24 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
     <div className="verso-auth-wrapper">
       <style>{`
         /* ==========================================================================
-           VERSO-STYLE SLIDING BLADE AUTHENTICATION ANIMATION
+           VERSO-STYLE SLIDING BLADE AUTHENTICATION ANIMATION WITH CONCESSION SQUAD
            ========================================================================== */
         .verso-auth-wrapper {
+          --coffee: #c98a4b;
+          --coffee-dark: #3d2b1a;
+          --donut-glaze: #ff8fab;
+          --donut-base: #e8a24a;
+          --popcorn-cream: #fff2d6;
+          --popcorn-red: #e63946;
+          --soda-can: #e6314a;
+          --radius-full: 999px;
+          --radius-lg: 16px;
+          --radius-md: 10px;
+          --radius-sm: 6px;
+
           position: relative;
           width: 100%;
-          max-width: 890px;
+          max-width: 900px;
           margin: 0 auto;
           box-sizing: border-box;
           font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -271,15 +456,15 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
         .verso-card {
           position: relative;
           width: 100%;
-          min-height: 560px;
+          min-height: 590px;
           background: #f7f5ee;
           border-radius: 26px;
           overflow: hidden;
-          box-shadow: 0 30px 70px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.12);
+          box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.12);
           display: flex;
         }
 
-        /* Close Floating Button */
+        /* Floating Close Button */
         .verso-close-btn {
           position: absolute;
           top: 18px;
@@ -287,7 +472,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
           width: 36px;
           height: 36px;
           border-radius: 50%;
-          border: 1px solid rgba(0, 0, 0, 0.08);
+          border: 1px solid rgba(0, 0, 0, 0.1);
           background: rgba(255, 255, 255, 0.9);
           backdrop-filter: blur(8px);
           -webkit-backdrop-filter: blur(8px);
@@ -300,7 +485,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
           justify-content: center;
           z-index: 60;
           transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
         .verso-close-btn:hover {
           background: #e11d48;
@@ -326,55 +511,69 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
         }
 
         /* ==========================================================================
-           TWO DUAL PANES (SIGN IN ON LEFT, SIGN UP ON RIGHT)
+           DUAL FORM PANES (SIGN IN ON LEFT, SIGN UP ON RIGHT)
            ========================================================================== */
-        .verso-pane {
+        .verso-form-pane {
           position: absolute;
           top: 0;
-          height: 100%;
           width: 50%;
-          padding: 46px 42px;
+          height: 100%;
+          padding: 44px 40px;
+          box-sizing: border-box;
           display: flex;
           flex-direction: column;
           justify-content: center;
-          box-sizing: border-box;
+          transition: opacity 0.4s ease 0.12s, transform 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.08s;
           z-index: 2;
           overflow-y: auto;
         }
-        .verso-pane::-webkit-scrollbar {
+        .verso-form-pane::-webkit-scrollbar {
           width: 4px;
         }
-        .verso-pane::-webkit-scrollbar-thumb {
+        .verso-form-pane::-webkit-scrollbar-thumb {
           background: rgba(0, 0, 0, 0.15);
           border-radius: 4px;
         }
 
-        .verso-pane--left {
+        .verso-form-pane--signin {
           left: 0;
         }
-        .verso-pane--right {
+        .verso-form-pane--signup {
           right: 0;
         }
 
-        /* Form Visibility Transitions Underneath */
+        /* Pane Visibility States */
+        .verso-card.is-login .verso-form-pane--signin,
+        .verso-card.is-forgot .verso-form-pane--signin {
+          opacity: 1;
+          pointer-events: auto;
+          transform: translateX(0);
+        }
+        .verso-card.is-signup .verso-form-pane--signin {
+          opacity: 0;
+          pointer-events: none;
+          transform: translateX(-30px);
+        }
+
+        .verso-card.is-signup .verso-form-pane--signup {
+          opacity: 1;
+          pointer-events: auto;
+          transform: translateX(0);
+        }
+        .verso-card.is-login .verso-form-pane--signup,
+        .verso-card.is-forgot .verso-form-pane--signup {
+          opacity: 0;
+          pointer-events: none;
+          transform: translateX(30px);
+        }
+
         .verso-pane-content {
           width: 100%;
           max-width: 350px;
           margin: 0 auto;
-          transition: opacity 0.35s ease 0.15s, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.15s;
-        }
-        .verso-pane--left .verso-pane-content {
-          opacity: ${mode === "login" || mode === "forgot" ? "1" : "0"};
-          transform: ${mode === "login" || mode === "forgot" ? "translateX(0)" : "translateX(-24px)"};
-          pointer-events: ${mode === "login" || mode === "forgot" ? "auto" : "none"};
-        }
-        .verso-pane--right .verso-pane-content {
-          opacity: ${mode === "signup" ? "1" : "0"};
-          transform: ${mode === "signup" ? "translateX(0)" : "translateX(24px)"};
-          pointer-events: ${mode === "signup" ? "auto" : "none"};
         }
 
-        /* Typography & Underline Accent */
+        /* Typography & Gold Accent Bar */
         .verso-heading {
           font-size: 27px;
           font-weight: 800;
@@ -604,59 +803,32 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
         }
 
         /* ==========================================================================
-           THE SLIDING BLADE (ANIMATED RECTANGLE WITH DIAGONAL SKEW & LIT SEAMS)
+           THE SLIDING BLADE WITH POPCORN, COKE, DONUT & COFFEE CONCESSION SQUAD
            ========================================================================== */
-        .verso-band {
+        .verso-sliding-blade {
           position: absolute;
           top: 0;
+          left: 0;
+          width: 53%;
           height: 100%;
-          width: 54%;
           z-index: 10;
-          background: linear-gradient(145deg, #123126 0%, #091e17 55%, #05130e 100%);
+          background: linear-gradient(150deg, #102e23 0%, #081a13 55%, #040e0a 100%);
           overflow: hidden;
-          box-shadow: 0 0 50px rgba(0, 0, 0, 0.4);
-          transform-origin: center center;
-          /* Default state based on mode */
-          left: ${mode === "signup" ? "-4%" : "48%"};
-          transform: skewX(-10deg);
+          box-shadow: 0 0 50px rgba(0, 0, 0, 0.45);
+          /* Continuous, hardware-accelerated 60fps sliding transform */
+          transition: transform 0.68s cubic-bezier(0.77, 0, 0.175, 1);
+          will-change: transform;
         }
 
-        /* Sweeping Animation When Transitioning Modes */
-        @keyframes sweepToLeft {
-          0% {
-            left: 48%;
-            width: 54%;
-          }
-          45% {
-            left: -2%;
-            width: 104%;
-          }
-          100% {
-            left: -4%;
-            width: 54%;
-          }
+        /* Login state: Blade slides to the RIGHT */
+        .verso-card.is-login .verso-sliding-blade,
+        .verso-card.is-forgot .verso-sliding-blade {
+          transform: translateX(90%) skewX(-8deg);
         }
 
-        @keyframes sweepToRight {
-          0% {
-            left: -4%;
-            width: 54%;
-          }
-          45% {
-            left: -2%;
-            width: 104%;
-          }
-          100% {
-            left: 48%;
-            width: 54%;
-          }
-        }
-
-        .verso-band.sweep-to-left {
-          animation: sweepToLeft 0.72s cubic-bezier(0.77, 0, 0.175, 1) forwards;
-        }
-        .verso-band.sweep-to-right {
-          animation: sweepToRight 0.72s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+        /* Signup state: Blade slides to the LEFT */
+        .verso-card.is-signup .verso-sliding-blade {
+          transform: translateX(-2%) skewX(-8deg);
         }
 
         /* Lit Seams (One Blade, Two Lit Seams) */
@@ -664,47 +836,51 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
           position: absolute;
           top: -15%;
           bottom: -15%;
-          width: 2px;
+          width: 2.5px;
           pointer-events: none;
           z-index: 12;
         }
         .verso-band-edge--lead {
           left: 0;
-          background: linear-gradient(180deg, rgba(212,175,55,0) 0%, rgba(212,175,55,0.9) 30%, rgba(255,255,255,0.95) 50%, rgba(212,175,55,0.9) 70%, rgba(212,175,55,0) 100%);
-          box-shadow: 0 0 12px rgba(212, 175, 55, 0.8), 0 0 24px rgba(34, 197, 94, 0.4);
+          background: linear-gradient(180deg, rgba(212,175,55,0) 0%, rgba(212,175,55,0.95) 30%, rgba(255,255,255,0.95) 50%, rgba(212,175,55,0.95) 70%, rgba(212,175,55,0) 100%);
+          box-shadow: 0 0 14px rgba(212, 175, 55, 0.85), 0 0 25px rgba(34, 197, 94, 0.45);
         }
         .verso-band-edge--trail {
           right: 0;
-          background: linear-gradient(180deg, rgba(212,175,55,0) 0%, rgba(212,175,55,0.9) 30%, rgba(255,255,255,0.95) 50%, rgba(212,175,55,0.9) 70%, rgba(212,175,55,0) 100%);
-          box-shadow: 0 0 12px rgba(212, 175, 55, 0.8), 0 0 24px rgba(34, 197, 94, 0.4);
+          background: linear-gradient(180deg, rgba(212,175,55,0) 0%, rgba(212,175,55,0.95) 30%, rgba(255,255,255,0.95) 50%, rgba(212,175,55,0.95) 70%, rgba(212,175,55,0) 100%);
+          box-shadow: 0 0 14px rgba(212, 175, 55, 0.85), 0 0 25px rgba(34, 197, 94, 0.45);
         }
 
-        /* Ambient Emerald Glow Inside Blade */
         .verso-band-glow {
           position: absolute;
           top: 0;
           left: 0;
           right: 0;
           bottom: 0;
-          background: radial-gradient(circle at ${displayedBladeMode === "login" ? "80% 25%" : "20% 25%"}, rgba(34, 197, 94, 0.14) 0%, transparent 65%);
+          background: radial-gradient(circle at 50% 30%, rgba(34, 197, 94, 0.16) 0%, transparent 70%);
           pointer-events: none;
         }
 
-        /* Counter-Skew Inner Container (Prevents Text Distortion) */
-        .verso-band-inner {
+        /* Counter-Skew Inner Container (Cancels Out -8deg Skew For Text & Snacks) */
+        .verso-blade-inner {
           position: relative;
           width: 100%;
           height: 100%;
-          transform: skewX(10deg); /* Exact inverse of outer -10deg skew */
+          transform: skewX(8deg); /* Cancels out the outer -8deg skew */
           display: flex;
           flex-direction: column;
-          justify-content: center;
-          padding: 48px 56px;
+          align-items: center;
+          justify-content: space-between;
+          padding: 34px 38px 28px;
           box-sizing: border-box;
           z-index: 11;
+          text-align: center;
         }
 
-        /* Blade Content & Typography */
+        /* Blade Top Typography */
+        .verso-blade-top {
+          width: 100%;
+        }
         .verso-brand-tag {
           display: inline-block;
           font-size: 11.5px;
@@ -712,33 +888,196 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
           letter-spacing: 0.28em;
           text-transform: uppercase;
           color: #a4beae;
-          margin-bottom: 22px;
+          margin-bottom: 8px;
         }
         .verso-welcome-title {
           font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
-          font-size: 38px;
+          font-size: 32px;
           line-height: 1.15;
           font-weight: 400;
           color: #fbfbf9;
           margin: 0;
           letter-spacing: -0.01em;
+          transition: opacity 0.3s ease;
         }
         .verso-welcome-title em {
           font-style: italic;
           font-weight: 400;
           color: #e8dcc4;
         }
+
+        /* Blade Bottom Subtitle */
         .verso-welcome-desc {
-          font-size: 14px;
-          line-height: 1.6;
-          color: rgba(240, 245, 242, 0.72);
-          margin-top: 18px;
-          margin-bottom: 0;
-          max-width: 310px;
+          font-size: 13px;
+          line-height: 1.55;
+          color: rgba(240, 245, 242, 0.75);
+          margin: 0;
+          max-width: 330px;
+          transition: opacity 0.3s ease;
         }
 
+        /* ==========================================================================
+           CONCESSION SQUAD (POPCORN, COFFEE, DONUT, SODA) CSS STYLES
+           ========================================================================== */
+        .concession-squad-stage {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          margin: 12px 0 8px;
+        }
+        .monsters {
+          position: relative;
+          display: flex;
+          align-items: flex-end;
+          justify-content: center;
+          gap: 12px;
+          transform: scale(0.92);
+          transform-origin: center bottom;
+          margin-bottom: 4px;
+        }
+        .stage-ground {
+          width: 290px;
+          height: 12px;
+          border-radius: 50%;
+          background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0) 70%);
+          margin-top: -6px;
+        }
+        .mon-slot { display: flex; flex-direction: column; align-items: center; }
+        .slot-popcorn { margin-bottom: 22px; }
+        .slot-donut { margin-bottom: 0px; }
+        .slot-cup { margin-bottom: 34px; margin-right: 10px; }
+        .slot-soda { margin-bottom: 10px; margin-left: 2px; }
+        .mon { position: relative; display: flex; flex-direction: column; align-items: center; }
+        .eyes-row { display: flex; gap: 6px; z-index: 3; position: relative; }
+        .snack-legs { display: flex; gap: 18px; margin-top: -4px; }
+        .leg { width: 7px; height: 30px; border-radius: var(--radius-sm); }
+        .leg.cup { background: var(--coffee-dark); opacity: 0.6; }
+        .leg.donut { background: #b5762f; opacity: 0.6; }
+        .leg.soda { background: #7a1620; opacity: 0.7; }
+
+        /* Coffee Cup Monster */
+        .mon-cup { width: 90px; position: relative; }
+        .cup-steam { position: relative; height: 18px; display: flex; justify-content: center; gap: 7px; margin-bottom: 2px; }
+        .cup-steam span { width: 3px; height: 14px; border-radius: var(--radius-sm); background: #c9a876; opacity: 0.75; transform: rotate(8deg); }
+        .cup-steam span:nth-child(2) { transform: rotate(-6deg); height: 18px; }
+        .cup-handle {
+          position: absolute; right: -10px; top: 36px;
+          width: 20px; height: 20px; border-radius: 50%;
+          border: 4.5px solid var(--coffee-dark); border-left-color: transparent; border-bottom-color: transparent;
+          transform: rotate(45deg);
+        }
+        .cup-sleeve { width: 100%; height: 15px; background: var(--coffee); border-radius: var(--radius-sm) var(--radius-sm) 0 0; border: 2.5px solid var(--coffee-dark); border-bottom: none; }
+        .cup-body {
+          width: 100%; height: 84px;
+          background: #ffffff;
+          border: 2.5px solid var(--coffee-dark);
+          border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+          display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px;
+          box-shadow: 0 5px 0 rgba(0,0,0,0.12);
+        }
+        .cup-mouth { width: 20px; height: 5px; background: var(--coffee-dark); border-radius: var(--radius-sm); overflow: hidden; transition: height .15s ease; display: flex; }
+        .cup-mouth.open { height: 13px; border-radius: var(--radius-sm); background: #fff; }
+        .cup-mouth .teeth { width: 100%; background: repeating-linear-gradient(90deg, #fff 0 4px, #cfd8e3 4px 6px); }
+
+        /* Donut Monster */
+        @keyframes donutWiggle {
+          0%, 100% { transform: rotate(0deg); }
+          30% { transform: rotate(4deg); }
+          70% { transform: rotate(-4deg); }
+        }
+        .mon-donut { width: 88px; animation: donutWiggle 3.2s ease-in-out infinite; transform-origin: bottom center; }
+        .donut-ring {
+          width: 88px; height: 88px;
+          background: radial-gradient(circle at 35% 35%, var(--donut-glaze) 0%, #e06085 100%);
+          border-radius: 50%;
+          position: relative;
+          display: flex; align-items: center; justify-content: center;
+          box-shadow: inset 0 -5px 0 rgba(0,0,0,0.2), 0 5px 0 rgba(0,0,0,0.12);
+          border: 2.5px solid #8c3b52;
+        }
+        .donut-hole { width: 22px; height: 22px; border-radius: 50%; background: #0c2018; border: 2px solid #8c3b52; position: absolute; }
+        .donut-eyes { position: absolute; top: 16px; }
+        .donut-mouth { position: absolute; bottom: 15px; width: 13px; height: 5px; background: #5c1b2c; border-radius: var(--radius-sm); transition: height .15s ease, border-radius .15s ease; }
+        .donut-mouth.open { height: 11px; border-radius: var(--radius-sm); }
+        .sprinkle { position: absolute; width: 7px; height: 3px; border-radius: var(--radius-sm); }
+        .s1 { background: #ffeb3b; top: 11px; left: 22px; transform: rotate(20deg); }
+        .s2 { background: #4caf50; top: 17px; right: 18px; transform: rotate(-30deg); }
+        .s3 { background: #00bcd4; bottom: 24px; left: 13px; transform: rotate(45deg); }
+        .s4 { background: #ff9800; bottom: 17px; right: 18px; transform: rotate(-15deg); }
+        .s5 { background: #fff; top: 38px; left: 11px; transform: rotate(60deg); }
+
+        /* Popcorn Monster */
+        @keyframes popcornWiggle {
+          0%, 100% { transform: rotate(0deg); }
+          30% { transform: rotate(-2.5deg); }
+          60% { transform: rotate(2.5deg); }
+        }
+        .mon-popcorn { width: 98px; animation: popcornWiggle 2.8s ease-in-out infinite; transform-origin: bottom center; }
+        .popcorn-top { position: relative; height: 52px; width: 100%; display: flex; flex-direction: column; align-items: center; box-sizing: border-box; }
+        .kernel-row { display: flex; justify-content: center; }
+        .kernel-row span {
+          width: 23px; height: 23px; border-radius: 50%; flex-shrink: 0;
+          background: #fff2d6; border: 2px solid #3d2b1a;
+          margin-left: -6px;
+          box-shadow: inset -2px -2px 0 rgba(230, 180, 80, 0.45);
+        }
+        .kernel-row span:first-child { margin-left: 0; }
+        .kernel-row.row-top { margin-bottom: -8px; z-index: 3; }
+        .kernel-row.row-mid { margin-bottom: -8px; z-index: 2; }
+        .kernel-row.row-bottom { z-index: 1; }
+        .popcorn-bucket {
+          width: 98px; height: 98px;
+          background: repeating-linear-gradient(90deg, #fff6ec 0 12px, var(--popcorn-red) 12px 22px);
+          border: 2.5px solid #3d2b1a;
+          clip-path: polygon(4% 0%, 96% 0%, 75% 100%, 25% 100%);
+          display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px;
+          padding-top: 5px;
+          box-shadow: 0 5px 0 rgba(0,0,0,0.15);
+        }
+        .popcorn-mouth { width: 20px; height: 7px; background: #3d2b1a; border-radius: var(--radius-sm); overflow: hidden; transition: height .15s ease; display: flex; }
+        .popcorn-mouth.open { height: 14px; border-radius: var(--radius-sm); background: #fff; }
+        .popcorn-mouth .teeth { width: 100%; background: repeating-linear-gradient(90deg, #fff 0 4px, #cfd8e3 4px 6px); }
+
+        /* Soda Can Monster */
+        @keyframes sodaFizz {
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          25% { transform: translateY(-6px) rotate(-3deg); }
+          55% { transform: translateY(1px) rotate(0deg); }
+          80% { transform: translateY(-3px) rotate(3deg); }
+        }
+        .mon-soda { width: 70px; animation: sodaFizz 2.6s ease-in-out infinite; transform-origin: bottom center; }
+        .soda-tab { width: 16px; height: 8px; border-radius: var(--radius-sm); background: linear-gradient(180deg, #e8e8e8, #a8a8a8); border: 2px solid #3d2b1a; margin: 0 auto -2px; position: relative; z-index: 3; }
+        .soda-can {
+          width: 70px; height: 116px;
+          background: linear-gradient(180deg, #e6314a 0%, #c8102e 100%);
+          border: 2.5px solid #3d2b1a;
+          border-radius: var(--radius-md);
+          display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px;
+          position: relative;
+          overflow: hidden;
+          box-shadow: 0 5px 0 rgba(0,0,0,0.15);
+        }
+        .soda-can::before {
+          content: "";
+          position: absolute; top: 0; left: 0; right: 0; height: 14px;
+          background: linear-gradient(180deg, #f0f0f0, #b0b0b0);
+          border-bottom: 2px solid #3d2b1a;
+          z-index: 1;
+        }
+        .soda-can::after {
+          content: "";
+          position: absolute; bottom: 0; left: 0; right: 0; height: 9px;
+          background: linear-gradient(180deg, #b0b0b0, #8a8a8a);
+          border-top: 2px solid #3d2b1a;
+          z-index: 1;
+        }
+        .soda-mouth { width: 13px; height: 5px; background: #4a000a; border-radius: var(--radius-sm); transition: height .15s ease; }
+        .soda-mouth.open { height: 10px; border-radius: var(--radius-sm); }
+
         /* Mobile Responsiveness */
-        @media (max-width: 780px) {
+        @media (max-width: 820px) {
           .verso-auth-wrapper {
             max-width: 480px;
           }
@@ -746,20 +1085,15 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
             flex-direction: column;
             min-height: auto;
           }
-          .verso-band {
+          .verso-sliding-blade {
             display: none; /* Hide desktop sliding blade on mobile */
           }
-          .verso-pane {
+          .verso-form-pane {
             position: relative !important;
             width: 100% !important;
             left: 0 !important;
             right: 0 !important;
             padding: 36px 26px;
-          }
-          .verso-pane-content {
-            opacity: 1 !important;
-            transform: none !important;
-            pointer-events: auto !important;
           }
         }
       `}</style>
@@ -775,11 +1109,11 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
         </button>
       )}
 
-      <div className="verso-card" data-mode={mode}>
+      <div className={`verso-card is-${mode}`}>
         {/* ==================================================================
-            LEFT PANE: SIGN IN & FORGOT PASSWORD FLOW
+            LEFT FORM PANE: SIGN IN & FORGOT PASSWORD FLOW
             ================================================================== */}
-        <div className="verso-pane verso-pane--left">
+        <div className="verso-form-pane verso-form-pane--signin">
           <div className="verso-pane-content">
             {reason && (
               <div className="verso-reason-pill" role="alert">
@@ -822,7 +1156,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
                       className="verso-input"
                       placeholder="Username or email"
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      onChange={(e) => handleEmailInput(e.target.value)}
                       required
                     />
                     <User size={18} className="verso-input-icon" aria-hidden="true" />
@@ -837,6 +1171,8 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
                       className="verso-input"
                       placeholder="Password"
                       value={password}
+                      onFocus={() => setPasswordFocused(true)}
+                      onBlur={() => setPasswordFocused(false)}
                       onChange={(e) => setPassword(e.target.value)}
                       required
                     />
@@ -865,7 +1201,12 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
                   <button
                     type="button"
                     className="verso-forgot-btn"
-                    onClick={() => switchMode("forgot")}
+                    onClick={() => {
+                      setError("");
+                      setSuccessMsg("");
+                      setMode("forgot");
+                      setForgotStep("email");
+                    }}
                   >
                     Forgot password?
                   </button>
@@ -893,7 +1234,11 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
                   <button
                     type="button"
                     className="verso-switch-trigger"
-                    onClick={() => switchMode("signup")}
+                    onClick={() => {
+                      setError("");
+                      setSuccessMsg("");
+                      setMode("signup");
+                    }}
                   >
                     Create an account
                   </button>
@@ -920,7 +1265,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
                           className="verso-input"
                           placeholder="Registered email address"
                           value={email}
-                          onChange={(e) => setEmail(e.target.value)}
+                          onChange={(e) => handleEmailInput(e.target.value)}
                           required
                           autoFocus
                         />
@@ -974,6 +1319,8 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
                           className="verso-input"
                           placeholder="New password (min 8 chars)"
                           value={newPassword}
+                          onFocus={() => setPasswordFocused(true)}
+                          onBlur={() => setPasswordFocused(false)}
                           onChange={(e) => setNewPassword(e.target.value)}
                           required
                         />
@@ -994,6 +1341,8 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
                           className="verso-input"
                           placeholder="Confirm new password"
                           value={confirmNewPassword}
+                          onFocus={() => setPasswordFocused(true)}
+                          onBlur={() => setPasswordFocused(false)}
                           onChange={(e) => setConfirmNewPassword(e.target.value)}
                           required
                         />
@@ -1018,7 +1367,11 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
                     type="button"
                     className="verso-forgot-btn"
                     style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}
-                    onClick={() => switchMode("login")}
+                    onClick={() => {
+                      setError("");
+                      setSuccessMsg("");
+                      setMode("login");
+                    }}
                   >
                     <ArrowLeft size={14} /> Back to Sign In
                   </button>
@@ -1029,9 +1382,9 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
         </div>
 
         {/* ==================================================================
-            RIGHT PANE: CREATE ACCOUNT (SIGN UP) FORM
+            RIGHT FORM PANE: CREATE ACCOUNT (SIGN UP) FORM
             ================================================================== */}
-        <div className="verso-pane verso-pane--right">
+        <div className="verso-form-pane verso-form-pane--signup">
           <div className="verso-pane-content">
             {error && mode === "signup" && (
               <div className="verso-alert verso-alert--error" role="alert">
@@ -1067,7 +1420,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
                     className="verso-input"
                     placeholder="Email address"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => handleEmailInput(e.target.value)}
                     required
                   />
                   <Mail size={18} className="verso-input-icon" aria-hidden="true" />
@@ -1082,6 +1435,8 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
                     className="verso-input"
                     placeholder="Password"
                     value={password}
+                    onFocus={() => setPasswordFocused(true)}
+                    onBlur={() => setPasswordFocused(false)}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                   />
@@ -1126,7 +1481,11 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
                 <button
                   type="button"
                   className="verso-switch-trigger"
-                  onClick={() => switchMode("login")}
+                  onClick={() => {
+                    setError("");
+                    setSuccessMsg("");
+                    setMode("login");
+                  }}
                 >
                   Sign in
                 </button>
@@ -1136,37 +1495,48 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
         </div>
 
         {/* ==================================================================
-            THE SLIDING BLADE (ANIMATED RECTANGLE WITH DIAGONAL SKEW & LIT SEAMS)
+            THE SLIDING BLADE WITH POPCORN, COCA, DONUT & COFFEE MONSTERS
             ================================================================== */}
-        <div className={`verso-band ${animClass}`}>
+        <div className="verso-sliding-blade">
           <span className="verso-band-edge verso-band-edge--lead" aria-hidden="true" />
           <span className="verso-band-edge verso-band-edge--trail" aria-hidden="true" />
           <div className="verso-band-glow" aria-hidden="true" />
 
-          <div className="verso-band-inner">
-            <span className="verso-brand-tag">REELIST</span>
-            
-            {displayedBladeMode === "login" ? (
-              <>
+          <div className="verso-blade-inner">
+            <div className="verso-blade-top">
+              <span className="verso-brand-tag">REELIST • CINEMA</span>
+              
+              {mode === "login" || mode === "forgot" ? (
                 <h3 className="verso-welcome-title">
                   Welcome<br />
                   <em>back.</em>
                 </h3>
-                <p className="verso-welcome-desc">
-                  Your watchlist, your ratings and your people are exactly where you left them.
-                </p>
-              </>
-            ) : (
-              <>
+              ) : (
                 <h3 className="verso-welcome-title">
                   Start the<br />
                   <em>first page.</em>
                 </h3>
+              )}
+            </div>
+
+            {/* THE CONCESSION SQUAD (POPCORN, COKE, DONUT, COFFEE) */}
+            <ConcessionSquad
+              mouse={mouse}
+              passwordFocused={passwordFocused}
+              emailTyping={emailTyping}
+            />
+
+            <div className="verso-blade-bottom">
+              {mode === "login" || mode === "forgot" ? (
                 <p className="verso-welcome-desc">
-                  One account for every premiere, every trailer and every device you own.
+                  We kept your popcorn warm and your cinema watchlist ready!
                 </p>
-              </>
-            )}
+              ) : (
+                <p className="verso-welcome-desc">
+                  Grab your soda and popcorn &mdash; 2026 premiere seats are waiting for you!
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </div>

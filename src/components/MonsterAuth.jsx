@@ -1,184 +1,6 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { User, Mail, Eye, EyeOff, AlertCircle, CheckCircle2, ArrowLeft, Loader2 } from "lucide-react";
 import { analytics } from "../api/analytics.js";
-
-// Eye tracking offset calculation hook
-function useEyeOffset(ref, mouse, maxOffset, lookAway) {
-  const [rect, setRect] = useState(null);
-
-  useEffect(() => {
-    const measure = () => ref.current && setRect(ref.current.getBoundingClientRect());
-    measure();
-    window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
-  }, [ref]);
-
-  if (lookAway) return { x: -maxOffset * 0.5, y: -maxOffset * 0.9 };
-  if (!mouse || !rect) return { x: 0, y: 0 };
-
-  const cx = rect.left + rect.width / 2;
-  const cy = rect.top + rect.height / 2;
-  const dx = mouse.x - cx;
-  const dy = mouse.y - cy;
-  const dist = Math.min(Math.hypot(dx, dy), 120) / 120;
-  const angle = Math.atan2(dy, dx);
-  return { x: Math.cos(angle) * maxOffset * dist, y: Math.sin(angle) * maxOffset * dist };
-}
-
-// Single eye component with moving pupil
-function Eye_({ size = 20, pupil = 8, offset }) {
-  return (
-    <div
-      style={{
-        width: size,
-        height: size,
-        borderRadius: "50%",
-        background: "#ffffff",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        flexShrink: 0,
-        boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
-      }}
-    >
-      <div
-        style={{
-          width: pupil,
-          height: pupil,
-          borderRadius: "50%",
-          background: "#1f2937",
-          transform: `translate(${offset.x}px, ${offset.y}px)`,
-          transition: "transform .05s linear",
-        }}
-      />
-    </div>
-  );
-}
-
-// Animated Coffee Cup Snack
-function CoffeeCup({ mouse, lookAway, mouthOpen }) {
-  const ref = useRef(null);
-  const offset = useEyeOffset(ref, mouse, 5, lookAway);
-  return (
-    <div ref={ref} className="mon mon-cup">
-      <div className="cup-steam">
-        <span /><span /><span />
-      </div>
-      <div className="cup-handle" />
-      <div className="cup-sleeve" />
-      <div className="cup-body">
-        <div className="eyes-row">
-          <Eye_ offset={offset} size={20} pupil={8} />
-          <Eye_ offset={offset} size={20} pupil={8} />
-        </div>
-        <div className={`cup-mouth ${mouthOpen ? "open" : ""}`}>
-          <div className="teeth" />
-        </div>
-      </div>
-      <div className="snack-legs">
-        <div className="leg cup" />
-        <div className="leg cup" />
-      </div>
-    </div>
-  );
-}
-
-// Animated Donut Snack
-function Donut({ mouse, lookAway, mouthOpen }) {
-  const ref = useRef(null);
-  const offset = useEyeOffset(ref, mouse, 4, lookAway);
-  return (
-    <div ref={ref} className="mon mon-donut">
-      <div className="donut-ring">
-        <span className="sprinkle s1" />
-        <span className="sprinkle s2" />
-        <span className="sprinkle s3" />
-        <span className="sprinkle s4" />
-        <span className="sprinkle s5" />
-        <div className="donut-hole" />
-        <div className="eyes-row donut-eyes">
-          <Eye_ offset={offset} size={18} pupil={7} />
-          <Eye_ offset={offset} size={18} pupil={7} />
-        </div>
-        <div className={`donut-mouth ${mouthOpen ? "open" : ""}`} />
-      </div>
-      <div className="snack-legs">
-        <div className="leg donut" />
-        <div className="leg donut" />
-      </div>
-    </div>
-  );
-}
-
-// Animated Popcorn Bucket Snack
-function Popcorn({ mouse, lookAway, mouthOpen }) {
-  const ref = useRef(null);
-  const offset = useEyeOffset(ref, mouse, 6, lookAway);
-  return (
-    <div ref={ref} className="mon mon-popcorn">
-      <div className="popcorn-top">
-        <div className="kernel-row row-top"><span /></div>
-        <div className="kernel-row row-mid"><span /><span /><span /></div>
-        <div className="kernel-row row-bottom"><span /><span /><span /><span /></div>
-      </div>
-      <div className="popcorn-bucket">
-        <div className="eyes-row">
-          <Eye_ offset={offset} size={20} pupil={8} />
-          <Eye_ offset={offset} size={20} pupil={8} />
-        </div>
-        <div className={`popcorn-mouth ${mouthOpen ? "open" : ""}`}>
-          <div className="teeth" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Animated Soda Can Snack
-function Soda({ mouse, lookAway, mouthOpen }) {
-  const ref = useRef(null);
-  const offset = useEyeOffset(ref, mouse, 6, lookAway);
-  return (
-    <div ref={ref} className="mon mon-soda">
-      <div className="soda-tab" />
-      <div className="soda-can">
-        <div className="soda-label" />
-        <div className="eyes-row">
-          <Eye_ offset={offset} size={18} pupil={7} />
-          <Eye_ offset={offset} size={18} pupil={7} />
-        </div>
-        <div className={`soda-mouth ${mouthOpen ? "open" : ""}`} />
-      </div>
-      <div className="snack-legs">
-        <div className="leg soda" />
-        <div className="leg soda" />
-      </div>
-    </div>
-  );
-}
-
-// The Concession Squad Stage Component
-function ConcessionSquad({ mouse, passwordFocused, emailTyping }) {
-  return (
-    <div className="concession-squad-stage">
-      <div className="monsters">
-        <div className="mon-slot slot-popcorn">
-          <Popcorn mouse={mouse} lookAway={passwordFocused} mouthOpen={emailTyping} />
-        </div>
-        <div className="mon-slot slot-donut">
-          <Donut mouse={mouse} lookAway={passwordFocused} mouthOpen={emailTyping} />
-        </div>
-        <div className="mon-slot slot-cup">
-          <CoffeeCup mouse={mouse} lookAway={passwordFocused} mouthOpen={emailTyping} />
-        </div>
-        <div className="mon-slot slot-soda">
-          <Soda mouse={mouse} lookAway={passwordFocused} mouthOpen={emailTyping} />
-        </div>
-      </div>
-      <div className="stage-ground" />
-    </div>
-  );
-}
 
 export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false, reason = "" }) {
   // mode: 'login' | 'signup' | 'forgot'
@@ -195,12 +17,6 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Interactive Eye-Tracking & Reaction States
-  const [mouse, setMouse] = useState(null);
-  const [passwordFocused, setPasswordFocused] = useState(false);
-  const [emailTyping, setEmailTyping] = useState(false);
-  const rafRef = useRef(null);
-  const typingTimeout = useRef(null);
   const animTimerRef = useRef(null);
   const midPointTimerRef = useRef(null);
 
@@ -222,20 +38,6 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [lockoutTimer, setLockoutTimer] = useState(0);
-
-  // Mouse move listener for reactive pupil tracking
-  const onMouseMove = useCallback((e) => {
-    if (rafRef.current) return;
-    rafRef.current = requestAnimationFrame(() => {
-      setMouse({ x: e.clientX, y: e.clientY });
-      rafRef.current = null;
-    });
-  }, []);
-
-  useEffect(() => {
-    window.addEventListener("mousemove", onMouseMove);
-    return () => window.removeEventListener("mousemove", onMouseMove);
-  }, [onMouseMove]);
 
   // Rate Limiting Countdown (Item 8)
   useEffect(() => {
@@ -304,13 +106,10 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
     }
   };
 
-  // Handle typing reaction for snack mouths
+  // Keep email changes responsive and clear stale validation errors.
   const handleEmailInput = (val) => {
     setEmail(val);
     if (error) setError("");
-    setEmailTyping(true);
-    clearTimeout(typingTimeout.current);
-    typingTimeout.current = setTimeout(() => setEmailTyping(false), 550);
   };
 
   // Password rules validation
@@ -960,7 +759,8 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
           display: flex;
           flex-direction: column;
           align-items: center;
-          justify-content: space-between;
+          justify-content: center;
+          gap: 22px;
           padding: 38px 38px 30px;
           box-sizing: border-box;
           z-index: 12;
@@ -981,6 +781,12 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
           32% { opacity: 0; }
           68% { opacity: 0; }
           100% { opacity: 1; }
+        }
+
+        .verso-blade-center-space {
+          width: 100%;
+          min-height: 44px;
+          flex: 0 0 44px;
         }
 
         /* Blade Top Typography with Gentle Cross-Fade */
@@ -1194,6 +1000,9 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
           .verso-sliding-blade {
             display: none !important;
           }
+          .verso-blade-center-space {
+            display: none;
+          }
           .verso-form-pane {
             position: relative !important;
             width: 100% !important;
@@ -1288,8 +1097,6 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
                       className="verso-input"
                       placeholder="Password"
                       value={password}
-                      onFocus={() => setPasswordFocused(true)}
-                      onBlur={() => setPasswordFocused(false)}
                       onChange={(e) => setPassword(e.target.value)}
                       required
                     />
@@ -1432,8 +1239,6 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
                           className="verso-input"
                           placeholder="New password (min 8 chars)"
                           value={newPassword}
-                          onFocus={() => setPasswordFocused(true)}
-                          onBlur={() => setPasswordFocused(false)}
                           onChange={(e) => setNewPassword(e.target.value)}
                           required
                         />
@@ -1454,8 +1259,6 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
                           className="verso-input"
                           placeholder="Confirm new password"
                           value={confirmNewPassword}
-                          onFocus={() => setPasswordFocused(true)}
-                          onBlur={() => setPasswordFocused(false)}
                           onChange={(e) => setConfirmNewPassword(e.target.value)}
                           required
                         />
@@ -1548,8 +1351,6 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
                     className="verso-input"
                     placeholder="Password"
                     value={password}
-                    onFocus={() => setPasswordFocused(true)}
-                    onBlur={() => setPasswordFocused(false)}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                   />
@@ -1628,12 +1429,8 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
               )}
             </div>
 
-            {/* THE CONCESSION SQUAD (POPCORN, COKE, DONUT, COFFEE) */}
-            <ConcessionSquad
-              mouse={mouse}
-              passwordFocused={passwordFocused}
-              emailTyping={emailTyping}
-            />
+            {/* Minimal center space: the reference design uses typography, not character illustrations. */}
+            <div className="verso-blade-center-space" aria-hidden="true" />
 
             <div className="verso-blade-bottom verso-blade-text-wrap">
               {displayedContentMode === "login" ? (

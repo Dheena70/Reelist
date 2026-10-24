@@ -266,36 +266,36 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
 
-  // Slow, Silky Smooth Blade Slide Trigger (1.1s duration, midpoint cover exchange)
+  // Slow, Silky Smooth Blade Slide Trigger (1.35s duration, midpoint cover exchange)
   const triggerSlide = (targetMode) => {
-    if (targetMode === mode) return;
+    if (targetMode === mode || animClass) return;
     setError("");
     setSuccessMsg("");
     clearTimeout(animTimerRef.current);
     clearTimeout(midPointTimerRef.current);
 
     if (targetMode === "signup" && mode === "login") {
-      setAnimClass("anim-sweep-left");
-      // Mid-point: at 480ms when the blade completely covers the card, trade states
+      setAnimClass("slide-to-signup");
+      // Mid-point: at 620ms when the blade completely covers the card, trade states
       midPointTimerRef.current = setTimeout(() => {
         setMode("signup");
         setDisplayedContentMode("signup");
-      }, 480);
-      // Settle at 1100ms
+      }, 620);
+      // Settle at 1350ms
       animTimerRef.current = setTimeout(() => {
         setAnimClass("");
-      }, 1100);
+      }, 1350);
     } else if (targetMode === "login" && mode === "signup") {
-      setAnimClass("anim-sweep-right");
-      // Mid-point: at 480ms when the blade completely covers the card, trade states
+      setAnimClass("slide-to-signin");
+      // Mid-point: at 620ms when the blade completely covers the card, trade states
       midPointTimerRef.current = setTimeout(() => {
         setMode("login");
         setDisplayedContentMode("login");
-      }, 480);
-      // Settle at 1100ms
+      }, 620);
+      // Settle at 1350ms
       animTimerRef.current = setTimeout(() => {
         setAnimClass("");
-      }, 1100);
+      }, 1350);
     } else if (targetMode === "forgot") {
       setMode("forgot");
       setForgotStep("email");
@@ -554,6 +554,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
 
         /* ==========================================================================
            DUAL FORM PANES (SIGN IN ON LEFT, SIGN UP ON RIGHT)
+           BOTH PANES PERMANENTLY AT OPACITY 1 SO THE SLICING BLADE MASKS THEM ORGANICALLY
            ========================================================================== */
         .verso-form-pane {
           position: absolute;
@@ -565,9 +566,10 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
           display: flex;
           flex-direction: column;
           justify-content: center;
-          transition: opacity 0.5s ease 0.35s, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s;
           z-index: 2;
           overflow-y: auto;
+          opacity: 1 !important;
+          transform: none !important;
         }
         .verso-form-pane::-webkit-scrollbar {
           width: 4px;
@@ -581,32 +583,24 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
           left: 0;
         }
         .verso-form-pane--signup {
-          right: 0;
+          left: 50%;
         }
 
-        /* Pane Visibility States */
+        /* Pointer Interaction Management (Prevent clicks into covered pane) */
         .verso-card.is-login .verso-form-pane--signin,
         .verso-card.is-forgot .verso-form-pane--signin {
-          opacity: 1;
           pointer-events: auto;
-          transform: translateX(0);
-        }
-        .verso-card.is-signup .verso-form-pane--signin {
-          opacity: 0;
-          pointer-events: none;
-          transform: translateX(-35px);
-        }
-
-        .verso-card.is-signup .verso-form-pane--signup {
-          opacity: 1;
-          pointer-events: auto;
-          transform: translateX(0);
         }
         .verso-card.is-login .verso-form-pane--signup,
         .verso-card.is-forgot .verso-form-pane--signup {
-          opacity: 0;
           pointer-events: none;
-          transform: translateX(35px);
+        }
+
+        .verso-card.is-signup .verso-form-pane--signup {
+          pointer-events: auto;
+        }
+        .verso-card.is-signup .verso-form-pane--signin {
+          pointer-events: none;
         }
 
         .verso-pane-content {
@@ -845,88 +839,106 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
         }
 
         /* ==========================================================================
-           THE SLIDING BLADE: SLOW, EXPANDING & BUTTERY SMOOTH (1.1s DURATION)
+           THE SLIDING BLADE: SLOW, EXPANDING & BUTTERY SMOOTH (1.35s DURATION)
+           MATCHES EXACT FRAME-BY-FRAME MOTION OF THE USER'S REFERENCE VIDEO
            ========================================================================== */
         .verso-sliding-blade {
           position: absolute;
-          top: 0;
-          height: 100%;
+          top: -5%;
+          bottom: -5%;
+          height: 110%;
           z-index: 10;
           background: linear-gradient(150deg, #102e23 0%, #081a13 55%, #040e0a 100%);
           overflow: hidden;
-          box-shadow: 0 0 50px rgba(0, 0, 0, 0.45);
-          transform-origin: center center;
-          /* Default state when at rest */
-          left: ${mode === "signup" ? "-3%" : "48%"};
-          width: 55%;
+          box-shadow: 0 0 60px rgba(0, 0, 0, 0.55);
           transform: skewX(-8deg);
+          transform-origin: center center;
+          will-change: left, right;
         }
 
-        /* Keyframes for the expanding sweep across the card (exact to the video!) */
-        @keyframes bladeSweepToLeftSlow {
+        /* Pure Static CSS Resting States - Zero Dynamic Style Re-evaluation */
+        .verso-card.is-login .verso-sliding-blade,
+        .verso-card.is-forgot .verso-sliding-blade {
+          left: 46%;
+          right: -4%;
+        }
+
+        .verso-card.is-signup .verso-sliding-blade {
+          left: -4%;
+          right: 46%;
+        }
+
+        /* Frame-By-Frame Sweep Keyframes: Slow (1.35s), Smooth & Continuous */
+        @keyframes sweepToSignupSlow {
           0% {
-            left: 48%;
-            width: 55%;
+            left: 46%;
+            right: -4%;
+            animation-timing-function: cubic-bezier(0.38, 0, 0.22, 1);
           }
-          40% {
-            left: -3%;
-            width: 106%;
+          42% {
+            left: -4%;
+            right: -4%;
+            animation-timing-function: linear;
           }
-          55% {
-            left: -3%;
-            width: 106%;
+          58% {
+            left: -4%;
+            right: -4%;
+            animation-timing-function: cubic-bezier(0.22, 1, 0.38, 1);
           }
           100% {
-            left: -3%;
-            width: 55%;
+            left: -4%;
+            right: 46%;
           }
         }
 
-        @keyframes bladeSweepToRightSlow {
+        @keyframes sweepToSigninSlow {
           0% {
-            left: -3%;
-            width: 55%;
+            left: -4%;
+            right: 46%;
+            animation-timing-function: cubic-bezier(0.38, 0, 0.22, 1);
           }
-          40% {
-            left: -3%;
-            width: 106%;
+          42% {
+            left: -4%;
+            right: -4%;
+            animation-timing-function: linear;
           }
-          55% {
-            left: -3%;
-            width: 106%;
+          58% {
+            left: -4%;
+            right: -4%;
+            animation-timing-function: cubic-bezier(0.22, 1, 0.38, 1);
           }
           100% {
-            left: 48%;
-            width: 55%;
+            left: 46%;
+            right: -4%;
           }
         }
 
-        .verso-sliding-blade.anim-sweep-left {
-          animation: bladeSweepToLeftSlow 1.1s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+        .verso-sliding-blade.slide-to-signup {
+          animation: sweepToSignupSlow 1.35s forwards !important;
         }
 
-        .verso-sliding-blade.anim-sweep-right {
-          animation: bladeSweepToRightSlow 1.1s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+        .verso-sliding-blade.slide-to-signin {
+          animation: sweepToSigninSlow 1.35s forwards !important;
         }
 
-        /* Lit Seams (One Blade, Two Lit Seams) */
+        /* Lit Seams on Leading & Trailing Diagonal Edges */
         .verso-band-edge {
           position: absolute;
-          top: -15%;
-          bottom: -15%;
+          top: -20%;
+          bottom: -20%;
           width: 2.5px;
           pointer-events: none;
-          z-index: 12;
+          z-index: 14;
         }
         .verso-band-edge--lead {
           left: 0;
-          background: linear-gradient(180deg, rgba(212,175,55,0) 0%, rgba(212,175,55,0.95) 30%, rgba(255,255,255,0.95) 50%, rgba(212,175,55,0.95) 70%, rgba(212,175,55,0) 100%);
-          box-shadow: 0 0 14px rgba(212, 175, 55, 0.85), 0 0 25px rgba(34, 197, 94, 0.45);
+          background: linear-gradient(180deg, rgba(212,175,55,0) 0%, rgba(212,175,55,0.95) 25%, rgba(255,255,255,0.98) 50%, rgba(212,175,55,0.95) 75%, rgba(212,175,55,0) 100%);
+          box-shadow: 0 0 14px rgba(212, 175, 55, 0.9), 0 0 25px rgba(34, 197, 94, 0.5);
         }
         .verso-band-edge--trail {
           right: 0;
-          background: linear-gradient(180deg, rgba(212,175,55,0) 0%, rgba(212,175,55,0.95) 30%, rgba(255,255,255,0.95) 50%, rgba(212,175,55,0.95) 70%, rgba(212,175,55,0) 100%);
-          box-shadow: 0 0 14px rgba(212, 175, 55, 0.85), 0 0 25px rgba(34, 197, 94, 0.45);
+          background: linear-gradient(180deg, rgba(212,175,55,0) 0%, rgba(212,175,55,0.95) 25%, rgba(255,255,255,0.98) 50%, rgba(212,175,55,0.95) 75%, rgba(212,175,55,0) 100%);
+          box-shadow: 0 0 14px rgba(212, 175, 55, 0.9), 0 0 25px rgba(34, 197, 94, 0.5);
         }
 
         .verso-band-glow {
@@ -935,7 +947,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
           left: 0;
           right: 0;
           bottom: 0;
-          background: radial-gradient(circle at 50% 30%, rgba(34, 197, 94, 0.16) 0%, transparent 70%);
+          background: radial-gradient(circle at 50% 30%, rgba(34, 197, 94, 0.18) 0%, transparent 70%);
           pointer-events: none;
         }
 
@@ -944,15 +956,31 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
           position: relative;
           width: 100%;
           height: 100%;
-          transform: skewX(8deg); /* Cancels out the outer -8deg skew */
+          transform: skewX(8deg);
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: space-between;
-          padding: 34px 38px 28px;
+          padding: 38px 38px 30px;
           box-sizing: border-box;
-          z-index: 11;
+          z-index: 12;
           text-align: center;
+        }
+
+        /* Blade Text Cross-Fade during Dark Period */
+        .verso-blade-text-wrap {
+          transition: opacity 0.3s ease;
+        }
+        .verso-sliding-blade.slide-to-signup .verso-blade-text-wrap,
+        .verso-sliding-blade.slide-to-signin .verso-blade-text-wrap {
+          animation: bladeTextCrossFade 1.35s ease forwards;
+        }
+
+        @keyframes bladeTextCrossFade {
+          0% { opacity: 1; }
+          32% { opacity: 0; }
+          68% { opacity: 0; }
+          100% { opacity: 1; }
         }
 
         /* Blade Top Typography with Gentle Cross-Fade */
@@ -1164,14 +1192,25 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
             min-height: auto;
           }
           .verso-sliding-blade {
-            display: none; /* Hide desktop sliding blade on mobile */
+            display: none !important;
           }
           .verso-form-pane {
             position: relative !important;
             width: 100% !important;
             left: 0 !important;
-            right: 0 !important;
             padding: 36px 26px;
+          }
+          .verso-card.is-login .verso-form-pane--signup {
+            display: none !important;
+          }
+          .verso-card.is-signup .verso-form-pane--signin {
+            display: none !important;
+          }
+          .verso-card.is-login .verso-form-pane--signin {
+            display: flex !important;
+          }
+          .verso-card.is-signup .verso-form-pane--signup {
+            display: flex !important;
           }
         }
       `}</style>
@@ -1221,7 +1260,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
             )}
 
             {/* --- SIGN IN FORM --- */}
-            {mode === "login" && (
+            {mode !== "forgot" && (
               <form onSubmit={handleSubmit} noValidate autoComplete="off">
                 <h2 className="verso-heading">Sign in</h2>
                 <div className="verso-accent-bar" />
@@ -1573,7 +1612,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
           <div className="verso-band-glow" aria-hidden="true" />
 
           <div className="verso-blade-inner">
-            <div className="verso-blade-top">
+            <div className="verso-blade-top verso-blade-text-wrap">
               <span className="verso-brand-tag">REELIST • CINEMA</span>
               
               {displayedContentMode === "login" ? (
@@ -1596,7 +1635,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
               emailTyping={emailTyping}
             />
 
-            <div className="verso-blade-bottom">
+            <div className="verso-blade-bottom verso-blade-text-wrap">
               {displayedContentMode === "login" ? (
                 <p className="verso-welcome-desc">
                   We kept your popcorn warm and your cinema watchlist ready!

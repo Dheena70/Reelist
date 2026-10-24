@@ -183,6 +183,8 @@ function ConcessionSquad({ mouse, passwordFocused, emailTyping }) {
 export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false, reason = "" }) {
   // mode: 'login' | 'signup' | 'forgot'
   const [mode, setMode] = useState("login");
+  const [animClass, setAnimClass] = useState(""); // 'anim-sweep-left' | 'anim-sweep-right' | ''
+  const [displayedContentMode, setDisplayedContentMode] = useState("login");
 
   // Form Fields
   const [name, setName] = useState("");
@@ -199,6 +201,8 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
   const [emailTyping, setEmailTyping] = useState(false);
   const rafRef = useRef(null);
   const typingTimeout = useRef(null);
+  const animTimerRef = useRef(null);
+  const midPointTimerRef = useRef(null);
 
   // SafeHire-style 3-Step OTP Password Reset States
   const [forgotStep, setForgotStep] = useState("email"); // 'email' | 'otp' | 'newpw'
@@ -261,6 +265,44 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
+
+  // Slow, Silky Smooth Blade Slide Trigger (1.1s duration, midpoint cover exchange)
+  const triggerSlide = (targetMode) => {
+    if (targetMode === mode) return;
+    setError("");
+    setSuccessMsg("");
+    clearTimeout(animTimerRef.current);
+    clearTimeout(midPointTimerRef.current);
+
+    if (targetMode === "signup" && mode === "login") {
+      setAnimClass("anim-sweep-left");
+      // Mid-point: at 480ms when the blade completely covers the card, trade states
+      midPointTimerRef.current = setTimeout(() => {
+        setMode("signup");
+        setDisplayedContentMode("signup");
+      }, 480);
+      // Settle at 1100ms
+      animTimerRef.current = setTimeout(() => {
+        setAnimClass("");
+      }, 1100);
+    } else if (targetMode === "login" && mode === "signup") {
+      setAnimClass("anim-sweep-right");
+      // Mid-point: at 480ms when the blade completely covers the card, trade states
+      midPointTimerRef.current = setTimeout(() => {
+        setMode("login");
+        setDisplayedContentMode("login");
+      }, 480);
+      // Settle at 1100ms
+      animTimerRef.current = setTimeout(() => {
+        setAnimClass("");
+      }, 1100);
+    } else if (targetMode === "forgot") {
+      setMode("forgot");
+      setForgotStep("email");
+    } else if (targetMode === "login" && mode === "forgot") {
+      setMode("login");
+    }
+  };
 
   // Handle typing reaction for snack mouths
   const handleEmailInput = (val) => {
@@ -395,7 +437,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
           if (onLoginSuccess) onLoginSuccess(res.user);
         } else if (res.alreadyExists) {
           setError("An account already exists with this email. Please sign in.");
-          setMode("login");
+          triggerSlide("login");
         } else {
           setError(res.error || "Registration failed. Please try again.");
         }
@@ -408,7 +450,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
           if (onLoginSuccess) onLoginSuccess(res.user);
         } else if (res.notFound) {
           setError("No account found with this email. Switching to registration...");
-          setMode("signup");
+          triggerSlide("signup");
         } else {
           const nextFailed = failedAttempts + 1;
           setFailedAttempts(nextFailed);
@@ -430,7 +472,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
     <div className="verso-auth-wrapper">
       <style>{`
         /* ==========================================================================
-           VERSO-STYLE SLIDING BLADE AUTHENTICATION ANIMATION WITH CONCESSION SQUAD
+           SLOW & SMOOTH SLIDING BLADE AUTHENTICATION ANIMATION (1.1s DURATION)
            ========================================================================== */
         .verso-auth-wrapper {
           --coffee: #c98a4b;
@@ -523,7 +565,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
           display: flex;
           flex-direction: column;
           justify-content: center;
-          transition: opacity 0.4s ease 0.12s, transform 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.08s;
+          transition: opacity 0.5s ease 0.35s, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s;
           z-index: 2;
           overflow-y: auto;
         }
@@ -552,7 +594,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
         .verso-card.is-signup .verso-form-pane--signin {
           opacity: 0;
           pointer-events: none;
-          transform: translateX(-30px);
+          transform: translateX(-35px);
         }
 
         .verso-card.is-signup .verso-form-pane--signup {
@@ -564,7 +606,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
         .verso-card.is-forgot .verso-form-pane--signup {
           opacity: 0;
           pointer-events: none;
-          transform: translateX(30px);
+          transform: translateX(35px);
         }
 
         .verso-pane-content {
@@ -803,32 +845,68 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
         }
 
         /* ==========================================================================
-           THE SLIDING BLADE WITH POPCORN, COKE, DONUT & COFFEE CONCESSION SQUAD
+           THE SLIDING BLADE: SLOW, EXPANDING & BUTTERY SMOOTH (1.1s DURATION)
            ========================================================================== */
         .verso-sliding-blade {
           position: absolute;
           top: 0;
-          left: 0;
-          width: 53%;
           height: 100%;
           z-index: 10;
           background: linear-gradient(150deg, #102e23 0%, #081a13 55%, #040e0a 100%);
           overflow: hidden;
           box-shadow: 0 0 50px rgba(0, 0, 0, 0.45);
-          /* Continuous, hardware-accelerated 60fps sliding transform */
-          transition: transform 0.68s cubic-bezier(0.77, 0, 0.175, 1);
-          will-change: transform;
+          transform-origin: center center;
+          /* Default state when at rest */
+          left: ${mode === "signup" ? "-3%" : "48%"};
+          width: 55%;
+          transform: skewX(-8deg);
         }
 
-        /* Login state: Blade slides to the RIGHT */
-        .verso-card.is-login .verso-sliding-blade,
-        .verso-card.is-forgot .verso-sliding-blade {
-          transform: translateX(90%) skewX(-8deg);
+        /* Keyframes for the expanding sweep across the card (exact to the video!) */
+        @keyframes bladeSweepToLeftSlow {
+          0% {
+            left: 48%;
+            width: 55%;
+          }
+          40% {
+            left: -3%;
+            width: 106%;
+          }
+          55% {
+            left: -3%;
+            width: 106%;
+          }
+          100% {
+            left: -3%;
+            width: 55%;
+          }
         }
 
-        /* Signup state: Blade slides to the LEFT */
-        .verso-card.is-signup .verso-sliding-blade {
-          transform: translateX(-2%) skewX(-8deg);
+        @keyframes bladeSweepToRightSlow {
+          0% {
+            left: -3%;
+            width: 55%;
+          }
+          40% {
+            left: -3%;
+            width: 106%;
+          }
+          55% {
+            left: -3%;
+            width: 106%;
+          }
+          100% {
+            left: 48%;
+            width: 55%;
+          }
+        }
+
+        .verso-sliding-blade.anim-sweep-left {
+          animation: bladeSweepToLeftSlow 1.1s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+        }
+
+        .verso-sliding-blade.anim-sweep-right {
+          animation: bladeSweepToRightSlow 1.1s cubic-bezier(0.77, 0, 0.175, 1) forwards;
         }
 
         /* Lit Seams (One Blade, Two Lit Seams) */
@@ -877,7 +955,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
           text-align: center;
         }
 
-        /* Blade Top Typography */
+        /* Blade Top Typography with Gentle Cross-Fade */
         .verso-blade-top {
           width: 100%;
         }
@@ -898,7 +976,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
           color: #fbfbf9;
           margin: 0;
           letter-spacing: -0.01em;
-          transition: opacity 0.3s ease;
+          transition: opacity 0.4s ease 0.25s, transform 0.4s ease 0.25s;
         }
         .verso-welcome-title em {
           font-style: italic;
@@ -913,7 +991,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
           color: rgba(240, 245, 242, 0.75);
           margin: 0;
           max-width: 330px;
-          transition: opacity 0.3s ease;
+          transition: opacity 0.4s ease 0.25s;
         }
 
         /* ==========================================================================
@@ -1234,11 +1312,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
                   <button
                     type="button"
                     className="verso-switch-trigger"
-                    onClick={() => {
-                      setError("");
-                      setSuccessMsg("");
-                      setMode("signup");
-                    }}
+                    onClick={() => triggerSlide("signup")}
                   >
                     Create an account
                   </button>
@@ -1481,11 +1555,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
                 <button
                   type="button"
                   className="verso-switch-trigger"
-                  onClick={() => {
-                    setError("");
-                    setSuccessMsg("");
-                    setMode("login");
-                  }}
+                  onClick={() => triggerSlide("login")}
                 >
                   Sign in
                 </button>
@@ -1497,7 +1567,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
         {/* ==================================================================
             THE SLIDING BLADE WITH POPCORN, COCA, DONUT & COFFEE MONSTERS
             ================================================================== */}
-        <div className="verso-sliding-blade">
+        <div className={`verso-sliding-blade ${animClass}`}>
           <span className="verso-band-edge verso-band-edge--lead" aria-hidden="true" />
           <span className="verso-band-edge verso-band-edge--trail" aria-hidden="true" />
           <div className="verso-band-glow" aria-hidden="true" />
@@ -1506,7 +1576,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
             <div className="verso-blade-top">
               <span className="verso-brand-tag">REELIST • CINEMA</span>
               
-              {mode === "login" || mode === "forgot" ? (
+              {displayedContentMode === "login" ? (
                 <h3 className="verso-welcome-title">
                   Welcome<br />
                   <em>back.</em>
@@ -1527,7 +1597,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
             />
 
             <div className="verso-blade-bottom">
-              {mode === "login" || mode === "forgot" ? (
+              {displayedContentMode === "login" ? (
                 <p className="verso-welcome-desc">
                   We kept your popcorn warm and your cinema watchlist ready!
                 </p>

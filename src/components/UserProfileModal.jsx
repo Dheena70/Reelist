@@ -15,7 +15,7 @@ import { analytics } from '../api/analytics.js';
 
 export default function UserProfileModal({ currentUser, onClose, onLogout }) {
   const [watchlistCount, setWatchlistCount] = useState(() => {
-    return analytics.getUserWatchlist(currentUser?.email)?.length || 0;
+    return analytics.getUserWatchlist(currentUser?.id || currentUser?.email)?.length || 0;
   });
   const [feedbackMsg, setFeedbackMsg] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
@@ -23,14 +23,14 @@ export default function UserProfileModal({ currentUser, onClose, onLogout }) {
 
   const handleExportBackup = () => {
     try {
-      const data = analytics.exportUserData(currentUser?.email);
+      const data = analytics.exportUserData(currentUser?.id || currentUser?.email);
       if (!data) throw new Error('Could not generate backup data.');
 
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `reelist-backup-${currentUser?.email || 'user'}-${new Date().toISOString().slice(0, 10)}.json`;
+      a.download = `reelist-backup-${currentUser?.email || currentUser?.id || 'user'}-${new Date().toISOString().slice(0, 10)}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -67,9 +67,9 @@ export default function UserProfileModal({ currentUser, onClose, onLogout }) {
     e.target.value = '';
   };
 
-  const handleDeleteAccount = () => {
+  const handleDeleteAccount = async () => {
     setIsDeleting(true);
-    const res = analytics.deleteAccount(currentUser?.email);
+    const res = await analytics.deleteAccount(currentUser?.id || currentUser?.email);
     if (res.success) {
       if (onLogout) onLogout();
       if (onClose) onClose();
@@ -154,18 +154,18 @@ export default function UserProfileModal({ currentUser, onClose, onLogout }) {
             </div>
           </section>
 
-          {/* Database Backup & Restore */}
+          {/* Data Backup & Restore */}
           <section className="user-profile__section">
-            <h4 className="user-profile__section-title">Database & Local Storage Backups</h4>
+            <h4 className="user-profile__section-title">Data Backup & Restore</h4>
             <p className="user-profile__section-desc">
-              Your watchlist, ratings, and preferences are protected with Row-Level Security in your private browser sandbox. You can download an encrypted JSON snapshot or restore a previous backup anytime.
+              Your watchlist and preferences are currently stored locally in your browser. You can export a JSON backup or restore a previous backup anytime.
             </p>
             <div className="user-profile__btn-row">
               <button
                 type="button"
                 className="btn-outline user-profile__action-btn"
                 onClick={handleExportBackup}
-                title="Download JSON backup of your watchlist and ratings"
+                title="Download JSON backup of your watchlist and reactions"
               >
                 <Download size={15} />
                 <span>Download Backup (JSON)</span>

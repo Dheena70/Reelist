@@ -189,7 +189,7 @@ export default function MovieModal({ movieId, onClose, onSelectMovie, currentUse
   // Poster Ribbon Watchlist Bookmark state (with RLS per-user isolation)
   const [isWatchlisted, setIsWatchlisted] = useState(() => {
     try {
-      const list = analytics.getUserWatchlist(currentUser?.email);
+      const list = analytics.getUserWatchlist(currentUser?.id || currentUser?.email);
       return list.includes(movieId);
     } catch {
       return false;
@@ -216,7 +216,10 @@ export default function MovieModal({ movieId, onClose, onSelectMovie, currentUse
 
   const [userReactions, setUserReactions] = useState(() => {
     try {
-      const saved = localStorage.getItem(`reelist_my_reactions_${movieId}`);
+      const userKey = currentUser?.id || currentUser?.email;
+      const saved =
+        (userKey ? localStorage.getItem(`reelist_my_reactions_${userKey}_${movieId}`) : null) ||
+        localStorage.getItem(`reelist_my_reactions_${movieId}`);
       return saved ? JSON.parse(saved) : {};
     } catch {
       return {};
@@ -236,6 +239,10 @@ export default function MovieModal({ movieId, onClose, onSelectMovie, currentUse
     setUserRating(score);
     setShowRatingPicker(false);
     try {
+      const userKey = currentUser?.id || currentUser?.email;
+      if (userKey) {
+        localStorage.setItem(`reelist_rating_${userKey}_${activeId}`, String(score));
+      }
       localStorage.setItem(`reelist_rating_${activeId}`, String(score));
     } catch {
       // ignore
@@ -246,6 +253,10 @@ export default function MovieModal({ movieId, onClose, onSelectMovie, currentUse
     setUserRating(null);
     setShowRatingPicker(false);
     try {
+      const userKey = currentUser?.id || currentUser?.email;
+      if (userKey) {
+        localStorage.removeItem(`reelist_rating_${userKey}_${activeId}`);
+      }
       localStorage.removeItem(`reelist_rating_${activeId}`);
     } catch {
       // ignore
@@ -262,7 +273,8 @@ export default function MovieModal({ movieId, onClose, onSelectMovie, currentUse
       return;
     }
     try {
-      const list = analytics.getUserWatchlist(currentUser?.email);
+      const userKey = currentUser?.id || currentUser?.email;
+      const list = analytics.getUserWatchlist(userKey);
       let next;
       if (list.includes(activeId)) {
         next = list.filter((id) => id !== activeId);
@@ -271,7 +283,7 @@ export default function MovieModal({ movieId, onClose, onSelectMovie, currentUse
         next = [...list, activeId];
         setIsWatchlisted(true);
       }
-      analytics.setUserWatchlist(currentUser?.email, next);
+      analytics.setUserWatchlist(userKey, next);
     } catch {
       // ignore
     }
@@ -298,7 +310,11 @@ export default function MovieModal({ movieId, onClose, onSelectMovie, currentUse
     setReactions(newReactions);
     setUserReactions(newMy);
     try {
+      const userKey = currentUser?.id || currentUser?.email;
       localStorage.setItem(`reelist_reactions_${activeId}`, JSON.stringify(newReactions));
+      if (userKey) {
+        localStorage.setItem(`reelist_my_reactions_${userKey}_${activeId}`, JSON.stringify(newMy));
+      }
       localStorage.setItem(`reelist_my_reactions_${activeId}`, JSON.stringify(newMy));
     } catch {
       // ignore
@@ -313,10 +329,13 @@ export default function MovieModal({ movieId, onClose, onSelectMovie, currentUse
   // Sync ratings and reactions when activeId switches
   useEffect(() => {
     try {
-      const savedRating = localStorage.getItem(`reelist_rating_${activeId}`);
+      const userKey = currentUser?.id || currentUser?.email;
+      const savedRating =
+        (userKey ? localStorage.getItem(`reelist_rating_${userKey}_${activeId}`) : null) ||
+        localStorage.getItem(`reelist_rating_${activeId}`);
       setUserRating(savedRating ? Number(savedRating) : null);
 
-      const list = analytics.getUserWatchlist(currentUser?.email);
+      const list = analytics.getUserWatchlist(userKey);
       setIsWatchlisted(list.includes(activeId));
 
       const savedReacts = localStorage.getItem(`reelist_reactions_${activeId}`);
@@ -333,12 +352,14 @@ export default function MovieModal({ movieId, onClose, onSelectMovie, currentUse
         });
       }
 
-      const savedMyReacts = localStorage.getItem(`reelist_my_reactions_${activeId}`);
+      const savedMyReacts =
+        (userKey ? localStorage.getItem(`reelist_my_reactions_${userKey}_${activeId}`) : null) ||
+        localStorage.getItem(`reelist_my_reactions_${activeId}`);
       setUserReactions(savedMyReacts ? JSON.parse(savedMyReacts) : {});
     } catch {
       // ignore
     }
-  }, [activeId, currentUser?.email]);
+  }, [activeId, currentUser?.id, currentUser?.email]);
 
   // Lock body scroll while modal is active
   useEffect(() => {

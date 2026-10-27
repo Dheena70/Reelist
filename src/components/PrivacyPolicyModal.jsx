@@ -42,8 +42,8 @@ export default function PrivacyPolicyModal({ onClose }) {
           <section className="legal-section">
             <h3>2. Information We Collect</h3>
             <ul>
-              <li><strong>Account Credentials:</strong> When you register on Reelist, we securely store your name, email address, and a cryptographically salted PBKDF2 SHA-256 password hash. We never store plaintext passwords.</li>
-              <li><strong>Watchlist & Reactions:</strong> Stored in your client-side browser storage (localStorage) so you retain instant, private access across sessions.</li>
+              <li><strong>Account Credentials:</strong> Authentication (email, password verification, and session tokens) is handled securely by Supabase Auth. Passwords are never stored on Reelist servers or written to your browser&apos;s local storage.</li>
+              <li><strong>Watchlist & Reactions:</strong> Stored locally in your browser storage (localStorage) keyed by your session ID so you retain private access across visits.</li>
               <li><strong>Anonymized Telemetry:</strong> Aggregated visitor counters, movie view tallies, and search queries strictly without linking personally identifiable information.</li>
             </ul>
           </section>
@@ -58,7 +58,7 @@ export default function PrivacyPolicyModal({ onClose }) {
           <section className="legal-section">
             <h3>4. Cookies & Local Storage</h3>
             <p>
-              We utilize essential local browser keys (<code>reelist_admin_user</code>, <code>reelist_watchlist</code>, <code>reelist_autoplay</code>, <code>reelist_cookie_consent</code>) to remember your preferences. You can clear these at any time via your browser settings or our Cookie Banner.
+              We utilize essential local browser keys (<code>reelist_watchlist</code>, <code>reelist_autoplay</code>, <code>reelist_cookie_consent</code>) to remember your preferences. You can clear these at any time via your browser settings or our Cookie Banner.
             </p>
           </section>
 

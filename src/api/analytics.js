@@ -1,87 +1,21 @@
-const ADMIN_USER_KEY = 'reelist_admin_user';
+import { supabase, isSupabaseConfigured } from '../lib/supabase.js';
+
 const ANALYTICS_STORAGE_KEY = 'reelist_analytics_live_v3';
 const SESSION_VISIT_KEY = 'reelist_session_active';
-const REGISTERED_USERS_KEY = 'reelist_registered_users';
 
-// Automatically clean up all legacy dummy/pre-populated analytics data
+// Automatically clean up legacy dummy/pre-populated analytics data and old local auth keys
 try {
   localStorage.removeItem('reelist_analytics_data');
   localStorage.removeItem('reelist_analytics_live_v2');
+  localStorage.removeItem('reelist_admin_user');
+  sessionStorage.removeItem('reelist_admin_user');
+  localStorage.removeItem('reelist_registered_users');
 } catch {
-  // ignore
+  // ignore storage errors
 }
 
 /**
- * Cryptographically hashes a password using PBKDF2 with SHA-256 (100,000 iterations).
- * Uses window.crypto.subtle for secure hardware-accelerated key derivation.
- */
-export async function hashPassword(password, saltHex = null) {
-  try {
-    const encoder = new TextEncoder();
-    let salt;
-    if (saltHex && /^[0-9a-fA-F]{32}$/.test(saltHex)) {
-      const matches = saltHex.match(/.{1,2}/g) || [];
-      salt = new Uint8Array(matches.map((b) => parseInt(b, 16)));
-    } else {
-      salt = (window.crypto || crypto).getRandomValues(new Uint8Array(16));
-    }
-
-    const keyMaterial = await (window.crypto || crypto).subtle.importKey(
-      'raw',
-      encoder.encode(password),
-      { name: 'PBKDF2' },
-      false,
-      ['deriveBits']
-    );
-
-    const derivedBits = await (window.crypto || crypto).subtle.deriveBits(
-      {
-        name: 'PBKDF2',
-        salt,
-        iterations: 100000,
-        hash: 'SHA-256',
-      },
-      keyMaterial,
-      256
-    );
-
-    const hashHex = Array.from(new Uint8Array(derivedBits))
-      .map((b) => b.toString(16).padStart(2, '0'))
-      .join('');
-    const outSaltHex = Array.from(salt)
-      .map((b) => b.toString(16).padStart(2, '0'))
-      .join('');
-
-    return `${outSaltHex}:${hashHex}`;
-  } catch (err) {
-    console.error('Cryptographic hashing error:', err);
-    return `fallback:${btoa(unescape(encodeURIComponent(password)))}`;
-  }
-}
-
-/**
- * Verifies a password against a stored PBKDF2 hash or performs seamless legacy migration.
- */
-export async function verifyPassword(password, storedHash) {
-  if (!password || !storedHash) return false;
-
-  // Seamless migration for legacy plaintext records
-  if (!storedHash.includes(':')) {
-    return password === storedHash;
-  }
-
-  if (storedHash.startsWith('fallback:')) {
-    return storedHash === `fallback:${btoa(unescape(encodeURIComponent(password)))}`;
-  }
-
-  const [saltHex, expectedHex] = storedHash.split(':');
-  const computed = await hashPassword(password, saltHex);
-  const [, computedHex] = computed.split(':');
-  return computedHex === expectedHex;
-}
-
-/**
- * Enforces strong password complexity policy:
+ * Enforces strong password complexity policy (UX guidance):
  * - At least 8 characters
  * - At least one uppercase letter (A-Z)
  * - At least one lowercase letter (a-z)
@@ -125,9 +59,31 @@ export function validatePasswordComplexity(password) {
   return { valid: true, error: '', rules };
 }
 
-export function isUserAdmin(_email) {
-  // Client-side admin verification decommissioned for security
-  return false;
+export function mapSupabaseUser(user) {
+  if (!user) return null;
+  return {
+    id: user.id,
+    email: user.email,
+    name:
+      user.user_metadata?.name ||
+      user.user_metadata?.full_name ||
+      (user.email ? user.email.split('@')[0] : 'Viewer'),
+    role: 'user',
+  };
+}
+
+let inMemoryCurrentUser = null;
+
+if (supabase) {
+  supabase.auth.getSession().then(({ data }) => {
+    inMemoryCurrentUser = mapSupabaseUser(data?.session?.user);
+  }).catch(() => {
+    inMemoryCurrentUser = null;
+  });
+
+  supabase.auth.onAuthStateChange((_event, session) => {
+    inMemoryCurrentUser = mapSupabaseUser(session?.user);
+  });
 }
 
 function sanitizeQuery(query) {
@@ -136,23 +92,6 @@ function sanitizeQuery(query) {
     .slice(0, 100)
     .replace(/[<>{}[\]\\;/]/g, '')
     .trim();
-}
-
-function getRegisteredUsers() {
-  try {
-    const raw = localStorage.getItem(REGISTERED_USERS_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveRegisteredUsers(users) {
-  try {
-    localStorage.setItem(REGISTERED_USERS_KEY, JSON.stringify(users));
-  } catch {
-    // ignore quota
-  }
 }
 
 function getDefaultData() {
@@ -194,25 +133,6 @@ function saveData(data) {
   }
 }
 
-function saveSessionUser(user, rememberMe = true) {
-  const serialized = JSON.stringify(user);
-  if (rememberMe) {
-    try {
-      localStorage.setItem(ADMIN_USER_KEY, serialized);
-      sessionStorage.removeItem(ADMIN_USER_KEY);
-    } catch {
-      // ignore
-    }
-  } else {
-    try {
-      sessionStorage.setItem(ADMIN_USER_KEY, serialized);
-      localStorage.removeItem(ADMIN_USER_KEY);
-    } catch {
-      // ignore
-    }
-  }
-}
-
 function isTrackingPermitted() {
   try {
     const raw = localStorage.getItem('reelist_cookie_consent');
@@ -229,15 +149,14 @@ export function trackEvent(eventName, eventParams = {}) {
     try {
       window.gtag('event', eventName, eventParams);
     } catch {
-      // Silently ignore Google Analytics dispatch errors when offline or ad-blocked
+      // Silently ignore Google Analytics dispatch errors
     }
   }
 }
 
 export const analytics = {
   recordVisit() {
-    // Exclude administrators from audience visitor counter
-    if (this.isAdminLoggedIn() || !isTrackingPermitted()) {
+    if (!isTrackingPermitted()) {
       return loadData();
     }
 
@@ -245,7 +164,6 @@ export const analytics = {
     const today = new Date().toISOString().slice(0, 10);
     const now = new Date().toISOString();
 
-    // Check if this browser tab/session already registered this visit
     const isNewSession = !sessionStorage.getItem(SESSION_VISIT_KEY);
     if (isNewSession) {
       sessionStorage.setItem(SESSION_VISIT_KEY, 'true');
@@ -261,8 +179,7 @@ export const analytics = {
   },
 
   recordSearch(query) {
-    // Exclude administrators from audience search telemetry
-    if (this.isAdminLoggedIn() || !isTrackingPermitted()) return;
+    if (!isTrackingPermitted()) return;
     const clean = sanitizeQuery(query);
     if (!clean) return;
     const data = loadData();
@@ -273,8 +190,7 @@ export const analytics = {
   },
 
   recordMovieView(movieTitle) {
-    // Exclude administrators from audience film inspection metrics
-    if (this.isAdminLoggedIn() || !isTrackingPermitted()) return;
+    if (!isTrackingPermitted()) return;
     const data = loadData();
     data.moviesViewed = (data.moviesViewed || 0) + 1;
     saveData(data);
@@ -297,7 +213,11 @@ export const analytics = {
     };
   },
 
-  async register(name, email, password, rememberMe = true) {
+  async register(name, email, password) {
+    if (!supabase || !isSupabaseConfigured) {
+      return { success: false, error: 'Accounts are unavailable right now.' };
+    }
+
     const cleanName = (name || '').trim().slice(0, 100);
     const cleanEmail = (email || '').toLowerCase().trim();
     const cleanPassword = (password || '').trim();
@@ -314,175 +234,174 @@ export const analytics = {
       return { success: false, error: 'Password must not exceed 128 characters.' };
     }
 
-    const users = getRegisteredUsers();
-    if (users.some((u) => u.email === cleanEmail)) {
+    try {
+      const redirectTo = typeof window !== 'undefined' ? window.location.origin : undefined;
+      const { data, error } = await supabase.auth.signUp({
+        email: cleanEmail,
+        password: cleanPassword,
+        options: {
+          data: { name: cleanName },
+          emailRedirectTo: redirectTo,
+        },
+      });
+
+      if (error) {
+        // Friendly message without leaking user presence
+        return {
+          success: false,
+          error: 'Unable to register with these details. If you already have an account, please sign in.',
+        };
+      }
+
+      const user = mapSupabaseUser(data?.user);
+      const needsConfirmation = !data?.session;
+
+      if (!needsConfirmation && user) {
+        inMemoryCurrentUser = user;
+      }
+
       return {
-        success: false,
-        alreadyExists: true,
-        error: 'An account with this email already exists. Please Sign In instead.',
+        success: true,
+        needsConfirmation,
+        user,
+        message: needsConfirmation
+          ? 'Check your email to confirm your account.'
+          : 'Account created successfully!',
       };
+    } catch {
+      return { success: false, error: 'Registration failed. Please try again later.' };
     }
-
-    const isAdmin = isUserAdmin(cleanEmail);
-    const passwordHash = await hashPassword(cleanPassword);
-
-    const newUserRecord = {
-      name: cleanName || (isAdmin ? 'Administrator' : 'Viewer'),
-      email: cleanEmail,
-      passwordHash,
-      role: isAdmin ? 'admin' : 'user',
-      createdAt: new Date().toISOString(),
-    };
-
-    users.push(newUserRecord);
-    saveRegisteredUsers(users);
-
-    const sessionUser = {
-      name: newUserRecord.name,
-      email: newUserRecord.email,
-      role: newUserRecord.role,
-      authenticatedAt: Date.now(),
-    };
-
-    saveSessionUser(sessionUser, rememberMe);
-    if (!isAdmin) {
-      this.recordVisit();
-    }
-    return { success: true, user: sessionUser };
   },
 
-  async login(email, password, rememberMe = true) {
+  async login(email, password) {
+    if (!supabase || !isSupabaseConfigured) {
+      return { success: false, error: 'Accounts are unavailable right now.' };
+    }
+
     const cleanEmail = (email || '').toLowerCase().trim();
     const cleanPassword = (password || '').trim();
 
     if (!cleanEmail) {
       return { success: false, error: 'Please enter your email address.' };
     }
-
     if (!cleanPassword) {
       return { success: false, error: 'Please enter your password.' };
     }
 
-    const users = getRegisteredUsers();
-    let foundUser = users.find((u) => u.email === cleanEmail);
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: cleanEmail,
+        password: cleanPassword,
+      });
 
-    // User Verification
-    if (!foundUser) {
-      return {
-        success: false,
-        notFound: true,
-        error: 'No account found with this email! Please click "Sign Up" below to create an account first.',
-      };
+      if (error) {
+        const msg = (error.message || '').toLowerCase();
+        if (msg.includes('email not confirmed')) {
+          return {
+            success: false,
+            error: 'Please check your email to confirm your account before signing in.',
+          };
+        }
+        // Never reveal whether an email exists
+        return {
+          success: false,
+          error: 'Invalid email or password. Please check your credentials.',
+        };
+      }
+
+      const user = mapSupabaseUser(data?.user);
+      inMemoryCurrentUser = user;
+      this.recordVisit();
+      return { success: true, user };
+    } catch {
+      return { success: false, error: 'Sign in failed. Please try again later.' };
     }
-
-    const isValid = await verifyPassword(
-      cleanPassword,
-      foundUser.passwordHash || foundUser.password
-    );
-
-    if (!isValid) {
-      return {
-        success: false,
-        error: 'Incorrect password. Please check your password and try again.',
-      };
-    }
-
-    // Upgrade legacy plaintext password to secure PBKDF2 hash on successful login
-    if (foundUser.password && !foundUser.passwordHash) {
-      foundUser.passwordHash = await hashPassword(cleanPassword);
-      delete foundUser.password;
-      saveRegisteredUsers(users);
-    }
-
-    const regularUser = {
-      name: foundUser.name || 'Viewer',
-      email: foundUser.email,
-      role: 'user',
-      authenticatedAt: Date.now(),
-    };
-    saveSessionUser(regularUser, rememberMe);
-    this.recordVisit();
-    return { success: true, user: regularUser };
   },
 
-  async resetPassword(email, newPassword) {
-    const cleanEmail = (email || '').toLowerCase().trim();
-    const cleanPassword = (newPassword || '').trim();
+  async resetPassword(email) {
+    if (!supabase || !isSupabaseConfigured) {
+      return { success: false, error: 'Accounts are unavailable right now.' };
+    }
 
-    const pwCheck = validatePasswordComplexity(cleanPassword);
+    const cleanEmail = (email || '').toLowerCase().trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!cleanEmail || !emailRegex.test(cleanEmail)) {
+      return { success: false, error: 'Please enter a valid email address.' };
+    }
+
+    try {
+      const redirectTo = typeof window !== 'undefined' ? window.location.origin : undefined;
+      await supabase.auth.resetPasswordForEmail(cleanEmail, {
+        redirectTo,
+      });
+
+      // Never reveal whether an email exists
+      return {
+        success: true,
+        message: 'If an account exists for this email, a password reset link has been sent.',
+      };
+    } catch {
+      return {
+        success: true,
+        message: 'If an account exists for this email, a password reset link has been sent.',
+      };
+    }
+  },
+
+  async updateUserPassword(password) {
+    if (!supabase || !isSupabaseConfigured) {
+      return { success: false, error: 'Accounts are unavailable right now.' };
+    }
+
+    const pwCheck = validatePasswordComplexity(password);
     if (!pwCheck.valid) {
       return { success: false, error: pwCheck.error };
     }
 
-    const users = getRegisteredUsers();
-    let found = users.find((u) => u.email === cleanEmail);
-    const passwordHash = await hashPassword(cleanPassword);
+    try {
+      const { data, error } = await supabase.auth.updateUser({
+        password,
+      });
 
-    if (found) {
-      found.passwordHash = passwordHash;
-      delete found.password;
-    } else {
-      found = {
-        name: cleanEmail.split('@')[0],
-        email: cleanEmail,
-        passwordHash,
-        role: 'user',
-        createdAt: new Date().toISOString(),
-      };
-      users.push(found);
+      if (error) {
+        return { success: false, error: error.message || 'Failed to update password.' };
+      }
+
+      const user = mapSupabaseUser(data?.user);
+      if (user) inMemoryCurrentUser = user;
+      return { success: true, user };
+    } catch {
+      return { success: false, error: 'Failed to update password. Please try again.' };
     }
-
-    saveRegisteredUsers(users);
-    return { success: true };
   },
 
   loginGuest() {
-    const guestUser = { name: 'Guest Viewer', email: 'guest@reelist.app', role: 'guest', authenticatedAt: Date.now() };
-    saveSessionUser(guestUser, false);
+    const guestUser = { id: 'guest', name: 'Guest Viewer', email: 'guest@reelist.app', role: 'guest' };
+    inMemoryCurrentUser = guestUser;
     this.recordVisit();
     return { success: true, user: guestUser };
   },
 
-  async loginAdmin(_email, _password) {
+  async loginAdmin() {
     return { success: false, error: 'Administrator access is not supported in client-only mode.' };
   },
 
   getCurrentUser() {
-    try {
-      let raw = sessionStorage.getItem(ADMIN_USER_KEY);
-      let isLocal = false;
-      if (!raw) {
-        raw = localStorage.getItem(ADMIN_USER_KEY);
-        isLocal = true;
-      }
-      if (!raw) return null;
-      const user = JSON.parse(raw);
-      // Session expiry validation (30 days if rememberMe in localStorage, 24 hours if in sessionStorage)
-      const maxAge = isLocal ? 30 * 86400000 : 86400000;
-      if (user.authenticatedAt && Date.now() - user.authenticatedAt > maxAge) {
-        if (isLocal) {
-          localStorage.removeItem(ADMIN_USER_KEY);
-        } else {
-          sessionStorage.removeItem(ADMIN_USER_KEY);
-        }
-        return null;
-      }
-      return user;
-    } catch {
-      return null;
-    }
+    return inMemoryCurrentUser;
   },
 
   getAdminUser() {
     return null;
   },
 
-  logout() {
-    try {
-      sessionStorage.removeItem(ADMIN_USER_KEY);
-      localStorage.removeItem(ADMIN_USER_KEY);
-    } catch {
-      // ignore
+  async logout() {
+    inMemoryCurrentUser = null;
+    if (supabase) {
+      try {
+        await supabase.auth.signOut();
+      } catch {
+        // ignore sign out network errors
+      }
     }
   },
 
@@ -494,39 +413,64 @@ export const analytics = {
     return false;
   },
 
-  getUserWatchlist(email) {
+  onAuthStateChange(callback) {
+    if (!supabase) return () => {};
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      const user = mapSupabaseUser(session?.user);
+      inMemoryCurrentUser = user;
+      if (typeof callback === 'function') {
+        callback(event, session, user);
+      }
+    });
+    return () => {
+      subscription?.unsubscribe();
+    };
+  },
+
+  getUserWatchlist(userIdentifier) {
     try {
-      const key = email ? `reelist_watchlist_${email.toLowerCase().trim()}` : 'reelist_watchlist';
-      const raw = localStorage.getItem(key) || localStorage.getItem('reelist_watchlist') || '[]';
-      return JSON.parse(raw);
+      if (!userIdentifier) {
+        const guestRaw = localStorage.getItem('reelist_watchlist') || '[]';
+        return JSON.parse(guestRaw);
+      }
+
+      // 1. Primary lookup by Supabase user id
+      const primaryKey = `reelist_watchlist_${userIdentifier}`;
+      const raw = localStorage.getItem(primaryKey);
+      if (raw) return JSON.parse(raw);
+
+      // 2. Legacy fallback to generic watchlist
+      const fallback = localStorage.getItem('reelist_watchlist') || '[]';
+      return JSON.parse(fallback);
     } catch {
       return [];
     }
   },
 
-  setUserWatchlist(email, list) {
+  setUserWatchlist(userIdentifier, list) {
     try {
-      const key = email ? `reelist_watchlist_${email.toLowerCase().trim()}` : 'reelist_watchlist';
-      localStorage.setItem(key, JSON.stringify(list || []));
-      // Also keep general key in sync
-      localStorage.setItem('reelist_watchlist', JSON.stringify(list || []));
+      const payload = JSON.stringify(list || []);
+      if (userIdentifier) {
+        localStorage.setItem(`reelist_watchlist_${userIdentifier}`, payload);
+      }
+      localStorage.setItem('reelist_watchlist', payload);
     } catch {
-      // ignore
+      // ignore storage quota errors
     }
   },
 
-  exportUserData(email) {
+  exportUserData(userIdentifier) {
     try {
       const user = this.getCurrentUser();
-      const watchlist = this.getUserWatchlist(email);
+      const watchlist = this.getUserWatchlist(userIdentifier || user?.id);
       return {
         exportedAt: new Date().toISOString(),
-        version: '1.0',
+        version: '2.0',
         platform: 'Reelist Cinema Explorer',
-        user: user || { email, role: 'user' },
+        user: user || { id: userIdentifier, role: 'user' },
         watchlist,
         reactions: Object.keys(localStorage)
-          .filter((k) => k.startsWith('reelist_reactions_'))
+          .filter((k) => k.startsWith('reelist_reactions_') || k.startsWith('reelist_my_reactions_'))
           .reduce((acc, k) => {
             acc[k] = localStorage.getItem(k);
             return acc;
@@ -546,7 +490,7 @@ export const analytics = {
       if (Array.isArray(backupData.watchlist)) {
         const user = this.getCurrentUser();
         const clean = backupData.watchlist.filter((id) => Number.isFinite(id)).slice(0, 2000);
-        this.setUserWatchlist(user?.email, clean);
+        this.setUserWatchlist(user?.id || user?.email, clean);
       }
       if (backupData.reactions && typeof backupData.reactions === 'object') {
         const allowed = /^reelist_reactions_\d+$/;
@@ -566,16 +510,12 @@ export const analytics = {
     }
   },
 
-  deleteAccount(email) {
+  async deleteAccount(userIdentifier) {
     try {
-      const cleanEmail = (email || '').toLowerCase().trim();
-      const users = getRegisteredUsers();
-      const remainingUsers = users.filter((u) => u.email !== cleanEmail);
-      saveRegisteredUsers(remainingUsers);
-
-      // Clean up session and user data
-      this.logout();
-      localStorage.removeItem(`reelist_watchlist_${cleanEmail}`);
+      await this.logout();
+      if (userIdentifier) {
+        localStorage.removeItem(`reelist_watchlist_${userIdentifier}`);
+      }
       return { success: true };
     } catch (err) {
       return { success: false, error: err.message || 'Failed to delete account.' };

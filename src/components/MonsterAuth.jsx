@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
-import { User, Mail, Eye, EyeOff, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
-import { analytics } from "../api/analytics.js";
+import { User, Mail, Eye, EyeOff, AlertCircle, CheckCircle2, Loader2, KeyRound } from "lucide-react";
+import { analytics, validatePasswordComplexity } from "../api/analytics.js";
+import { isSupabaseConfigured } from "../lib/supabase.js";
 
-export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false, reason = "" }) {
+export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false, reason = "", initialMode = "login" }) {
   // mode: 'login' | 'signup'
   const [mode, setMode] = useState("login");
   const [animClass, setAnimClass] = useState(""); // 'anim-sweep-left' | 'anim-sweep-right' | ''
@@ -16,24 +17,20 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
   const [showPassword, setShowPassword] = useState(false);
   const [showSignupPassword, setShowSignupPassword] = useState(false);
 
+  // Recovery & Forgot Password States
+  const [isForgot, setIsForgot] = useState(false);
+  const [isRecovery, setIsRecovery] = useState(() => initialMode === "recovery");
+  const [recoveryPassword, setRecoveryPassword] = useState("");
+  const [recoveryConfirm, setRecoveryConfirm] = useState("");
+  const [showRecoveryPw, setShowRecoveryPw] = useState(false);
+
   const animTimerRef = useRef(null);
   const midPointTimerRef = useRef(null);
 
-  // Feedback, Loading & Rate Limiting States
+  // Feedback & Loading States
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [failedAttempts, setFailedAttempts] = useState(0);
-  const [lockoutTimer, setLockoutTimer] = useState(0);
-
-  // Rate Limiting Countdown (Item 8)
-  useEffect(() => {
-    if (lockoutTimer <= 0) return;
-    const interval = setInterval(() => {
-      setLockoutTimer((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [lockoutTimer]);
 
   // Close on Escape Key
   useEffect(() => {
@@ -51,6 +48,8 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
     if (targetMode === mode || animClass) return;
     setError("");
     setSuccessMsg("");
+    setIsForgot(false);
+    setIsRecovery(false);
     clearTimeout(animTimerRef.current);
     clearTimeout(midPointTimerRef.current);
 
@@ -85,7 +84,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
     if (error) setError("");
   };
 
-  // Password rules validation
+  // Password rules validation (UX only)
   const pwRules = {
     length: (password || "").length >= 8,
     upper: /[A-Z]/.test(password || ""),
@@ -93,11 +92,18 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
     special: /[!@#$%^&*(),.?":{}|<>_~+=-]/.test(password || ""),
   };
 
-  // Handle Form Submission (Sign In or Sign Up)
+  const recoveryRules = {
+    length: (recoveryPassword || "").length >= 8,
+    upper: /[A-Z]/.test(recoveryPassword || ""),
+    number: /[0-9]/.test(recoveryPassword || ""),
+    special: /[!@#$%^&*(),.?":{}|<>_~+=-]/.test(recoveryPassword || ""),
+  };
+
+  // Handle Form Submission (Sign In or Sign Up via Supabase Auth)
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (lockoutTimer > 0) {
-      setError(`Security lockout: Please wait ${lockoutTimer}s before attempting again.`);
+    if (!isSupabaseConfigured) {
+      setError("Accounts are unavailable right now.");
       return;
     }
 
@@ -121,38 +127,91 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
           return;
         }
 
-        const res = await analytics.register(name, email, password, rememberMe);
+        const res = await analytics.register(name, email, password);
         if (res.success) {
           setError("");
-          setFailedAttempts(0);
-          if (onLoginSuccess) onLoginSuccess(res.user);
-        } else if (res.alreadyExists) {
-          setError("An account already exists with this email. Please sign in.");
-          triggerSlide("login");
+          if (res.needsConfirmation) {
+            setSuccessMsg("Check your email to confirm your account.");
+          } else if (res.user && onLoginSuccess) {
+            onLoginSuccess(res.user);
+          }
         } else {
           setError(res.error || "Registration failed. Please try again.");
         }
       } else if (mode === "login") {
-        const res = await analytics.login(email, password, rememberMe);
+        const res = await analytics.login(email, password);
         if (res.success) {
           setError("");
-          setFailedAttempts(0);
-          setLockoutTimer(0);
           if (onLoginSuccess) onLoginSuccess(res.user);
-        } else if (res.notFound) {
-          setError("No account found with this email. Switching to registration...");
-          triggerSlide("signup");
         } else {
-          const nextFailed = failedAttempts + 1;
-          setFailedAttempts(nextFailed);
-          if (nextFailed >= 5) {
-            setLockoutTimer(30);
-            setFailedAttempts(0);
-            setError("Security lockout: 5 consecutive failed attempts. Form locked for 30s.");
-          } else {
-            setError(`${res.error || "Invalid email or password."} (${5 - nextFailed} attempts remaining)`);
-          }
+          setError(res.error || "Invalid email or password.");
         }
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Handle Forgot Password Submission (Supabase resetPasswordForEmail)
+  const handleForgotSubmit = async (e) => {
+    e.preventDefault();
+    if (!isSupabaseConfigured) {
+      setError("Accounts are unavailable right now.");
+      return;
+    }
+    const cleanEmail = email.trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!cleanEmail || !emailRegex.test(cleanEmail)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError("");
+    setSuccessMsg("");
+
+    try {
+      const res = await analytics.resetPassword(cleanEmail);
+      setSuccessMsg(res.message || "If an account exists for this email, a password reset link has been sent.");
+    } catch {
+      setSuccessMsg("If an account exists for this email, a password reset link has been sent.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Handle Password Recovery Submission (Supabase updateUser({ password }))
+  const handleRecoverySubmit = async (e) => {
+    e.preventDefault();
+    if (!isSupabaseConfigured) {
+      setError("Accounts are unavailable right now.");
+      return;
+    }
+    if (!recoveryPassword) {
+      setError("Please enter a new password.");
+      return;
+    }
+    if (recoveryPassword !== recoveryConfirm) {
+      setError("Passwords do not match.");
+      return;
+    }
+    const check = validatePasswordComplexity(recoveryPassword);
+    if (!check.valid) {
+      setError(check.error);
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError("");
+    setSuccessMsg("");
+
+    try {
+      const res = await analytics.updateUserPassword(recoveryPassword);
+      if (res.success) {
+        setSuccessMsg("Password updated successfully!");
+        if (onLoginSuccess && res.user) onLoginSuccess(res.user);
+      } else {
+        setError(res.error || "Failed to update password.");
       }
     } finally {
       setIsSubmitting(false);
@@ -921,7 +980,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
         </button>
       )}
 
-      <div className={`verso-card is-${mode}`}>
+      <div className={`verso-card is-${mode} ${isForgot ? "is-forgot" : ""} ${isRecovery ? "is-recovery" : ""}`}>
         {/* ==================================================================
             LEFT FORM PANE: SIGN IN & FORGOT PASSWORD FLOW
             ================================================================== */}
@@ -931,6 +990,13 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
               <div className="verso-reason-pill" role="alert">
                 <span aria-hidden="true">🔒</span>
                 <span>{reason}</span>
+              </div>
+            )}
+
+            {!isSupabaseConfigured && (
+              <div className="verso-alert verso-alert--warning" role="alert" style={{ background: "#fef3c7", borderColor: "#fde68a", color: "#92400e" }}>
+                <AlertCircle size={16} style={{ flexShrink: 0, marginTop: "2px" }} />
+                <span>Accounts are unavailable right now.</span>
               </div>
             )}
 
@@ -948,96 +1014,223 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
               </div>
             )}
 
-            {/* --- SIGN IN FORM --- */}
-            <form onSubmit={handleSubmit} noValidate autoComplete="off">
-              <h2 className="verso-heading">Sign in</h2>
-              <div className="verso-accent-bar" />
+            {isRecovery ? (
+              /* --- PASSWORD RECOVERY FORM --- */
+              <form onSubmit={handleRecoverySubmit} noValidate autoComplete="off">
+                <h2 className="verso-heading">Set new password</h2>
+                <div className="verso-accent-bar" />
+                <p style={{ fontSize: "13px", color: "#64748b", margin: "6px 0 16px" }}>
+                  Choose a new password for your Reelist account.
+                </p>
 
-              <div className="verso-field">
-                <div className="verso-input-wrap">
-                  <input
-                    type="email"
-                    id="signin-email"
-                    className="verso-input"
-                    placeholder="Username or email"
-                    value={email}
-                    onChange={(e) => handleEmailInput(e.target.value)}
-                    required
-                  />
-                  <User size={18} className="verso-input-icon" aria-hidden="true" />
+                <div className="verso-field">
+                  <div className="verso-input-wrap">
+                    <input
+                      type={showRecoveryPw ? "text" : "password"}
+                      id="recovery-password"
+                      className="verso-input"
+                      placeholder="New password"
+                      value={recoveryPassword}
+                      onChange={(e) => setRecoveryPassword(e.target.value)}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="verso-toggle-pw-btn"
+                      onClick={() => setShowRecoveryPw(!showRecoveryPw)}
+                      aria-label={showRecoveryPw ? "Hide password" : "Show password"}
+                    >
+                      {showRecoveryPw ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                  <div className="verso-pw-checklist">
+                    <div className="verso-pw-bars">
+                      <span className={`verso-pw-bar ${recoveryRules.length ? "is-valid" : ""}`} />
+                      <span className={`verso-pw-bar ${recoveryRules.upper ? "is-valid" : ""}`} />
+                      <span className={`verso-pw-bar ${recoveryRules.number ? "is-valid" : ""}`} />
+                      <span className={`verso-pw-bar ${recoveryRules.special ? "is-valid" : ""}`} />
+                    </div>
+                    <span>Use 8+ characters with uppercase, number &amp; symbol.</span>
+                  </div>
                 </div>
-              </div>
 
-              <div className="verso-field">
-                <div className="verso-input-wrap">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    id="signin-password"
-                    className="verso-input"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
+                <div className="verso-field">
+                  <div className="verso-input-wrap">
+                    <input
+                      type={showRecoveryPw ? "text" : "password"}
+                      id="recovery-confirm"
+                      className="verso-input"
+                      placeholder="Confirm new password"
+                      value={recoveryConfirm}
+                      onChange={(e) => setRecoveryConfirm(e.target.value)}
+                      required
+                    />
+                    <KeyRound size={18} className="verso-input-icon" aria-hidden="true" />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  className="verso-submit-btn"
+                  disabled={isSubmitting || !isSupabaseConfigured}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      <span>Updating password...</span>
+                    </>
+                  ) : (
+                    "Update password"
+                  )}
+                </button>
+              </form>
+            ) : isForgot ? (
+              /* --- FORGOT PASSWORD FORM --- */
+              <form onSubmit={handleForgotSubmit} noValidate autoComplete="off">
+                <h2 className="verso-heading">Reset password</h2>
+                <div className="verso-accent-bar" />
+                <p style={{ fontSize: "13px", color: "#64748b", margin: "6px 0 16px" }}>
+                  Enter your email address to receive a secure password reset link.
+                </p>
+
+                <div className="verso-field">
+                  <div className="verso-input-wrap">
+                    <input
+                      type="email"
+                      id="forgot-email"
+                      className="verso-input"
+                      placeholder="Email address"
+                      value={email}
+                      onChange={(e) => handleEmailInput(e.target.value)}
+                      required
+                    />
+                    <Mail size={18} className="verso-input-icon" aria-hidden="true" />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  className="verso-submit-btn"
+                  disabled={isSubmitting || !isSupabaseConfigured}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      <span>Sending reset link...</span>
+                    </>
+                  ) : (
+                    "Send reset link"
+                  )}
+                </button>
+
+                <div className="verso-switch-footer" style={{ marginTop: "16px" }}>
                   <button
                     type="button"
-                    className="verso-toggle-pw-btn"
-                    onClick={() => setShowPassword(!showPassword)}
-                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    className="verso-switch-trigger"
+                    onClick={() => {
+                      setIsForgot(false);
+                      setError("");
+                      setSuccessMsg("");
+                    }}
                   >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    &larr; Back to Sign in
                   </button>
                 </div>
-              </div>
+              </form>
+            ) : (
+              /* --- SIGN IN FORM --- */
+              <form onSubmit={handleSubmit} noValidate autoComplete="off">
+                <h2 className="verso-heading">Sign in</h2>
+                <div className="verso-accent-bar" />
 
-              <div className="verso-options-row">
-                <label className="verso-checkbox-label">
-                  <input
-                    type="checkbox"
-                    className="verso-checkbox"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                  />
-                  <span>Keep me signed in</span>
-                </label>
+                <div className="verso-field">
+                  <div className="verso-input-wrap">
+                    <input
+                      type="email"
+                      id="signin-email"
+                      className="verso-input"
+                      placeholder="Username or email"
+                      value={email}
+                      onChange={(e) => handleEmailInput(e.target.value)}
+                      required
+                    />
+                    <User size={18} className="verso-input-icon" aria-hidden="true" />
+                  </div>
+                </div>
+
+                <div className="verso-field">
+                  <div className="verso-input-wrap">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      id="signin-password"
+                      className="verso-input"
+                      placeholder="Password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="verso-toggle-pw-btn"
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="verso-options-row">
+                  <label className="verso-checkbox-label">
+                    <input
+                      type="checkbox"
+                      className="verso-checkbox"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                    />
+                    <span>Keep me signed in</span>
+                  </label>
+
+                  <button
+                    type="button"
+                    className="verso-forgot-btn"
+                    onClick={() => {
+                      setIsForgot(true);
+                      setError("");
+                      setSuccessMsg("");
+                    }}
+                  >
+                    Forgot password?
+                  </button>
+                </div>
 
                 <button
-                  type="button"
-                  className="verso-forgot-btn"
-                  disabled
+                  type="submit"
+                  className="verso-submit-btn"
+                  disabled={isSubmitting || !isSupabaseConfigured}
                 >
-                  Password reset arrives with the upcoming account system.
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      <span>Signing in...</span>
+                    </>
+                  ) : (
+                    "Sign in"
+                  )}
                 </button>
-              </div>
 
-              <button
-                type="submit"
-                className="verso-submit-btn"
-                disabled={isSubmitting || lockoutTimer > 0}
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 size={16} className="animate-spin" />
-                    <span>Signing in...</span>
-                  </>
-                ) : lockoutTimer > 0 ? (
-                  `Locked (${lockoutTimer}s)`
-                ) : (
-                  "Sign in"
-                )}
-              </button>
-
-              <div className="verso-switch-footer">
-                <span>New to REELIST? </span>
-                <button
-                  type="button"
-                  className="verso-switch-trigger"
-                  onClick={() => triggerSlide("signup")}
-                >
-                  Create an account
-                </button>
-              </div>
-            </form>
+                <div className="verso-switch-footer">
+                  <span>New to REELIST? </span>
+                  <button
+                    type="button"
+                    className="verso-switch-trigger"
+                    onClick={() => triggerSlide("signup")}
+                  >
+                    Create an account
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
 
@@ -1046,10 +1239,24 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
             ================================================================== */}
         <div className="verso-form-pane verso-form-pane--signup">
           <div className="verso-pane-content">
+            {!isSupabaseConfigured && (
+              <div className="verso-alert verso-alert--warning" role="alert" style={{ background: "#fef3c7", borderColor: "#fde68a", color: "#92400e" }}>
+                <AlertCircle size={16} style={{ flexShrink: 0, marginTop: "2px" }} />
+                <span>Accounts are unavailable right now.</span>
+              </div>
+            )}
+
             {error && mode === "signup" && (
               <div className="verso-alert verso-alert--error" role="alert">
                 <AlertCircle size={16} style={{ flexShrink: 0, marginTop: "2px" }} />
                 <span>{error}</span>
+              </div>
+            )}
+
+            {successMsg && mode === "signup" && (
+              <div className="verso-alert verso-alert--success" role="status">
+                <CheckCircle2 size={16} style={{ flexShrink: 0, marginTop: "2px" }} />
+                <span>{successMsg}</span>
               </div>
             )}
 
@@ -1122,7 +1329,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
               <button
                 type="submit"
                 className="verso-submit-btn"
-                disabled={isSubmitting}
+                disabled={isSubmitting || !isSupabaseConfigured}
               >
                 {isSubmitting ? (
                   <>

@@ -83,6 +83,7 @@ export default function App() {
   const [lastInquiry, setLastInquiry] = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authModalReason, setAuthModalReason] = useState('');
+  const [authInitialMode, setAuthInitialMode] = useState('login');
   const [pendingAction, setPendingAction] = useState(null);
 
   // Synchronize URL hash for routing and SPA fallback navigation
@@ -169,19 +170,33 @@ export default function App() {
     setCurrentUser(user);
   };
 
-  const handleLogout = useCallback(() => {
-    analytics.logout();
+  const handleLogout = useCallback(async () => {
+    await analytics.logout();
     setCurrentUser(null);
+    setShowProfileModal(false);
     setShowCurtain(false);
   }, []);
 
-  // Track visitor on mount
+  // Listen for Supabase session changes and password recovery events
   useEffect(() => {
+    const unsubscribe = analytics.onAuthStateChange((event, _session, user) => {
+      setCurrentUser(user);
+      if (event === 'PASSWORD_RECOVERY') {
+        setAuthInitialMode('recovery');
+        setAuthModalReason('Password Recovery');
+        setShowAuthModal(true);
+      }
+    });
+
     const user = analytics.getCurrentUser();
     if (user) {
       analytics.recordVisit();
     }
     syncUserState();
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, []);
 
   // Smart auto-hiding navbar on scroll ("vanthu pora maari")
@@ -256,18 +271,23 @@ export default function App() {
         }
       } else if (pendingAction.type === 'reaction' && pendingAction.movieId && pendingAction.key) {
         try {
-          const currentMy = JSON.parse(localStorage.getItem(`reelist_my_reactions_${pendingAction.movieId}`) || '{}');
+          const userKey = user?.id || 'guest';
+          const currentMy = JSON.parse(
+            localStorage.getItem(`reelist_my_reactions_${userKey}_${pendingAction.movieId}`) ||
+            localStorage.getItem(`reelist_my_reactions_${pendingAction.movieId}`) ||
+            '{}'
+          );
           currentMy[pendingAction.key] = true;
-          localStorage.setItem(`reelist_my_reactions_${pendingAction.movieId}`, JSON.stringify(currentMy));
+          localStorage.setItem(`reelist_my_reactions_${userKey}_${pendingAction.movieId}`, JSON.stringify(currentMy));
         } catch {
           // ignore
         }
       } else if (pendingAction.type === 'watchlist' && pendingAction.movieId) {
         try {
-          const list = JSON.parse(localStorage.getItem('reelist_watchlist') || '[]');
+          const list = analytics.getUserWatchlist(user?.id);
           if (!list.includes(pendingAction.movieId)) {
             list.push(pendingAction.movieId);
-            localStorage.setItem('reelist_watchlist', JSON.stringify(list));
+            analytics.setUserWatchlist(user?.id, list);
           }
         } catch {
           // ignore
@@ -829,13 +849,16 @@ export default function App() {
           <div className="auth-modal-container">
             <MonsterAuth
               isModal={true}
+              initialMode={authInitialMode}
               reason={authModalReason}
               onClose={() => {
                 setShowAuthModal(false);
                 setPendingAction(null);
+                setAuthInitialMode('login');
               }}
               onLoginSuccess={(user) => {
                 handleAuthSuccess(user);
+                setAuthInitialMode('login');
               }}
             />
           </div>

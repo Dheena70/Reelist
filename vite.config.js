@@ -73,6 +73,7 @@ export default defineConfig(({ mode }) => {
     test: {
       environment: 'jsdom',
       globals: true,
+      fileParallelism: false,
     },
     build: {
       rollupOptions: {

@@ -6,18 +6,21 @@ const { mockFrom, mockFunctionsInvoke, mockGetSession } = vi.hoisted(() => ({
   mockGetSession: vi.fn(),
 }));
 
+const mockSupabaseClient = {
+  from: (...args) => mockFrom(...args),
+  functions: {
+    invoke: (...args) => mockFunctionsInvoke(...args),
+  },
+  auth: {
+    getSession: (...args) => mockGetSession(...args),
+    signOut: vi.fn(),
+  },
+};
+
 vi.mock('../lib/supabase.js', () => ({
   isSupabaseConfigured: true,
-  supabase: {
-    from: (...args) => mockFrom(...args),
-    functions: {
-      invoke: (...args) => mockFunctionsInvoke(...args),
-    },
-    auth: {
-      getSession: (...args) => mockGetSession(...args),
-      signOut: vi.fn(),
-    },
-  },
+  getSupabase: vi.fn(() => Promise.resolve(mockSupabaseClient)),
+  hasPersistedSession: vi.fn(() => false),
 }));
 
 import {
@@ -188,7 +191,8 @@ describe('UserData Data Layer', () => {
         error: null,
       });
 
-      const { supabase } = await import('../lib/supabase.js');
+      const { getSupabase } = await import('../lib/supabase.js');
+      const supabase = await getSupabase();
       const { data, error } = await supabase.functions.invoke('delete-account');
 
       expect(error).toBeNull();

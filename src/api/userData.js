@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase.js';
+import { getSupabase } from '../lib/supabase.js';
 
 export const ALLOWED_MEDIA_TYPES = ['movie', 'tv'];
 export const ALLOWED_REACTION_KINDS = ['thumbsUp', 'heart', 'clap', 'lightbulb', 'smile', 'starFace'];
@@ -49,6 +49,7 @@ export function clearLegacyLocalUserData() {
  * Watchlist operations (Supabase table: public.watchlist)
  */
 export async function getWatchlist() {
+  const supabase = await getSupabase();
   if (!supabase) return { data: [], error: null };
   try {
     const { data: { session } } = await supabase.auth.getSession();
@@ -67,10 +68,11 @@ export async function getWatchlist() {
 }
 
 export async function addToWatchlist(mediaType = 'movie', tmdbId) {
+  const supabase = await getSupabase();
   if (!supabase) return { data: null, error: 'Database unavailable' };
   const cleanId = sanitizeId(tmdbId);
-  if (!cleanId) return { data: null, error: 'Invalid movie ID' };
   const cleanType = sanitizeMediaType(mediaType);
+  if (!cleanId) return { data: null, error: 'Invalid movie ID' };
 
   try {
     const { data: { session } } = await supabase.auth.getSession();
@@ -98,10 +100,11 @@ export async function addToWatchlist(mediaType = 'movie', tmdbId) {
 }
 
 export async function removeFromWatchlist(mediaType = 'movie', tmdbId) {
+  const supabase = await getSupabase();
   if (!supabase) return { data: null, error: 'Database unavailable' };
   const cleanId = sanitizeId(tmdbId);
-  if (!cleanId) return { data: null, error: 'Invalid movie ID' };
   const cleanType = sanitizeMediaType(mediaType);
+  if (!cleanId) return { data: null, error: 'Invalid movie ID' };
 
   try {
     const { data: { session } } = await supabase.auth.getSession();
@@ -125,6 +128,7 @@ export async function removeFromWatchlist(mediaType = 'movie', tmdbId) {
  * User ratings operations (Supabase table: public.ratings)
  */
 export async function getMyRatings() {
+  const supabase = await getSupabase();
   if (!supabase) return { data: [], error: null };
   try {
     const { data: { session } } = await supabase.auth.getSession();
@@ -142,6 +146,7 @@ export async function getMyRatings() {
 }
 
 export async function setRating(mediaType = 'movie', tmdbId, score) {
+  const supabase = await getSupabase();
   if (!supabase) return { data: null, error: 'Database unavailable' };
   const cleanId = sanitizeId(tmdbId);
   if (!cleanId) return { data: null, error: 'Invalid movie ID' };
@@ -176,6 +181,7 @@ export async function setRating(mediaType = 'movie', tmdbId, score) {
 }
 
 export async function removeRating(mediaType = 'movie', tmdbId) {
+  const supabase = await getSupabase();
   if (!supabase) return { data: null, error: 'Database unavailable' };
   const cleanId = sanitizeId(tmdbId);
   if (!cleanId) return { data: null, error: 'Invalid movie ID' };
@@ -203,6 +209,7 @@ export async function removeRating(mediaType = 'movie', tmdbId) {
  * Reactions operations (Supabase table: public.reactions)
  */
 export async function getMyReactions(mediaType = 'movie', tmdbId) {
+  const supabase = await getSupabase();
   if (!supabase) return { data: {}, error: null };
   const cleanId = sanitizeId(tmdbId);
   if (!cleanId) return { data: {}, error: 'Invalid movie ID' };
@@ -231,6 +238,7 @@ export async function getMyReactions(mediaType = 'movie', tmdbId) {
 }
 
 export async function toggleReaction(mediaType = 'movie', tmdbId, kind) {
+  const supabase = await getSupabase();
   if (!supabase) return { data: null, error: 'Database unavailable' };
   const cleanId = sanitizeId(tmdbId);
   if (!cleanId) return { data: null, error: 'Invalid movie ID' };
@@ -287,6 +295,7 @@ export async function toggleReaction(mediaType = 'movie', tmdbId, kind) {
  */
 export async function getRatingStats(mediaType = 'movie', tmdbId) {
   const defaultStat = { avg_score: null, votes: 0 };
+  const supabase = await getSupabase();
   if (!supabase) return { data: defaultStat, error: null };
   const cleanId = sanitizeId(tmdbId);
   if (!cleanId) return { data: defaultStat, error: 'Invalid movie ID' };
@@ -324,6 +333,7 @@ export async function getReactionCounts(mediaType = 'movie', tmdbId) {
     smile: 0,
     starFace: 0,
   };
+  const supabase = await getSupabase();
   if (!supabase) return { data: baseCounts, error: null };
   const cleanId = sanitizeId(tmdbId);
   if (!cleanId) return { data: baseCounts, error: 'Invalid movie ID' };
@@ -355,6 +365,7 @@ export async function getReactionCounts(mediaType = 'movie', tmdbId) {
  * Backup Export & Import (Validated JSON against Supabase tables)
  */
 export async function exportUserDataFromDB() {
+  const supabase = await getSupabase();
   if (!supabase) return { data: null, error: 'Database unavailable' };
   try {
     const { data: { session } } = await supabase.auth.getSession();
@@ -387,6 +398,7 @@ export async function exportUserDataFromDB() {
 }
 
 export async function importUserDataToDB(payload) {
+  const supabase = await getSupabase();
   if (!supabase) return { success: false, error: 'Database unavailable' };
   if (!payload || typeof payload !== 'object') {
     return { success: false, error: 'Invalid backup file structure' };

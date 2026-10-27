@@ -12,7 +12,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { analytics } from '../api/analytics.js';
-import { supabase } from '../lib/supabase.js';
+import { getSupabase } from '../lib/supabase.js';
 import {
   getWatchlist,
   exportUserDataFromDB,
@@ -92,6 +92,7 @@ export default function UserProfileModal({ currentUser, onClose, onLogout }) {
     setFeedbackMsg('');
 
     try {
+      const supabase = await getSupabase();
       if (!supabase) throw new Error('Database connection unavailable.');
       const { error } = await supabase.functions.invoke('delete-account');
       if (error) {

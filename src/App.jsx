@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { tmdb, getLanguageLabel } from './api/tmdb.js';
 import { analytics } from './api/analytics.js';
+import { hasPersistedSession, getSupabase } from './lib/supabase.js';
 import { updatePageMeta } from './utils/meta.js';
 import SearchBar from './components/SearchBar.jsx';
 import MovieGrid from './components/MovieGrid.jsx';
@@ -177,6 +178,7 @@ export default function App() {
   };
 
   const handleLogout = useCallback(async () => {
+    await getSupabase();
     await analytics.logout();
     setCurrentUser(null);
     setShowProfileModal(false);
@@ -185,14 +187,21 @@ export default function App() {
 
   // Listen for Supabase session changes and password recovery events
   useEffect(() => {
-    const unsubscribe = analytics.onAuthStateChange((event, _session, user) => {
-      setCurrentUser(user);
-      if (event === 'PASSWORD_RECOVERY') {
-        setAuthInitialMode('recovery');
-        setAuthModalReason('Password Recovery');
-        setShowAuthModal(true);
-      }
-    });
+    let unsubscribe = () => {};
+
+    // Only initialize / subscribe on mount if a persisted session or recovery token might exist
+    if (hasPersistedSession()) {
+      getSupabase().then(() => {
+        unsubscribe = analytics.onAuthStateChange((event, _session, user) => {
+          setCurrentUser(user);
+          if (event === 'PASSWORD_RECOVERY') {
+            setAuthInitialMode('recovery');
+            setAuthModalReason('Password Recovery');
+            setShowAuthModal(true);
+          }
+        });
+      });
+    }
 
     const user = analytics.getCurrentUser();
     if (user) {
@@ -204,6 +213,25 @@ export default function App() {
       if (unsubscribe) unsubscribe();
     };
   }, []);
+
+  // When auth modal opens for guest, ensure Supabase client and auth listener are active
+  useEffect(() => {
+    if (showAuthModal) {
+      getSupabase();
+      const unsubscribe = analytics.onAuthStateChange((event, _session, user) => {
+        if (user) {
+          setCurrentUser(user);
+        }
+        if (event === 'PASSWORD_RECOVERY') {
+          setAuthInitialMode('recovery');
+          setAuthModalReason('Password Recovery');
+        }
+      });
+      return () => {
+        if (unsubscribe) unsubscribe();
+      };
+    }
+  }, [showAuthModal]);
 
   // Smart auto-hiding navbar on scroll ("vanthu pora maari")
   const [navVisible, setNavVisible] = useState(true);
@@ -259,7 +287,8 @@ export default function App() {
     setShowAuthModal(true);
   }, []);
 
-  const handleAuthSuccess = useCallback((user) => {
+  const handleAuthSuccess = useCallback(async (user) => {
+    await getSupabase();
     setCurrentUser(user);
     setShowAuthModal(false);
     setShowCurtain(true);

@@ -52,8 +52,10 @@ Browse what's trending, filter by regional languages (Tamil, Telugu, Hindi, Mala
       VITE_SUPABASE_URL=https://your-project-id.supabase.co
       VITE_SUPABASE_ANON_KEY=your_public_anon_key_here
       ```
-   6. Deploy the account deletion Edge Function:
+   6. Deploy the account deletion Edge Function and configure CORS origin:
       ```bash
+      # Set allowed origin to restrict CORS to your app domain (e.g. production domain or wildcard for dev)
+      supabase secrets set ALLOWED_ORIGIN="https://reelist.app"
       supabase functions deploy delete-account
       ```
 

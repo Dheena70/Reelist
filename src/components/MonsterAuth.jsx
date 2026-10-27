@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { User, Mail, Eye, EyeOff, AlertCircle, CheckCircle2, Loader2, KeyRound } from "lucide-react";
 import { analytics, validatePasswordComplexity } from "../api/analytics.js";
-import { isSupabaseConfigured } from "../lib/supabase.js";
+import { isSupabaseConfigured, getSupabase } from "../lib/supabase.js";
 
 export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false, reason = "", initialMode = "login" }) {
   // mode: 'login' | 'signup'
@@ -31,6 +31,13 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Preload Supabase client when auth modal opens
+  useEffect(() => {
+    if (isSupabaseConfigured) {
+      getSupabase();
+    }
+  }, []);
 
   // Close on Escape Key
   useEffect(() => {
@@ -106,6 +113,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
       setError("Accounts are unavailable right now.");
       return;
     }
+    await getSupabase();
 
     setIsSubmitting(true);
     setError("");
@@ -159,6 +167,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
       setError("Accounts are unavailable right now.");
       return;
     }
+    await getSupabase();
     const cleanEmail = email.trim();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!cleanEmail || !emailRegex.test(cleanEmail)) {
@@ -187,6 +196,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
       setError("Accounts are unavailable right now.");
       return;
     }
+    await getSupabase();
     if (!recoveryPassword) {
       setError("Please enter a new password.");
       return;

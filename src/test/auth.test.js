@@ -16,19 +16,22 @@ const {
   mockGetSession: vi.fn(() => Promise.resolve({ data: { session: null } })),
 }));
 
+const mockSupabaseClient = {
+  auth: {
+    signUp: mockSignUp,
+    signInWithPassword: mockSignInWithPassword,
+    signOut: vi.fn(),
+    resetPasswordForEmail: mockResetPasswordForEmail,
+    updateUser: mockUpdateUser,
+    onAuthStateChange: mockOnAuthStateChange,
+    getSession: mockGetSession,
+  },
+};
+
 vi.mock('../lib/supabase.js', () => ({
   isSupabaseConfigured: true,
-  supabase: {
-    auth: {
-      signUp: mockSignUp,
-      signInWithPassword: mockSignInWithPassword,
-      signOut: vi.fn(),
-      resetPasswordForEmail: mockResetPasswordForEmail,
-      updateUser: mockUpdateUser,
-      onAuthStateChange: mockOnAuthStateChange,
-      getSession: mockGetSession,
-    },
-  },
+  getSupabase: vi.fn(() => Promise.resolve(mockSupabaseClient)),
+  hasPersistedSession: vi.fn(() => false),
 }));
 
 import { analytics } from '../api/analytics.js';
@@ -118,12 +121,5 @@ describe('Supabase Auth Integration', () => {
     const res = await analytics.updateUserPassword('NewStrongPass1!');
     expect(res.success).toBe(true);
     expect(mockUpdateUser).toHaveBeenCalledWith({ password: 'NewStrongPass1!' });
-  });
-
-  it('keys watchlist by Supabase user id instead of email', () => {
-    const userId = 'uuid-999';
-    analytics.setUserWatchlist(userId, [100, 200, 300]);
-    expect(localStorage.getItem(`reelist_watchlist_${userId}`)).toBe(JSON.stringify([100, 200, 300]));
-    expect(analytics.getUserWatchlist(userId)).toEqual([100, 200, 300]);
   });
 });

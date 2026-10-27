@@ -36,6 +36,7 @@ import {
   getRatingStats,
   getReactionCounts,
 } from '../api/userData.js';
+import { getSupabase } from '../lib/supabase.js';
 
 function determineRoleBadge(member, index, allCast = []) {
   const char = (member.character || '').toLowerCase();
@@ -232,22 +233,25 @@ export default function MovieModal({ movieId, onClose, onSelectMovie, currentUse
 
     // 2. User specific state
     if (currentUser) {
-      getMyRatings().then(({ data }) => {
-        if (mounted && Array.isArray(data)) {
-          const match = data.find((r) => r.tmdb_id === activeId);
-          setUserRating(match ? match.score : null);
-        }
-      });
+      getSupabase().then(() => {
+        if (!mounted) return;
+        getMyRatings().then(({ data }) => {
+          if (mounted && Array.isArray(data)) {
+            const match = data.find((r) => r.tmdb_id === activeId);
+            setUserRating(match ? match.score : null);
+          }
+        });
 
-      getWatchlist().then(({ data }) => {
-        if (mounted && Array.isArray(data)) {
-          const match = data.some((w) => w.tmdb_id === activeId);
-          setIsWatchlisted(match);
-        }
-      });
+        getWatchlist().then(({ data }) => {
+          if (mounted && Array.isArray(data)) {
+            const match = data.some((w) => w.tmdb_id === activeId);
+            setIsWatchlisted(match);
+          }
+        });
 
-      getMyReactions(mediaType, activeId).then(({ data }) => {
-        if (mounted && data) setUserReactions(data);
+        getMyReactions(mediaType, activeId).then(({ data }) => {
+          if (mounted && data) setUserReactions(data);
+        });
       });
     } else {
       setUserRating(null);
@@ -273,6 +277,7 @@ export default function MovieModal({ movieId, onClose, onSelectMovie, currentUse
     const prevRating = userRating;
     setUserRating(score);
     setShowRatingPicker(false);
+    await getSupabase();
 
     const mediaType = isTv ? 'tv' : 'movie';
     const { error } = await setUserRatingInDB(mediaType, activeId, score);
@@ -289,6 +294,7 @@ export default function MovieModal({ movieId, onClose, onSelectMovie, currentUse
     const prevRating = userRating;
     setUserRating(null);
     setShowRatingPicker(false);
+    await getSupabase();
 
     const mediaType = isTv ? 'tv' : 'movie';
     const { error } = await removeUserRatingInDB(mediaType, activeId);
@@ -312,6 +318,7 @@ export default function MovieModal({ movieId, onClose, onSelectMovie, currentUse
     }
     const prevState = isWatchlisted;
     setIsWatchlisted(!prevState);
+    await getSupabase();
 
     const mediaType = isTv ? 'tv' : 'movie';
     const res = prevState
@@ -342,6 +349,7 @@ export default function MovieModal({ movieId, onClose, onSelectMovie, currentUse
       ...prev,
       [type]: wasReacted ? Math.max(0, (prev[type] || 0) - 1) : (prev[type] || 0) + 1,
     }));
+    await getSupabase();
 
     const mediaType = isTv ? 'tv' : 'movie';
     const res = await toggleUserReactionInDB(mediaType, activeId, type);

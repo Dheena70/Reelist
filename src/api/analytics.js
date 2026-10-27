@@ -1,4 +1,4 @@
-import { supabase, isSupabaseConfigured } from '../lib/supabase.js';
+import { getSupabase, isSupabaseConfigured, hasPersistedSession } from '../lib/supabase.js';
 import { clearLegacyLocalUserData } from './userData.js';
 
 const ANALYTICS_STORAGE_KEY = 'reelist_analytics_live_v3';
@@ -75,15 +75,20 @@ export function mapSupabaseUser(user) {
 
 let inMemoryCurrentUser = null;
 
-if (supabase) {
-  supabase.auth.getSession().then(({ data }) => {
-    inMemoryCurrentUser = mapSupabaseUser(data?.session?.user);
+if (hasPersistedSession()) {
+  getSupabase().then((client) => {
+    if (!client) return;
+    client.auth.getSession().then(({ data }) => {
+      inMemoryCurrentUser = mapSupabaseUser(data?.session?.user);
+    }).catch(() => {
+      inMemoryCurrentUser = null;
+    });
+
+    client.auth.onAuthStateChange((_event, session) => {
+      inMemoryCurrentUser = mapSupabaseUser(session?.user);
+    });
   }).catch(() => {
     inMemoryCurrentUser = null;
-  });
-
-  supabase.auth.onAuthStateChange((_event, session) => {
-    inMemoryCurrentUser = mapSupabaseUser(session?.user);
   });
 }
 
@@ -215,6 +220,7 @@ export const analytics = {
   },
 
   async register(name, email, password) {
+    const supabase = await getSupabase();
     if (!supabase || !isSupabaseConfigured) {
       return { success: false, error: 'Accounts are unavailable right now.' };
     }
@@ -275,6 +281,7 @@ export const analytics = {
   },
 
   async login(email, password) {
+    const supabase = await getSupabase();
     if (!supabase || !isSupabaseConfigured) {
       return { success: false, error: 'Accounts are unavailable right now.' };
     }
@@ -321,6 +328,7 @@ export const analytics = {
   },
 
   async resetPassword(email) {
+    const supabase = await getSupabase();
     if (!supabase || !isSupabaseConfigured) {
       return { success: false, error: 'Accounts are unavailable right now.' };
     }
@@ -351,6 +359,7 @@ export const analytics = {
   },
 
   async updateUserPassword(password) {
+    const supabase = await getSupabase();
     if (!supabase || !isSupabaseConfigured) {
       return { success: false, error: 'Accounts are unavailable right now.' };
     }
@@ -398,6 +407,7 @@ export const analytics = {
 
   async logout() {
     inMemoryCurrentUser = null;
+    const supabase = await getSupabase();
     if (supabase) {
       try {
         await supabase.auth.signOut();
@@ -416,112 +426,24 @@ export const analytics = {
   },
 
   onAuthStateChange(callback) {
-    if (!supabase) return () => {};
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      const user = mapSupabaseUser(session?.user);
-      inMemoryCurrentUser = user;
-      if (typeof callback === 'function') {
-        callback(event, session, user);
-      }
-    });
+    let unsub = () => {};
+    let isCancelled = false;
+    getSupabase().then((client) => {
+      if (isCancelled || !client) return;
+      const { data: { subscription } } = client.auth.onAuthStateChange((event, session) => {
+        const user = mapSupabaseUser(session?.user);
+        inMemoryCurrentUser = user;
+        if (typeof callback === 'function') {
+          callback(event, session, user);
+        }
+      });
+      unsub = () => subscription?.unsubscribe();
+    }).catch(() => {});
+
     return () => {
-      subscription?.unsubscribe();
+      isCancelled = true;
+      unsub();
     };
-  },
-
-  getUserWatchlist(userIdentifier) {
-    try {
-      if (!userIdentifier) {
-        const guestRaw = localStorage.getItem('reelist_watchlist') || '[]';
-        return JSON.parse(guestRaw);
-      }
-
-      // 1. Primary lookup by Supabase user id
-      const primaryKey = `reelist_watchlist_${userIdentifier}`;
-      const raw = localStorage.getItem(primaryKey);
-      if (raw) return JSON.parse(raw);
-
-      // 2. Legacy fallback to generic watchlist
-      const fallback = localStorage.getItem('reelist_watchlist') || '[]';
-      return JSON.parse(fallback);
-    } catch {
-      return [];
-    }
-  },
-
-  setUserWatchlist(userIdentifier, list) {
-    try {
-      const payload = JSON.stringify(list || []);
-      if (userIdentifier) {
-        localStorage.setItem(`reelist_watchlist_${userIdentifier}`, payload);
-      }
-      localStorage.setItem('reelist_watchlist', payload);
-    } catch {
-      // ignore storage quota errors
-    }
-  },
-
-  exportUserData(userIdentifier) {
-    try {
-      const user = this.getCurrentUser();
-      const watchlist = this.getUserWatchlist(userIdentifier || user?.id);
-      return {
-        exportedAt: new Date().toISOString(),
-        version: '2.0',
-        platform: 'Reelist Cinema Explorer',
-        user: user || { id: userIdentifier, role: 'user' },
-        watchlist,
-        reactions: Object.keys(localStorage)
-          .filter((k) => k.startsWith('reelist_reactions_') || k.startsWith('reelist_my_reactions_'))
-          .reduce((acc, k) => {
-            acc[k] = localStorage.getItem(k);
-            return acc;
-          }, {}),
-      };
-    } catch (err) {
-      console.error('Export error:', err);
-      return null;
-    }
-  },
-
-  importUserData(backupData) {
-    try {
-      if (!backupData || typeof backupData !== 'object') {
-        return { success: false, error: 'Invalid backup file format.' };
-      }
-      if (Array.isArray(backupData.watchlist)) {
-        const user = this.getCurrentUser();
-        const clean = backupData.watchlist.filter((id) => Number.isFinite(id)).slice(0, 2000);
-        this.setUserWatchlist(user?.id || user?.email, clean);
-      }
-      if (backupData.reactions && typeof backupData.reactions === 'object') {
-        const allowed = /^reelist_reactions_\d+$/;
-        Object.entries(backupData.reactions).forEach(([k, v]) => {
-          if (!allowed.test(k) || typeof v !== 'string' || v.length > 5000) return;
-          try {
-            JSON.parse(v);
-            localStorage.setItem(k, v);
-          } catch {
-            /* skip bad entry */
-          }
-        });
-      }
-      return { success: true, count: backupData.watchlist?.length || 0 };
-    } catch (err) {
-      return { success: false, error: err.message || 'Import failed.' };
-    }
-  },
-
-  async deleteAccount(userIdentifier) {
-    try {
-      await this.logout();
-      if (userIdentifier) {
-        localStorage.removeItem(`reelist_watchlist_${userIdentifier}`);
-      }
-      return { success: true };
-    } catch (err) {
-      return { success: false, error: err.message || 'Failed to delete account.' };
-    }
   },
 
   resetStats() {

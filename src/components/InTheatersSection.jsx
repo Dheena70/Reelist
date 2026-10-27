@@ -8,11 +8,7 @@ import {
   MapPin,
 } from 'lucide-react';
 import MovieCard from './MovieCard.jsx';
-import {
-  tmdb,
-  THEATRICAL_NOW_PLAYING,
-  THEATRICAL_COMING_SOON,
-} from '../api/tmdb.js';
+import { tmdb } from '../api/tmdb.js';
 import {
   TAMIL_NADU_CITIES,
   getSavedCity,
@@ -51,8 +47,8 @@ function formatDateBadge(dateStr, label) {
 export default function InTheatersSection({ onSelectMovie, onOpenShowtimes }) {
   const [activeTab, setActiveTab] = useState('now_playing'); // 'now_playing' | 'upcoming'
   const [selectedLang, setSelectedLang] = useState('all');
-  const [nowPlayingMovies, setNowPlayingMovies] = useState(THEATRICAL_NOW_PLAYING);
-  const [upcomingMovies, setUpcomingMovies] = useState(THEATRICAL_COMING_SOON);
+  const [nowPlayingMovies, setNowPlayingMovies] = useState([]);
+  const [upcomingMovies, setUpcomingMovies] = useState([]);
   const [_loading, setLoading] = useState(false);
   const [userLocation, setUserLocation] = useState({ city: 'Chennai', country: 'IN', regionName: 'Tamil Nadu' });
   const [selectedCityId, setSelectedCityId] = useState(() => getSavedCity());
@@ -114,17 +110,7 @@ export default function InTheatersSection({ onSelectMovie, onOpenShowtimes }) {
               release_label: formatDateBadge(m.release_date, 'In theaters'),
             }));
           if (apiMovies.length > 0) {
-            // Keep curated Indian movies while merging live additions without duplicate IDs
-            const existingIds = new Set(THEATRICAL_NOW_PLAYING.map((c) => c.id));
-            const seenNewIds = new Set();
-            const uniqueApiMovies = [];
-            for (const m of apiMovies) {
-              if (!existingIds.has(m.id) && !seenNewIds.has(m.id)) {
-                seenNewIds.add(m.id);
-                uniqueApiMovies.push(m);
-              }
-            }
-            setNowPlayingMovies([...THEATRICAL_NOW_PLAYING, ...uniqueApiMovies]);
+            setNowPlayingMovies(apiMovies);
           }
         }
 
@@ -144,16 +130,7 @@ export default function InTheatersSection({ onSelectMovie, onOpenShowtimes }) {
               release_label: formatDateBadge(m.release_date, 'Coming soon'),
             }));
           if (apiUpcoming.length > 0) {
-            const existingUpIds = new Set(THEATRICAL_COMING_SOON.map((c) => c.id));
-            const seenUpIds = new Set();
-            const uniqueApiUp = [];
-            for (const m of apiUpcoming) {
-              if (!existingUpIds.has(m.id) && !seenUpIds.has(m.id)) {
-                seenUpIds.add(m.id);
-                uniqueApiUp.push(m);
-              }
-            }
-            setUpcomingMovies([...THEATRICAL_COMING_SOON, ...uniqueApiUp]);
+            setUpcomingMovies(apiUpcoming);
           }
         }
       })
@@ -224,7 +201,7 @@ export default function InTheatersSection({ onSelectMovie, onOpenShowtimes }) {
             <button
               type="button"
               className="theaters-location-chip theaters-location-chip--interactive"
-              onClick={() => onOpenShowtimes && onOpenShowtimes(currentList[0] || THEATRICAL_NOW_PLAYING[0])}
+              onClick={() => onOpenShowtimes && onOpenShowtimes(currentList[0] || null)}
               title={`View showtimes for ${cityTheaters.length} cinemas in ${currentCity.name} (${currentCity.tamilName})`}
             >
               <MapPin size={11} />

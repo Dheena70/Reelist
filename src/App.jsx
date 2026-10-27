@@ -8,8 +8,9 @@ import {
   Sparkles,
   Search,
   Mail,
+  Calendar,
 } from 'lucide-react';
-import { tmdb } from './api/tmdb.js';
+import { tmdb, getLanguageLabel } from './api/tmdb.js';
 import { analytics } from './api/analytics.js';
 import { updatePageMeta } from './utils/meta.js';
 import SearchBar from './components/SearchBar.jsx';
@@ -22,7 +23,6 @@ import CookieBanner from './components/CookieBanner.jsx';
 
 const MovieModal = lazy(() => import('./components/MovieModal.jsx'));
 const ShowtimesModal = lazy(() => import('./components/ShowtimesModal.jsx'));
-const ApiKeyGate = lazy(() => import('./components/ApiKeyGate.jsx'));
 const TheaterScreen = lazy(() => import('./components/TheaterScreen.jsx'));
 const NotFound = lazy(() => import('./components/NotFound.jsx'));
 const PrivacyPolicyModal = lazy(() => import('./components/PrivacyPolicyModal.jsx'));
@@ -54,14 +54,12 @@ function getUserInitials(user) {
 export default function App() {
   const [currentUser, setCurrentUser] = useState(() => analytics.getCurrentUser());
   const [showCurtain, setShowCurtain] = useState(false);
-  const [hasKey, setHasKey] = useState(!!tmdb.getApiKey());
-  const [isEditingKey, setIsEditingKey] = useState(false);
-  const [keyError, setKeyError] = useState('');
   const [query, setQuery] = useState('');
   const [activeQuery, setActiveQuery] = useState('');
   const [matchedArtist, setMatchedArtist] = useState(null);
   const [similarArtists, setSimilarArtists] = useState([]);
   const [reloadTrigger, setReloadTrigger] = useState(0);
+  const [activeSection, setActiveSection] = useState('trending'); // 'trending' | 'now_playing' | 'upcoming'
   const [mediaType, setMediaType] = useState('movie'); // 'movie' | 'tv'
   const [catalogLanguage, setCatalogLanguage] = useState('all');
   const [movies, setMovies] = useState([]);
@@ -163,13 +161,8 @@ export default function App() {
   }, [show404Page, activeLegalModal, selectedId, activeQuery, movies]);
 
   const displayedCatalogMovies = useMemo(() => {
-    let list = movies;
-    if (catalogLanguage !== 'all') {
-      list = movies.filter((m) => (m.original_language || '').toLowerCase() === catalogLanguage.toLowerCase());
-    }
-    // Reverse chronological order: September -> August -> July 2026
-    return [...list].sort((a, b) => (b.release_date || '').localeCompare(a.release_date || ''));
-  }, [movies, catalogLanguage]);
+    return movies;
+  }, [movies]);
 
   const syncUserState = () => {
     const user = analytics.getCurrentUser();
@@ -331,62 +324,54 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (!hasKey) return;
+    const controller = new AbortController();
+    const { signal } = controller;
 
-    let cancelled = false;
     setLoading(true);
     setError(null);
 
-    const request = activeQuery
-      ? tmdb.search(activeQuery)
-      : (mediaType === 'tv' ? tmdb.trendingTv('week') : tmdb.trending('week'));
-
-    request
-      .then((data) => {
-        if (cancelled) return;
-        setMovies(data.results || []);
-        setMatchedArtist(data.artist || null);
-        setSimilarArtists(data.similarArtists || []);
-      })
-      .catch((err) => {
-        if (cancelled) return;
-        if (err.code === 'INVALID_API_KEY' || err.code === 'MISSING_API_KEY') {
-          setKeyError('Your TMDB key was rejected (401 Unauthorized). Please check or re-enter it.');
-          setHasKey(false);
-        } else {
-          setError('Something went wrong reaching TMDB. Check your connection and try again.');
+    async function fetchCatalog() {
+      try {
+        if (activeQuery) {
+          const data = await tmdb.search(activeQuery, 1, signal);
+          setMovies(data?.results || []);
+          setMatchedArtist(data?.artist || null);
+          setSimilarArtists(data?.similarArtists || []);
+          return;
         }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+
+        let data;
+        if (catalogLanguage !== 'all') {
+          data = await tmdb.regional(catalogLanguage, 1, signal);
+        } else if (activeSection === 'now_playing') {
+          data = await tmdb.nowPlaying(1, 'IN', signal);
+        } else if (activeSection === 'upcoming') {
+          data = await tmdb.upcoming(1, 'IN', signal);
+        } else {
+          data = mediaType === 'tv'
+            ? await tmdb.trendingTv('week', signal)
+            : await tmdb.trending('week', signal);
+        }
+
+        setMovies(data?.results || []);
+        setMatchedArtist(null);
+        setSimilarArtists([]);
+      } catch (err) {
+        if (signal.aborted) return;
+        setError(err.message || 'Something went wrong reaching TMDB. Check your connection and try again.');
+      } finally {
+        if (!signal.aborted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    fetchCatalog();
 
     return () => {
-      cancelled = true;
+      controller.abort();
     };
-  }, [activeQuery, hasKey, reloadTrigger, mediaType]);
-
-  if (!hasKey || isEditingKey) {
-    return (
-      <Suspense fallback={<div className="modal-loading-gate" />}>
-        {showCurtain && <TheaterScreen onEnter={() => setShowCurtain(false)} />}
-        <ApiKeyGate
-          errorMessage={keyError}
-          canCancel={hasKey && isEditingKey}
-          onCancel={() => {
-            setKeyError('');
-            setIsEditingKey(false);
-          }}
-          onSaved={() => {
-            setHasKey(true);
-            setKeyError('');
-            setIsEditingKey(false);
-            setReloadTrigger((prev) => prev + 1);
-          }}
-        />
-      </Suspense>
-    );
-  }
+  }, [activeQuery, activeSection, mediaType, catalogLanguage, reloadTrigger]);
 
   return (
     <div className="app">
@@ -539,7 +524,7 @@ export default function App() {
                         <span>Quick Tour</span>
                       </div>
                       <p className="onboarding-guide-text">
-                        <strong>Welcome to Reelist!</strong> 🎬 Browse September, August & July 2026 blockbusters &bull; Filter across 6 languages &bull; Tap any movie poster to stream official HD trailers.
+                        <strong>Welcome to Reelist!</strong> 🎬 Browse trending cinema, now showing and upcoming releases &bull; Filter across regional languages &bull; Tap any movie poster to stream official HD trailers.
                       </p>
                     </div>
                     <button
@@ -559,41 +544,86 @@ export default function App() {
                     </button>
                   </div>
                 )}
-                {/* Global Trending & Acclaimed Catalog Section */}
+                {/* Global Trending & Theatrical Catalog Section */}
                 <section className="trending-catalog-section" aria-labelledby="trending-heading">
                   <div className="section-header-wrap section-header-wrap--with-toggle">
                     <div className="section-header-left">
                       <h2 id="trending-heading" className="section-heading">
-                        {mediaType === 'tv' ? 'Trending TV Shows & Series' : 'Trending Movies This Week'}
+                        {catalogLanguage !== 'all'
+                          ? `${getLanguageLabel(catalogLanguage)} Releases`
+                          : activeSection === 'now_playing'
+                          ? 'In Theatres Now'
+                          : activeSection === 'upcoming'
+                          ? 'Coming Soon to Theatres'
+                          : mediaType === 'tv'
+                          ? 'Trending TV Shows & Series'
+                          : 'Trending Movies This Week'}
                       </h2>
                       <p className="section-subheading">
-                        {mediaType === 'tv'
-                          ? 'Binge-worthy web series, critically acclaimed dramas & fan-favorite TV shows'
-                          : 'Now Screening — September, August & July 2026 Blockbusters'}
+                        {catalogLanguage !== 'all'
+                          ? `Fresh Theatrical & Streaming Releases in ${getLanguageLabel(catalogLanguage)}`
+                          : activeSection === 'now_playing'
+                          ? 'Now Showing in Theatres across India & Tamil Nadu'
+                          : activeSection === 'upcoming'
+                          ? 'Upcoming Theatrical Releases & Advance Premieres'
+                          : mediaType === 'tv'
+                          ? 'Binge-worthy web series, critically acclaimed dramas & fan favorites'
+                          : 'Popular & Trending Blockbusters This Week'}
                       </p>
                     </div>
 
-                    <div className="media-format-switcher" role="tablist" aria-label="Media format switcher">
+                    <div className="media-format-switcher" role="tablist" aria-label="Catalog section switcher">
                       <button
                         type="button"
                         role="tab"
-                        aria-selected={mediaType === 'movie'}
-                        className={`format-switch-btn ${mediaType === 'movie' ? 'is-active' : ''}`}
-                        onClick={() => setMediaType('movie')}
+                        aria-selected={activeSection === 'trending'}
+                        className={`format-switch-btn ${activeSection === 'trending' ? 'is-active' : ''}`}
+                        onClick={() => {
+                          setActiveSection('trending');
+                          setCatalogLanguage('all');
+                        }}
                       >
-                        <Film size={15} />
-                        <span>All Movies</span>
+                        <Sparkles size={14} />
+                        <span>Trending</span>
                       </button>
                       <button
                         type="button"
                         role="tab"
-                        aria-selected={mediaType === 'tv'}
-                        className={`format-switch-btn ${mediaType === 'tv' ? 'is-active' : ''}`}
-                        onClick={() => setMediaType('tv')}
+                        aria-selected={activeSection === 'now_playing'}
+                        className={`format-switch-btn ${activeSection === 'now_playing' ? 'is-active' : ''}`}
+                        onClick={() => {
+                          setActiveSection('now_playing');
+                          setMediaType('movie');
+                        }}
                       >
-                        <Tv size={15} />
-                        <span>TV Shows & Web Series</span>
+                        <Ticket size={14} />
+                        <span>In Theatres</span>
                       </button>
+                      <button
+                        type="button"
+                        role="tab"
+                        aria-selected={activeSection === 'upcoming'}
+                        className={`format-switch-btn ${activeSection === 'upcoming' ? 'is-active' : ''}`}
+                        onClick={() => {
+                          setActiveSection('upcoming');
+                          setMediaType('movie');
+                        }}
+                      >
+                        <Calendar size={14} />
+                        <span>Coming Soon</span>
+                      </button>
+                      {activeSection === 'trending' && (
+                        <button
+                          type="button"
+                          role="tab"
+                          aria-selected={mediaType === 'tv'}
+                          className={`format-switch-btn ${mediaType === 'tv' ? 'is-active' : ''}`}
+                          onClick={() => setMediaType((prev) => (prev === 'tv' ? 'movie' : 'tv'))}
+                        >
+                          <Tv size={14} />
+                          <span>{mediaType === 'tv' ? 'TV Shows' : 'Movies'}</span>
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -669,6 +699,8 @@ export default function App() {
           onClick={() => {
             if (show404Page) setShow404Page(false);
             setMediaType('movie');
+            setActiveSection('trending');
+            setCatalogLanguage('all');
             if (activeQuery) {
               setQuery('');
               setActiveQuery('');
@@ -678,10 +710,10 @@ export default function App() {
             const el = document.querySelector('.trending-catalog-section');
             if (el) el.scrollIntoView({ behavior: 'smooth' });
           }}
-          title="2026 Premieres"
+          title="Trending Cinema"
         >
           <Film size={18} />
-          <span>2026 Hits</span>
+          <span>Trending</span>
         </button>
         <button
           type="button"

@@ -22,8 +22,6 @@ import {
   profileUrl,
   providerLogoUrl,
   tmdb,
-  THEATRICAL_NOW_PLAYING,
-  ALL_CURATED_MOVIES,
   FRANCHISE_COLLECTIONS,
 } from '../api/tmdb.js';
 import { analytics } from '../api/analytics.js';
@@ -354,12 +352,7 @@ export default function MovieModal({ movieId, onClose, onSelectMovie, currentUse
   // Fetch movie details & collection info
   useEffect(() => {
     let cancelled = false;
-    const curatedMatch = ALL_CURATED_MOVIES.find((m) => m.id === Number(activeId) || String(m.id) === String(activeId));
-    if (curatedMatch) {
-      setDetails(curatedMatch);
-    } else {
-      setDetails(null);
-    }
+    setDetails(null);
     setError(null);
     setImgError(false);
     setShowTrailer(true);
@@ -388,44 +381,9 @@ export default function MovieModal({ movieId, onClose, onSelectMovie, currentUse
             .catch(() => {});
         }
       })
-      .catch(() => {
+      .catch((err) => {
         if (cancelled) return;
-        if (curatedMatch) {
-          setDetails({
-            id: curatedMatch.id,
-            title: curatedMatch.title,
-            tagline: 'Now Screening in Cinemas Worldwide',
-            overview: curatedMatch.overview,
-            release_date: curatedMatch.release_date,
-            vote_average: curatedMatch.vote_average,
-            vote_count: curatedMatch.vote_count,
-            poster_path: curatedMatch.poster_path,
-            backdrop_path: curatedMatch.backdrop_path,
-            genres: [{ id: 28, name: 'Action' }, { id: 53, name: 'Thriller' }],
-            original_language: 'ta',
-            videos: {
-              results: [
-                {
-                  site: 'YouTube',
-                  type: 'Trailer',
-                  official: true,
-                  key: curatedMatch.trailerKey || 'd9MyW72ELq0',
-                  name: `${curatedMatch.title} Official Trailer`,
-                },
-              ],
-            },
-            credits: {
-              cast: [
-                { id: 1, name: 'Lead Protagonist', character: 'Hero', gender: 2, order: 0 },
-                { id: 2, name: 'Lead Protagonist Female', character: 'Heroine', gender: 1, order: 1 },
-                { id: 3, name: 'Main Rival', character: 'Antagonist', gender: 2, order: 2 },
-              ],
-            },
-            'watch/providers': { results: {} },
-          });
-        } else {
-          setError('Could not load details for this title.');
-        }
+        setError(err?.message || 'Could not load details for this title.');
       });
 
     return () => {
@@ -710,8 +668,7 @@ export default function MovieModal({ movieId, onClose, onSelectMovie, currentUse
       }
       if (unique.length >= 8) break;
     }
-    if (unique.length > 0) return unique;
-    return THEATRICAL_NOW_PLAYING.filter((m) => m.id !== activeId).slice(0, 6);
+    return unique;
   }, [details, activeId]);
 
   const isTv = details?.media_type === 'tv' || (details?.media_type !== 'movie' && (Boolean(details?.number_of_seasons) || (Boolean(details?.first_air_date) && !details?.release_date)));

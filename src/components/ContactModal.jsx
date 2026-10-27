@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Mail, Phone, MapPin, Send, X, Clock, AlertCircle } from 'lucide-react';
+import { CONTACT_EMAIL } from '../config/constants.js';
 
 export default function ContactModal({ onClose, onSuccess }) {
   const [name, setName] = useState('');
@@ -80,7 +81,7 @@ export default function ContactModal({ onClose, onSuccess }) {
               <Mail size={18} className="contact-info-icon" />
               <div>
                 <strong>Official Email</strong>
-                <p>safehire20@gmail.com</p>
+                <p>{CONTACT_EMAIL}</p>
               </div>
             </div>
           </div>

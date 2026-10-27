@@ -29,16 +29,16 @@ Browse what's trending, filter by regional languages (Tamil, Telugu, Hindi, Mala
    npm install
    ```
 
-2. **Configure TMDB API Key**:
-   Get a free TMDB API key at [themoviedb.org](https://www.themoviedb.org/settings/api).
-   Copy `.env.example` to `.env` and set your key:
+2. **Configure TMDB Read Access Token**:
+   Get an **API Read Access Token** (v4) at [themoviedb.org](https://www.themoviedb.org/settings/api).
+   Copy `.env.example` to `.env` and set your token:
    ```bash
    cp .env.example .env
    ```
    ```env
-   VITE_TMDB_API_KEY=your_key_here
+   TMDB_TOKEN=your_read_access_token_here
    ```
-   *(If no `.env` is provided, Reelist provides an on-screen gate to paste your key into browser storage.)*
+   *(All requests are routed securely through the `/api/tmdb` serverless proxy with 1-hour caching. The token is never exposed to client browsers).*
 
 3. **Development Server**:
    ```bash
@@ -64,10 +64,12 @@ Browse what's trending, filter by regional languages (Tamil, Telugu, Hindi, Mala
 ## Directory Structure
 
 ```text
+api/
+  tmdb.js                 Serverless API proxy (Vercel / Node) injecting TMDB_TOKEN
 src/
   api/
     analytics.js          Client-side security, consent, and user preferences
-    tmdb.js               TMDB API client and regional fallback catalog
+    tmdb.js               TMDB dynamic client with Map + sessionStorage caching
   components/
     CookieBanner.jsx      Privacy consent banner (analytics storage control)
     MonsterAuth.jsx       Sliding blade authentication modal
@@ -75,14 +77,22 @@ src/
     ShowtimesModal.jsx    38-district Tamil Nadu theater directory & BMS shortcuts
     SearchBar.jsx         Marquee search bar with quick filters
     MovieGrid.jsx         Responsive posters grid with lazy loading
+  config/
+    constants.js          Shared application constants (CONTACT_EMAIL)
   data/
+    overrides.json        Manual movie metadata overrides
     theaters.js           Tamil Nadu 38-district cinema directory data
+  utils/
+    tmdbCache.js          In-memory Map + sessionStorage TTL cache helper
+    tmdbValidation.js     Safe path validation and SSRF prevention
   test/
-    analytics.test.js     Vitest unit tests for security and import validation
+    analytics.test.js     Unit tests for auth security and import allowlisting
+    tmdbValidation.test.js Path validation and prefix security tests
+    tmdbCache.test.js     Cache TTL and expiration unit tests
 ```
 
 ## Security & Disclosures
 
 - **Showtimes & Ticketing**: Live seat maps, dynamic pricing, and seat allocation are powered by BookMyShow. Reelist indexes theater directories and provides direct booking shortcuts.
 - **Local Storage**: User profiles, custom ratings, and watchlists are kept in client storage unless connected to a cloud database.
-- **API Protection**: For high-volume production deployments, route TMDB requests through a serverless proxy (Cloudflare Worker or Vercel function) to prevent key exposure.
+- **Server-Side API Token**: All TMDB requests are routed through `/api/tmdb` serverless proxy using `TMDB_TOKEN`. No API keys or tokens are embedded in client bundles.

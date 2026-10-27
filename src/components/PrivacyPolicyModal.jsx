@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Shield, X } from 'lucide-react';
+import { CONTACT_EMAIL } from '../config/constants.js';
 
 export default function PrivacyPolicyModal({ onClose }) {
   const modalRef = useRef(null);
@@ -68,7 +69,7 @@ export default function PrivacyPolicyModal({ onClose }) {
               <br />
               <strong>Reelist Data Protection Officer</strong><br />
               Kallakurichi, Tamil Nadu, India<br />
-              Email: <code>safehire20@gmail.com</code> | Phone: +91 98765 43210
+              Email: <code>{CONTACT_EMAIL}</code>
             </p>
           </section>
         </div>

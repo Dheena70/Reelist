@@ -1,4 +1,5 @@
 import { MapPin, Phone, Mail } from 'lucide-react';
+import { CONTACT_EMAIL } from '../config/constants.js';
 
 export default function Footer({ onOpenPrivacy, onOpenTerms, onOpenContact, onOpen404 }) {
   return (
@@ -12,7 +13,7 @@ export default function Footer({ onOpenPrivacy, onOpenTerms, onOpenContact, onOp
               <span className="footer-brand-badge">CINEMA</span>
             </div>
             <p className="footer-brand-tagline">
-              Curated Theatrical Explorer for September, August & July 2026 releases across Tamil, Telugu, Hindi, Malayalam, Kannada and Global cinema.
+              Curated Theatrical &amp; Streaming Explorer across Tamil, Telugu, Hindi, Malayalam, Kannada and Global cinema.
             </p>
 
             <div className="footer-address-block">
@@ -31,7 +32,7 @@ export default function Footer({ onOpenPrivacy, onOpenTerms, onOpenContact, onOp
 
               <div className="footer-address-item">
                 <Mail size={15} className="footer-icon" />
-                <span>safehire20@gmail.com</span>
+                <span>{CONTACT_EMAIL}</span>
               </div>
             </div>
           </div>

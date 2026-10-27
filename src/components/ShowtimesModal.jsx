@@ -13,7 +13,7 @@ import {
   Navigation,
   Search,
 } from 'lucide-react';
-import { posterUrl, THEATRICAL_NOW_PLAYING } from '../api/tmdb.js';
+import { posterUrl } from '../api/tmdb.js';
 import {
   TAMIL_NADU_CITIES,
   getTheatersForCity,
@@ -61,7 +61,7 @@ export default function ShowtimesModal({
   const theaters = useMemo(() => getTheatersForCity(selectedCityId), [selectedCityId]);
 
   const [selectedTheaterId, setSelectedTheaterId] = useState(() => theaters[0]?.id || '');
-  const [currentMovie, setCurrentMovie] = useState(movie || THEATRICAL_NOW_PLAYING[0]);
+  const [currentMovie, setCurrentMovie] = useState(movie || null);
   const modalRef = useRef(null);
 
   const filteredDistricts = useMemo(() => {
@@ -107,17 +107,10 @@ export default function ShowtimesModal({
   const selectedTheater = theaters.find((t) => t.id === selectedTheaterId) || theaters[0];
 
   const handleSwitchMovie = (movieRef) => {
-    const matched =
-      THEATRICAL_NOW_PLAYING.find(
-        (m) =>
-          m.id === movieRef.id ||
-          (m.title && movieRef.title && m.title.toLowerCase() === movieRef.title.toLowerCase())
-      ) || movieRef;
-
-    setCurrentMovie(matched);
+    setCurrentMovie(movieRef);
     setViewMode('by_movie');
     setBookedSlot(null);
-    if (onSelectMovie) onSelectMovie(matched);
+    if (onSelectMovie) onSelectMovie(movieRef);
   };
 
   const handleCityChange = (cityId) => {
@@ -544,10 +537,7 @@ export default function ShowtimesModal({
                 </div>
 
                 {selectedTheater.screeningMovies.map((m) => {
-                  const fullItem = THEATRICAL_NOW_PLAYING.find(
-                    (tp) => tp.id === m.id || (tp.title && tp.title.toLowerCase() === m.title.toLowerCase())
-                  );
-                  const itemPoster = fullItem ? posterUrl(fullItem.poster_path, 'w185') : null;
+                  const itemPoster = m.poster_path ? posterUrl(m.poster_path, 'w185') : null;
 
                   return (
                     <div key={m.id} className="cinema-movie-card">

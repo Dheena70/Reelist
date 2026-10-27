@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mail, Phone, MapPin, Send, X, Clock, AlertCircle } from 'lucide-react';
+import { Mail, MapPin, Send, X, Clock, AlertCircle } from 'lucide-react';
 import { CONTACT_EMAIL } from '../config/constants.js';
 
 export default function ContactModal({ onClose, onSuccess }) {
@@ -58,14 +58,6 @@ export default function ContactModal({ onClose, onSuccess }) {
               <div>
                 <strong>Reelist Cinema Concierge</strong>
                 <p>Kallakurichi, Tamil Nadu, India</p>
-              </div>
-            </div>
-
-            <div className="contact-info-item">
-              <Phone size={18} className="contact-info-icon" />
-              <div>
-                <strong>Direct Contact</strong>
-                <p>+91 98765 43210</p>
               </div>
             </div>
 
@@ -130,7 +122,7 @@ export default function ContactModal({ onClose, onSuccess }) {
                 onChange={(e) => setTopic(e.target.value)}
               >
                 <option value="Feedback">App Feedback & Suggestions</option>
-                <option value="Movie Request">Suggest a 2026 Title</option>
+                <option value="Movie Request">Suggest a Title</option>
                 <option value="Showtimes">Cinema Showtimes Question</option>
                 <option value="Partnership">Studio / Exhibitor Partnership</option>
                 <option value="Other">Other Inquiry</option>

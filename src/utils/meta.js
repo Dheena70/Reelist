@@ -2,8 +2,8 @@
  * Dynamic SEO and Open Graph metadata manager for Reelist SPA.
  */
 
-const DEFAULT_TITLE = 'Reelist — Explore September, August & July 2026 Blockbusters';
-const DEFAULT_DESC = 'Discover the freshest theatrical blockbusters released in September, August & July 2026 across Tamil, Telugu, Hindi, Malayalam, Kannada & Global cinema with official 4K trailers.';
+const DEFAULT_TITLE = 'Reelist — Trending & Now Playing Movies in India';
+const DEFAULT_DESC = 'Discover trending and now playing theatrical blockbusters across Tamil, Telugu, Hindi, Malayalam, Kannada & Global cinema with official 4K trailers.';
 const SITE_URL = 'https://dheena70.github.io/Reelist/';
 const DEFAULT_OG_IMAGE = 'https://dheena70.github.io/Reelist/og-image.png';
 

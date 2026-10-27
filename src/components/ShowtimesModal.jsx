@@ -6,7 +6,6 @@ import {
   Clock,
   MapPin,
   Sparkles,
-  CheckCircle2,
   ExternalLink,
   Building2,
   Film,
@@ -22,37 +21,13 @@ import {
   saveCity,
 } from '../data/theaters.js';
 
-function getUpcomingDateTabs() {
-  const tabs = [];
-  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const now = new Date();
-
-  for (let i = 0; i < 4; i++) {
-    const d = new Date(now.getTime() + i * 24 * 60 * 60 * 1000);
-    const dayName = days[d.getDay()];
-    const monthName = months[d.getMonth()];
-    const dateNum = d.getDate();
-    let label = i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : dayName;
-    tabs.push({
-      id: `day_${i}`,
-      label,
-      date: `${dayName}, ${monthName} ${dateNum}`,
-    });
-  }
-  return tabs;
-}
-
 export default function ShowtimesModal({
   movie,
   onClose,
   onWatchTrailer,
-  onSelectMovie,
+  _onSelectMovie,
   initialCityId,
 }) {
-  const dateTabs = useMemo(() => getUpcomingDateTabs(), []);
-  const [selectedDate, setSelectedDate] = useState('day_0');
-  const [bookedSlot, setBookedSlot] = useState(null);
   const [viewMode, setViewMode] = useState('by_movie'); // 'by_movie' | 'by_theater'
   const [selectedCityId, setSelectedCityId] = useState(() => initialCityId || getSavedCity());
   const [districtSearch, setDistrictSearch] = useState('');
@@ -100,41 +75,40 @@ export default function ShowtimesModal({
   if (!currentMovie) return null;
 
   const poster = posterUrl(currentMovie.poster_path, 'w342');
+  const bmsCitySlug = cityDetails.bmsSlug || 'chennai';
+  const bmsSearchUrl = `https://in.bookmyshow.com/explore/movies-${bmsCitySlug}?search=${encodeURIComponent(
+    currentMovie.title || ''
+  )}`;
+
   const releaseLabel =
     currentMovie.release_label ||
     (currentMovie.release_date ? `In Theaters: ${currentMovie.release_date}` : 'Now in Theaters');
 
   const selectedTheater = theaters.find((t) => t.id === selectedTheaterId) || theaters[0];
 
-  const handleSwitchMovie = (movieRef) => {
-    setCurrentMovie(movieRef);
-    setViewMode('by_movie');
-    setBookedSlot(null);
-    if (onSelectMovie) onSelectMovie(movieRef);
-  };
-
   const handleCityChange = (cityId) => {
     setSelectedCityId(cityId);
     saveCity(cityId);
-    setBookedSlot(null);
+    setDistrictSearch('');
   };
 
-  const bmsCitySlug = cityDetails?.bmsSlug || 'salem';
-  const bmsSearchUrl = `https://in.bookmyshow.com/explore/movies-${bmsCitySlug}?search=${encodeURIComponent(
-    currentMovie.title || ''
-  )}`;
+  const getMapsUrl = (theater) => {
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+      `${theater.name} ${theater.location} ${cityDetails.name}`
+    )}`;
+  };
 
   return (
     <div
-      className="showtimes-backdrop"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
+      className="showtimes-modal-backdrop"
       role="dialog"
       aria-modal="true"
       aria-labelledby="showtimes-modal-title"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
-      <div className="showtimes-modal" ref={modalRef}>
+      <div className="showtimes-modal-container" ref={modalRef}>
         {/* Close Button */}
         <button
           type="button"
@@ -145,7 +119,7 @@ export default function ShowtimesModal({
           <X size={18} />
         </button>
 
-        {/* City / District Selector Bar (Covers all 38 Districts in Tamil Nadu with live search) */}
+        {/* City / District Selector Bar */}
         <div className="showtimes-city-selector-section">
           <div className="city-selector-header">
             <span className="city-selector-title">
@@ -267,7 +241,7 @@ export default function ShowtimesModal({
                 <span className="showtimes-modal__tag">
                   <Sparkles size={12} />
                   <span>
-                    THEATRICAL SHOWTIMES • {cityDetails.name.toUpperCase()} ({cityDetails.tamilName})
+                    THEATRICAL DIRECTORY • {cityDetails.name.toUpperCase()} ({cityDetails.tamilName})
                   </span>
                 </span>
                 <h2 id="showtimes-modal-title" className="showtimes-modal__title">
@@ -324,139 +298,74 @@ export default function ShowtimesModal({
               </div>
             </div>
 
-            {/* Date Selector Tabs */}
-            <div className="showtimes-modal__dates">
-              {dateTabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  type="button"
-                  className={`showtimes-date-btn ${selectedDate === tab.id ? 'is-selected' : ''}`}
-                  onClick={() => {
-                    setSelectedDate(tab.id);
-                    setBookedSlot(null);
-                  }}
-                >
-                  <span className="date-btn__label">{tab.label}</span>
-                  <span className="date-btn__day">{tab.date}</span>
-                </button>
-              ))}
-            </div>
-
-            {/* Selected Slot Notification Banner */}
-            {bookedSlot && (
-              <div className="showtimes-booking-banner">
-                <CheckCircle2 size={16} className="booking-icon" />
-                <div>
-                  <strong>Showtime: {bookedSlot.time}</strong> at {bookedSlot.theater} (
-                  {bookedSlot.dateLabel})
-                  <div className="booking-sub">
-                    Directing to BookMyShow for real-time seat selection and instant ticketing in {cityDetails.name}.
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Theaters in Selected City */}
+            {/* Theaters Directory in Selected City */}
             <div className="showtimes-theaters-list">
-              {theaters.map((theater) => {
-                const movieEntry = theater.screeningMovies?.find(
-                  (m) =>
-                    m.id === currentMovie.id ||
-                    (m.title && m.title.toLowerCase() === currentMovie.title.toLowerCase())
-                );
-                const slotsToRender = movieEntry?.shows || theater.shows;
-                const otherMovies = (theater.screeningMovies || []).filter(
-                  (m) =>
-                    m.id !== currentMovie.id &&
-                    m.title.toLowerCase() !== currentMovie.title.toLowerCase()
-                );
-
-                return (
-                  <div key={theater.id} className="theater-schedule-card">
-                    <div className="theater-schedule-card__info">
-                      <div className="theater-schedule-card__name-row">
-                        <div className="theater-title-group">
-                          <h3 className="theater-name">{theater.name}</h3>
+              <h3 style={{ fontSize: '1rem', color: '#f1f5f9', margin: '8px 0 12px', fontWeight: 600 }}>
+                Cinemas in {cityDetails.name} ({theaters.length})
+              </h3>
+              {theaters.map((theater) => (
+                <div key={theater.id} className="theater-schedule-card">
+                  <div className="theater-schedule-card__info">
+                    <div className="theater-schedule-card__name-row">
+                      <div className="theater-title-group">
+                        <h3 className="theater-name">{theater.name}</h3>
+                        {theater.distance && (
                           <span className="theater-distance-pill">
                             <Navigation size={10} />
                             <span>{theater.distance}</span>
                           </span>
-                        </div>
-                        <span className="theater-format-badge">
-                          {movieEntry?.format || theater.format}
-                        </span>
+                        )}
                       </div>
-                      <div className="theater-location">
-                        <MapPin size={12} />
-                        <span>{theater.location}</span>
-                      </div>
+                      <span className="theater-format-badge">{theater.format}</span>
                     </div>
-
-                    {/* Showtime Slots Grid */}
-                    <div className="theater-slots-grid">
-                      {slotsToRender.map((show, sIdx) => {
-                        const isSelected =
-                          bookedSlot &&
-                          bookedSlot.theater === theater.name &&
-                          bookedSlot.time === show.time &&
-                          bookedSlot.date === selectedDate;
-
-                        return (
-                          <button
-                            key={sIdx}
-                            type="button"
-                            className={`show-slot-btn ${
-                              isSelected ? 'is-chosen' : ''
-                            } show-slot--${show.status}`}
-                            onClick={() =>
-                              setBookedSlot({
-                                theater: theater.name,
-                                time: show.time,
-                                date: selectedDate,
-                                dateLabel: dateTabs.find((d) => d.id === selectedDate)?.date,
-                              })
-                            }
-                            title={`Select ${show.time} show at ${theater.name}`}
-                          >
-                            <Clock size={11} className="slot-clock" />
-                            <span className="slot-time">{show.time}</span>
-                            <span className="slot-pill">Show</span>
-                          </button>
-                        );
-                      })}
+                    <div className="theater-location">
+                      <MapPin size={12} />
+                      <span>{theater.location}</span>
                     </div>
-
-                    {/* Also Playing at this Theater */}
-                    {otherMovies.length > 0 && (
-                      <div className="theater-other-movies-row">
-                        <span className="other-movies-label">
-                          <Film size={11} />
-                          <span>Also screening at this cinema today:</span>
-                        </span>
-                        <div className="other-movies-chips">
-                          {otherMovies.map((om) => (
-                            <button
-                              key={om.id}
-                              type="button"
-                              className="theater-other-chip"
-                              onClick={() => handleSwitchMovie(om)}
-                              title={`Switch to showtimes for ${om.title}`}
-                            >
-                              <span>{om.title}</span>
-                              <span className="other-chip-lang">{om.lang}</span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
                   </div>
-                );
-              })}
+
+                  {/* Actions: Book on BMS & Directions on Google Maps */}
+                  <div style={{ display: 'flex', gap: '8px', marginTop: '12px', flexWrap: 'wrap' }}>
+                    <a
+                      href={bmsSearchUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="showtimes-bms-btn"
+                      style={{ flex: '1 1 180px', justifyContent: 'center' }}
+                      title={`Book ${currentMovie.title} at ${theater.name} on BookMyShow`}
+                    >
+                      <Ticket size={13} />
+                      <span>Book on BookMyShow</span>
+                      <ExternalLink size={12} />
+                    </a>
+                    <a
+                      href={getMapsUrl(theater)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-outline"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '8px 12px',
+                        fontSize: '0.8rem',
+                        textDecoration: 'none',
+                        borderRadius: '8px',
+                      }}
+                      title={`Directions to ${theater.name} on Google Maps`}
+                    >
+                      <MapPin size={12} />
+                      <span>Directions</span>
+                      <ExternalLink size={10} />
+                    </a>
+                  </div>
+                </div>
+              ))}
             </div>
           </>
         ) : (
           /* ================================================================
-             VIEW MODE 2: BROWSE BY CINEMA (All movies playing at chosen theater)
+             VIEW MODE 2: BROWSE BY CINEMA (Directory of theaters in city)
              ================================================================ */
           <div className="showtimes-by-cinema-view">
             {/* Cinema Selection Tabs */}
@@ -466,10 +375,7 @@ export default function ShowtimesModal({
                   key={t.id}
                   type="button"
                   className={`cinema-tab-chip ${selectedTheaterId === t.id ? 'is-active' : ''}`}
-                  onClick={() => {
-                    setSelectedTheaterId(t.id);
-                    setBookedSlot(null);
-                  }}
+                  onClick={() => setSelectedTheaterId(t.id)}
                 >
                   <Building2 size={13} />
                   <span>{t.shortName}</span>
@@ -486,150 +392,50 @@ export default function ShowtimesModal({
                     <div className="cinema-spotlight-location">
                       <MapPin size={12} />
                       <span>{selectedTheater.location}</span>
-                      <span className="spotlight-dot">•</span>
-                      <span className="spotlight-dist">{selectedTheater.distance}</span>
+                      {selectedTheater.distance && (
+                        <>
+                          <span className="spotlight-dot">•</span>
+                          <span className="spotlight-dist">{selectedTheater.distance}</span>
+                        </>
+                      )}
                     </div>
                   </div>
                   <span className="cinema-spotlight-format">{selectedTheater.format}</span>
                 </div>
-                <div className="cinema-spotlight-screens">
-                  <span>Auditoriums: <strong>{selectedTheater.screens}</strong></span>
+
+                <div style={{ display: 'flex', gap: '10px', marginTop: '16px', flexWrap: 'wrap' }}>
+                  <a
+                    href={`https://in.bookmyshow.com/explore/cinemas-${bmsCitySlug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="showtimes-bms-btn"
+                    title={`View schedule & book tickets at ${selectedTheater.name} on BookMyShow`}
+                  >
+                    <Ticket size={14} />
+                    <span>View Schedule & Book on BookMyShow</span>
+                    <ExternalLink size={12} />
+                  </a>
+                  <a
+                    href={getMapsUrl(selectedTheater)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-outline"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '10px 16px',
+                      fontSize: '0.85rem',
+                      textDecoration: 'none',
+                      borderRadius: '8px',
+                    }}
+                    title={`Open ${selectedTheater.name} on Google Maps`}
+                  >
+                    <MapPin size={13} />
+                    <span>Open in Google Maps</span>
+                    <ExternalLink size={11} />
+                  </a>
                 </div>
-              </div>
-            )}
-
-            {/* Date Selector Tabs */}
-            <div className="showtimes-modal__dates">
-              {dateTabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  type="button"
-                  className={`showtimes-date-btn ${selectedDate === tab.id ? 'is-selected' : ''}`}
-                  onClick={() => {
-                    setSelectedDate(tab.id);
-                    setBookedSlot(null);
-                  }}
-                >
-                  <span className="date-btn__label">{tab.label}</span>
-                  <span className="date-btn__day">{tab.date}</span>
-                </button>
-              ))}
-            </div>
-
-            {/* Selected Slot Notification Banner */}
-            {bookedSlot && (
-              <div className="showtimes-booking-banner">
-                <CheckCircle2 size={16} className="booking-icon" />
-                <div>
-                  <strong>Showtime Selected: {bookedSlot.time}</strong> at {bookedSlot.theater} for{' '}
-                  <em>{bookedSlot.movieTitle}</em>
-                </div>
-              </div>
-            )}
-
-            {/* List of All Movies Running at this Selected Theater */}
-            {selectedTheater && (
-              <div className="cinema-movies-schedule-list">
-                <div className="cinema-schedule-section-header">
-                  <h4>
-                    Now Screening at {selectedTheater.name} Today ({selectedTheater.screeningMovies.length} Movies)
-                  </h4>
-                </div>
-
-                {selectedTheater.screeningMovies.map((m) => {
-                  const itemPoster = m.poster_path ? posterUrl(m.poster_path, 'w185') : null;
-
-                  return (
-                    <div key={m.id} className="cinema-movie-card">
-                      <div className="cinema-movie-card__top">
-                        <div className="cinema-movie-card__poster-box">
-                          {itemPoster ? (
-                            <img
-                              src={itemPoster}
-                              alt={`${m.title} screening poster`}
-                              className="cinema-movie-card__poster"
-                              width="50"
-                              height="75"
-                            />
-                          ) : (
-                            <div className="cinema-movie-card__poster-fallback">
-                              <Film size={20} />
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="cinema-movie-card__details">
-                          <div className="cinema-movie-title-row">
-                            <h4 className="cinema-movie-title">{m.title}</h4>
-                            <span className="cinema-movie-lang">{m.lang}</span>
-                          </div>
-                          <div className="cinema-movie-screen-format">
-                            <Sparkles size={11} />
-                            <span>{m.format}</span>
-                          </div>
-                          <div className="cinema-movie-actions">
-                            <button
-                              type="button"
-                              className="cinema-view-details-link"
-                              onClick={() => handleSwitchMovie(m)}
-                            >
-                              <span>Movie Synopsis & Details →</span>
-                            </button>
-                            <a
-                              href={`https://in.bookmyshow.com/explore/movies-${bmsCitySlug}?search=${encodeURIComponent(
-                                m.title
-                              )}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="cinema-bms-mini-btn"
-                              title={`Book ${m.title} on BookMyShow`}
-                            >
-                              <Ticket size={11} />
-                              <span>Book</span>
-                              <ExternalLink size={10} />
-                            </a>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Showtimes for this movie at this theater */}
-                      <div className="theater-slots-grid cinema-movie-slots">
-                        {m.shows.map((show, sIdx) => {
-                          const isSelected =
-                            bookedSlot &&
-                            bookedSlot.theater === selectedTheater.name &&
-                            bookedSlot.movieTitle === m.title &&
-                            bookedSlot.time === show.time &&
-                            bookedSlot.date === selectedDate;
-
-                          return (
-                            <button
-                              key={sIdx}
-                              type="button"
-                              className={`show-slot-btn ${
-                                isSelected ? 'is-chosen' : ''
-                              } show-slot--${show.status}`}
-                              onClick={() =>
-                                setBookedSlot({
-                                  theater: selectedTheater.name,
-                                  movieTitle: m.title,
-                                  time: show.time,
-                                  date: selectedDate,
-                                  dateLabel: dateTabs.find((d) => d.id === selectedDate)?.date,
-                                })
-                              }
-                              title={`Select ${show.time} show for ${m.title}`}
-                            >
-                              <Clock size={11} className="slot-clock" />
-                              <span className="slot-time">{show.time}</span>
-                              <span className="slot-pill">Show</span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                })}
               </div>
             )}
           </div>

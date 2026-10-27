@@ -6,7 +6,7 @@ export default function SearchSpotlight({ movie, onSelectMovie, onOpenShowtimes 
 
   const title = movie.title || movie.original_title || 'Untitled';
   const poster = posterUrl(movie.poster_path, 'w342');
-  const releaseDate = movie.full_release_date || movie.release_date || '2024';
+  const releaseDate = movie.full_release_date || movie.release_date || 'TBA';
   const duration = movie.duration || (movie.runtime ? `${Math.floor(movie.runtime / 60)}h ${movie.runtime % 60}m` : null);
   const director = movie.director || null;
   const musicDirector = movie.music_director || null;

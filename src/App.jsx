@@ -109,7 +109,7 @@ export default function App() {
     if (show404Page) {
       updatePageMeta({
         title: '404 — Scene Not Found',
-        description: 'The requested scene or page was cut from the marquee. Return to our September, August & July 2026 blockbusters.',
+        description: 'The requested scene or page was cut from the marquee. Return to trending movies and now playing blockbusters.',
         path: '404',
       });
     } else if (activeLegalModal === 'privacy') {
@@ -139,22 +139,22 @@ export default function App() {
     } else if (selectedId) {
       const activeMovie = movies.find((m) => m.id === selectedId);
       const title = activeMovie?.title || 'Movie Details';
-      const year = activeMovie?.release_date ? activeMovie.release_date.slice(0, 4) : '2026';
+      const yearSuffix = activeMovie?.release_date ? ` (${activeMovie.release_date.slice(0, 4)})` : '';
       updatePageMeta({
-        title: `${title} (${year}) — Official 4K Trailer & Ratings`,
-        description: `Watch the official trailer for ${title} (${year}), view cast, streaming OTT platforms, and cinema showtimes on Reelist.`,
+        title: `${title}${yearSuffix} — Official 4K Trailer & Ratings`,
+        description: `Watch the official trailer for ${title}${yearSuffix}, view cast, streaming OTT platforms, and cinema showtimes on Reelist.`,
         path: `movie/${selectedId}`,
       });
     } else if (activeQuery) {
       updatePageMeta({
         title: `Search: "${activeQuery}"`,
-        description: `Explore search results for "${activeQuery}" across 2026 theatrical releases, cast, and artists on Reelist.`,
+        description: `Explore search results for "${activeQuery}" across theatrical releases, cast, and artists on Reelist.`,
         path: `search?q=${encodeURIComponent(activeQuery)}`,
       });
     } else {
       updatePageMeta({
-        title: 'Reelist — Explore September, August & July 2026 Blockbusters',
-        description: 'Discover the freshest theatrical blockbusters released in September, August & July 2026 across Tamil, Telugu, Hindi, Malayalam, Kannada & Global cinema with official 4K trailers.',
+        title: 'Reelist — Trending & Now Playing Movies in India',
+        description: 'Discover trending and now playing theatrical blockbusters across Tamil, Telugu, Hindi, Malayalam, Kannada & Global cinema with official 4K trailers.',
         path: '',
       });
     }

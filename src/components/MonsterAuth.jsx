@@ -1183,7 +1183,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
                 </p>
               ) : (
                 <p className="verso-welcome-desc">
-                  Grab your soda and popcorn &mdash; 2026 premiere seats are waiting for you!
+                  Grab your soda and popcorn &mdash; your premiere seats are waiting for you!
                 </p>
               )}
             </div>

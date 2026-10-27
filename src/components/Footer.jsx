@@ -1,4 +1,4 @@
-import { MapPin, Phone, Mail } from 'lucide-react';
+import { MapPin, Mail } from 'lucide-react';
 import { CONTACT_EMAIL } from '../config/constants.js';
 
 export default function Footer({ onOpenPrivacy, onOpenTerms, onOpenContact, onOpen404 }) {
@@ -23,11 +23,6 @@ export default function Footer({ onOpenPrivacy, onOpenTerms, onOpenContact, onOp
                   <strong>Reelist Cinema Concierge</strong><br />
                   Kallakurichi, Tamil Nadu, India
                 </address>
-              </div>
-
-              <div className="footer-address-item">
-                <Phone size={15} className="footer-icon" />
-                <span>+91 98765 43210</span>
               </div>
 
               <div className="footer-address-item">
@@ -78,7 +73,7 @@ export default function Footer({ onOpenPrivacy, onOpenTerms, onOpenContact, onOp
 
         <div className="site-footer__bottom">
           <p className="footer-copy">
-            © 2026 Reelist Cinema. All rights reserved.
+            © {new Date().getFullYear()} Reelist Cinema. All rights reserved.
           </p>
           <div className="footer-bottom-links">
             <button type="button" className="footer-bottom-btn" onClick={onOpenPrivacy}>Privacy</button>

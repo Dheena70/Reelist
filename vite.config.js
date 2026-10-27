@@ -1,6 +1,6 @@
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
-import { validateTmdbPath } from './src/utils/tmdbValidation.js';
+import { validateTmdbPath, filterTmdbQueryParams } from './src/utils/tmdbValidation.js';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
@@ -20,6 +20,17 @@ export default defineConfig(({ mode }) => {
                 res.statusCode = 400;
                 res.setHeader('Content-Type', 'application/json');
                 res.end(JSON.stringify({ error: 'Invalid or unauthorized path' }));
+                return;
+              }
+              const rawObj = {};
+              parsed.searchParams.forEach((v, k) => {
+                rawObj[k] = v;
+              });
+              const queryCheck = filterTmdbQueryParams(rawObj);
+              if (!queryCheck.valid) {
+                res.statusCode = 400;
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify({ error: queryCheck.error }));
                 return;
               }
               if (!token) {
@@ -42,8 +53,12 @@ export default defineConfig(({ mode }) => {
           rewrite: (urlPath) => {
             const parsed = new URL(urlPath, 'http://localhost');
             const tmdbPath = (parsed.searchParams.get('path') || '').replace(/^\/+/, '');
-            parsed.searchParams.delete('path');
-            const remaining = parsed.searchParams.toString();
+            const rawObj = {};
+            parsed.searchParams.forEach((v, k) => {
+              rawObj[k] = v;
+            });
+            const filtered = filterTmdbQueryParams(rawObj);
+            const remaining = new URLSearchParams(filtered.params).toString();
             return `/${tmdbPath}${remaining ? `?${remaining}` : ''}`;
           },
           headers: token

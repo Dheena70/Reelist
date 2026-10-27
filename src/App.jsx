@@ -18,7 +18,7 @@ import MonsterAuth from './components/MonsterAuth.jsx';
 import SearchSpotlight from './components/SearchSpotlight.jsx';
 import ArtistSpotlight from './components/ArtistSpotlight.jsx';
 import Footer from './components/Footer.jsx';
-import LiveSocialProof from './components/LiveSocialProof.jsx';
+import CookieBanner from './components/CookieBanner.jsx';
 
 const MovieModal = lazy(() => import('./components/MovieModal.jsx'));
 const ShowtimesModal = lazy(() => import('./components/ShowtimesModal.jsx'));
@@ -86,19 +86,6 @@ export default function App() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authModalReason, setAuthModalReason] = useState('');
   const [pendingAction, setPendingAction] = useState(null);
-  const [liveViewersCount, setLiveViewersCount] = useState(1428);
-
-  // Live active audience fluctuation
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setLiveViewersCount((prev) => {
-        const delta = Math.floor(Math.random() * 7) - 3;
-        const next = prev + delta;
-        return next < 1380 ? 1415 : next > 1520 ? 1445 : next;
-      });
-    }, 4500);
-    return () => clearInterval(interval);
-  }, []);
 
   // Synchronize URL hash for routing and SPA fallback navigation
   useEffect(() => {
@@ -480,11 +467,6 @@ export default function App() {
             <p className="hero__eyebrow">Now screening</p>
             <h1 className="hero__title">Explore Cinema</h1>
             <p className="hero__subtitle">Find what&apos;s trending, or search the whole marquee.</p>
-            <div className="hero__live-audience-pill" title="Live active cinephiles on Reelist right now">
-              <span className="live-pulse-dot" />
-              <strong className="hero__live-audience-count">{liveViewersCount.toLocaleString()}</strong>
-              <span className="hero__live-audience-text">cinephiles browsing & streaming right now</span>
-            </div>
             <SearchBar
               value={query}
               onChange={setQuery}
@@ -828,11 +810,8 @@ export default function App() {
         </div>
       )}
 
-      {/* Real-time Audience Activity Social Proof Toast */}
-      <LiveSocialProof
-        movies={displayedCatalogMovies.length > 0 ? displayedCatalogMovies : movies}
-        onSelectMovie={(movie) => setSelectedId(movie.id)}
-      />
+      {/* Cookie & Analytics Privacy Banner */}
+      <CookieBanner />
     </div>
   );
 }

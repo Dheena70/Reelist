@@ -1,5 +1,5 @@
 {
-  "name": "movie-explorer",
+  "name": "reelist",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "node --max-old-space-size=4096 node_modules/vite/bin/vite.js build",
     "preview": "vite preview",
-    "lint": "node --max-old-space-size=4096 node_modules/eslint/bin/eslint.js src"
+    "lint": "node --max-old-space-size=4096 node_modules/eslint/bin/eslint.js src",
+    "test": "vitest run"
   },
   "dependencies": {
     "lucide-react": "^1.41.0",
@@ -15,11 +16,15 @@
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
     "@vitejs/plugin-react": "^4.3.1",
     "eslint": "^9.39.5",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.13.0",
-    "vite": "^5.4.1"
+    "jsdom": "^29.1.1",
+    "vite": "^5.4.1",
+    "vitest": "^2.1.9"
   }
 }

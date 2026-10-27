@@ -225,6 +225,29 @@ export default function ShowtimesModal({
           </button>
         </div>
 
+        {/* Transparent Showtimes Disclosure */}
+        <div
+          className="showtimes-disclosure-notice"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 12px',
+            borderRadius: '8px',
+            background: 'rgba(235, 179, 58, 0.08)',
+            border: '1px solid rgba(235, 179, 58, 0.22)',
+            fontSize: '0.8rem',
+            color: '#e2be78',
+            marginBottom: '16px',
+            lineHeight: '1.4',
+          }}
+        >
+          <span style={{ fontSize: '1rem' }}>ℹ️</span>
+          <span>
+            <strong>Theater Directory Notice:</strong> Showtimes and live seat availability are on BookMyShow; Reelist provides the regional theater directory and quick links.
+          </span>
+        </div>
+
         {viewMode === 'by_movie' ? (
           /* ================================================================
              VIEW MODE 1: BY MOVIE (Shows movie header + cinemas in chosen city)
@@ -331,10 +354,10 @@ export default function ShowtimesModal({
               <div className="showtimes-booking-banner">
                 <CheckCircle2 size={16} className="booking-icon" />
                 <div>
-                  <strong>Showtime Selected: {bookedSlot.time}</strong> at {bookedSlot.theater} (
+                  <strong>Showtime: {bookedSlot.time}</strong> at {bookedSlot.theater} (
                   {bookedSlot.dateLabel})
                   <div className="booking-sub">
-                    Box office and online reservations active for {currentMovie.title} in {cityDetails.name}.
+                    Directing to BookMyShow for real-time seat selection and instant ticketing in {cityDetails.name}.
                   </div>
                 </div>
               </div>
@@ -404,13 +427,7 @@ export default function ShowtimesModal({
                           >
                             <Clock size={11} className="slot-clock" />
                             <span className="slot-time">{show.time}</span>
-                            <span className="slot-pill">
-                              {show.status === 'filling'
-                                ? 'Filling Fast'
-                                : show.status === 'almost_full'
-                                ? 'Few Seats'
-                                : 'Available'}
-                            </span>
+                            <span className="slot-pill">Show</span>
                           </button>
                         );
                       })}
@@ -615,13 +632,7 @@ export default function ShowtimesModal({
                             >
                               <Clock size={11} className="slot-clock" />
                               <span className="slot-time">{show.time}</span>
-                              <span className="slot-pill">
-                                {show.status === 'filling'
-                                  ? 'Filling Fast'
-                                  : show.status === 'almost_full'
-                                  ? 'Few Seats'
-                                  : 'Available'}
-                              </span>
+                              <span className="slot-pill">Show</span>
                             </button>
                           );
                         })}

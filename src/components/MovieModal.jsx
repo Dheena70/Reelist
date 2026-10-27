@@ -206,14 +206,13 @@ export default function MovieModal({ movieId, onClose, onSelectMovie, currentUse
     } catch {
       // fallback
     }
-    const seed = (typeof movieId === 'number' ? movieId : 100) % 99;
     return {
-      thumbsUp: 520 + seed * 7,
-      heart: 140 + seed * 3,
-      clap: 65 + seed * 2,
-      lightbulb: 48 + seed,
-      smile: 34 + seed,
-      starFace: 82 + seed * 2,
+      thumbsUp: 0,
+      heart: 0,
+      clap: 0,
+      lightbulb: 0,
+      smile: 0,
+      starFace: 0,
     };
   });
 
@@ -326,14 +325,13 @@ export default function MovieModal({ movieId, onClose, onSelectMovie, currentUse
       if (savedReacts) {
         setReactions(JSON.parse(savedReacts));
       } else {
-        const seed = (typeof activeId === 'number' ? activeId : 100) % 99;
         setReactions({
-          thumbsUp: 520 + seed * 7,
-          heart: 140 + seed * 3,
-          clap: 65 + seed * 2,
-          lightbulb: 48 + seed,
-          smile: 34 + seed,
-          starFace: 82 + seed * 2,
+          thumbsUp: 0,
+          heart: 0,
+          clap: 0,
+          lightbulb: 0,
+          smile: 0,
+          starFace: 0,
         });
       }
 
@@ -523,9 +521,9 @@ export default function MovieModal({ movieId, onClose, onSelectMovie, currentUse
     const mute = isMuted ? '1' : '0';
     if (trailer.isSearchFallback) {
       const q = encodeURIComponent(`${details.title || details.name || ''} official trailer`);
-      return `https://www.youtube.com/embed?listType=search&list=${q}&autoplay=${auto}&mute=${mute}&enablejsapi=1&rel=0&playsinline=1`;
+      return `https://www.youtube-nocookie.com/embed?listType=search&list=${q}&autoplay=${auto}&mute=${mute}&enablejsapi=1&rel=0&playsinline=1`;
     }
-    return `https://www.youtube.com/embed/${trailer.key}?autoplay=${auto}&mute=${mute}&enablejsapi=1&rel=0&playsinline=1`;
+    return `https://www.youtube-nocookie.com/embed/${trailer.key}?autoplay=${auto}&mute=${mute}&enablejsapi=1&rel=0&playsinline=1`;
   }, [trailer, autoPlayEnabled, isMuted, details]);
 
   // Comprehensive Theatrical & Regional Dub Release Languages resolver
@@ -1185,6 +1183,7 @@ export default function MovieModal({ movieId, onClose, onSelectMovie, currentUse
                           key={`${trailer.key}-${isMuted}-${autoPlayEnabled}`}
                           src={trailerEmbedUrl}
                           title={`${details.title} Official Trailer`}
+                          referrerPolicy="strict-origin-when-cross-origin"
                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                           allowFullScreen
                         />

@@ -216,11 +216,11 @@ function saveSessionUser(user, rememberMe = true) {
 function isTrackingPermitted() {
   try {
     const raw = localStorage.getItem('reelist_cookie_consent');
-    if (!raw) return true;
+    if (!raw) return false;
     const parsed = JSON.parse(raw);
-    return parsed.level !== 'essential';
+    return parsed.level === 'all';
   } catch {
-    return true;
+    return false;
   }
 }
 
@@ -545,14 +545,18 @@ export const analytics = {
       }
       if (Array.isArray(backupData.watchlist)) {
         const user = this.getCurrentUser();
-        this.setUserWatchlist(user?.email, backupData.watchlist);
+        const clean = backupData.watchlist.filter((id) => Number.isFinite(id)).slice(0, 2000);
+        this.setUserWatchlist(user?.email, clean);
       }
       if (backupData.reactions && typeof backupData.reactions === 'object') {
+        const allowed = /^reelist_reactions_\d+$/;
         Object.entries(backupData.reactions).forEach(([k, v]) => {
+          if (!allowed.test(k) || typeof v !== 'string' || v.length > 5000) return;
           try {
+            JSON.parse(v);
             localStorage.setItem(k, v);
           } catch {
-            // ignore
+            /* skip bad entry */
           }
         });
       }

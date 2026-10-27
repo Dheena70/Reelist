@@ -19,7 +19,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: queryCheck.error });
   }
 
-  const token = process.env.TMDB_TOKEN;
+  const token = (process.env.TMDB_TOKEN || process.env.VITE_TMDB_API_KEY || '').trim();
   if (!token) {
     res.setHeader('Cache-Control', 'no-store');
     return res.status(500).json({ error: 'TMDB_TOKEN is not configured on the server' });
@@ -33,13 +33,15 @@ export default async function handler(req, res) {
     targetUrl.searchParams.set(k, v);
   });
 
+  const headers = { Accept: 'application/json' };
+  if (token.startsWith('eyJ')) {
+    headers.Authorization = `Bearer ${token}`;
+  } else {
+    targetUrl.searchParams.set('api_key', token);
+  }
+
   try {
-    const upstreamRes = await fetch(targetUrl.toString(), {
-      headers: {
-        Accept: 'application/json',
-        Authorization: `Bearer ${token.trim()}`,
-      },
-    });
+    const upstreamRes = await fetch(targetUrl.toString(), { headers });
 
     const data = await upstreamRes.json();
 

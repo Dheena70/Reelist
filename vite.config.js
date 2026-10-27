@@ -4,7 +4,8 @@ import { validateTmdbPath, filterTmdbQueryParams } from './src/utils/tmdbValidat
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const token = (env.TMDB_TOKEN || process.env.TMDB_TOKEN || '').trim();
+  const token = (env.TMDB_TOKEN || env.VITE_TMDB_API_KEY || process.env.TMDB_TOKEN || process.env.VITE_TMDB_API_KEY || '').trim();
+  const isBearer = token.startsWith('eyJ');
 
   return {
     plugins: [
@@ -58,10 +59,13 @@ export default defineConfig(({ mode }) => {
               rawObj[k] = v;
             });
             const filtered = filterTmdbQueryParams(rawObj);
+            if (!isBearer && token) {
+              filtered.params.api_key = token;
+            }
             const remaining = new URLSearchParams(filtered.params).toString();
             return `/${tmdbPath}${remaining ? `?${remaining}` : ''}`;
           },
-          headers: token
+          headers: isBearer && token
             ? {
                 Authorization: `Bearer ${token}`,
                 Accept: 'application/json',

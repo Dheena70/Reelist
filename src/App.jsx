@@ -20,6 +20,12 @@ import SearchSpotlight from './components/SearchSpotlight.jsx';
 import ArtistSpotlight from './components/ArtistSpotlight.jsx';
 import Footer from './components/Footer.jsx';
 import CookieBanner from './components/CookieBanner.jsx';
+import {
+  clearLegacyLocalUserData,
+  addToWatchlist,
+  setRating,
+  toggleReaction,
+} from './api/userData.js';
 
 const MovieModal = lazy(() => import('./components/MovieModal.jsx'));
 const ShowtimesModal = lazy(() => import('./components/ShowtimesModal.jsx'));
@@ -257,6 +263,7 @@ export default function App() {
     setCurrentUser(user);
     setShowAuthModal(false);
     setShowCurtain(true);
+    clearLegacyLocalUserData();
 
     if (pendingAction) {
       if (pendingAction.type === 'search' && pendingAction.query) {
@@ -264,34 +271,11 @@ export default function App() {
         setActiveQuery(pendingAction.query);
         analytics.recordSearch(pendingAction.query);
       } else if (pendingAction.type === 'rate' && pendingAction.movieId && pendingAction.score) {
-        try {
-          localStorage.setItem(`reelist_rating_${pendingAction.movieId}`, String(pendingAction.score));
-        } catch {
-          // ignore
-        }
+        setRating('movie', pendingAction.movieId, pendingAction.score);
       } else if (pendingAction.type === 'reaction' && pendingAction.movieId && pendingAction.key) {
-        try {
-          const userKey = user?.id || 'guest';
-          const currentMy = JSON.parse(
-            localStorage.getItem(`reelist_my_reactions_${userKey}_${pendingAction.movieId}`) ||
-            localStorage.getItem(`reelist_my_reactions_${pendingAction.movieId}`) ||
-            '{}'
-          );
-          currentMy[pendingAction.key] = true;
-          localStorage.setItem(`reelist_my_reactions_${userKey}_${pendingAction.movieId}`, JSON.stringify(currentMy));
-        } catch {
-          // ignore
-        }
+        toggleReaction('movie', pendingAction.movieId, pendingAction.key);
       } else if (pendingAction.type === 'watchlist' && pendingAction.movieId) {
-        try {
-          const list = analytics.getUserWatchlist(user?.id);
-          if (!list.includes(pendingAction.movieId)) {
-            list.push(pendingAction.movieId);
-            analytics.setUserWatchlist(user?.id, list);
-          }
-        } catch {
-          // ignore
-        }
+        addToWatchlist('movie', pendingAction.movieId);
       }
       setPendingAction(null);
     }

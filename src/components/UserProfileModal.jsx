@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   X,
   User,
@@ -12,19 +12,37 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { analytics } from '../api/analytics.js';
+import { supabase } from '../lib/supabase.js';
+import {
+  getWatchlist,
+  exportUserDataFromDB,
+  importUserDataToDB,
+  clearLegacyLocalUserData,
+} from '../api/userData.js';
 
 export default function UserProfileModal({ currentUser, onClose, onLogout }) {
-  const [watchlistCount, setWatchlistCount] = useState(() => {
-    return analytics.getUserWatchlist(currentUser?.id || currentUser?.email)?.length || 0;
-  });
+  const [watchlistCount, setWatchlistCount] = useState(0);
   const [feedbackMsg, setFeedbackMsg] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleteConfirmationText, setDeleteConfirmationText] = useState('');
 
-  const handleExportBackup = () => {
+  useEffect(() => {
+    let mounted = true;
+    getWatchlist().then(({ data }) => {
+      if (mounted && Array.isArray(data)) {
+        setWatchlistCount(data.length);
+      }
+    });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const handleExportBackup = async () => {
     try {
-      const data = analytics.exportUserData(currentUser?.id || currentUser?.email);
-      if (!data) throw new Error('Could not generate backup data.');
+      const { data, error } = await exportUserDataFromDB();
+      if (error || !data) throw new Error(error || 'Could not generate backup data.');
 
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
@@ -36,7 +54,7 @@ export default function UserProfileModal({ currentUser, onClose, onLogout }) {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      setFeedbackMsg('Backup downloaded successfully! Keep it safe.');
+      setFeedbackMsg('Database backup downloaded successfully!');
       setTimeout(() => setFeedbackMsg(''), 4000);
     } catch (err) {
       setFeedbackMsg(`Export failed: ${err.message}`);
@@ -48,16 +66,17 @@ export default function UserProfileModal({ currentUser, onClose, onLogout }) {
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = async (event) => {
       try {
         const parsed = JSON.parse(event.target?.result);
-        const res = analytics.importUserData(parsed);
+        const res = await importUserDataToDB(parsed);
         if (res.success) {
-          setWatchlistCount(res.count);
-          setFeedbackMsg(`Data restored successfully! Restored ${res.count} saved titles.`);
+          const totalImported = (res.counts.watchlist || 0) + (res.counts.ratings || 0) + (res.counts.reactions || 0);
+          setWatchlistCount((prev) => prev + (res.counts.watchlist || 0));
+          setFeedbackMsg(`Data restored successfully! Imported ${totalImported} records into your account.`);
           setTimeout(() => setFeedbackMsg(''), 4000);
         } else {
-          setFeedbackMsg(res.error || 'Failed to parse backup.');
+          setFeedbackMsg(res.error || 'Failed to restore backup.');
         }
       } catch {
         setFeedbackMsg('Invalid JSON file format. Please upload a valid Reelist backup file.');
@@ -68,14 +87,24 @@ export default function UserProfileModal({ currentUser, onClose, onLogout }) {
   };
 
   const handleDeleteAccount = async () => {
+    if (deleteConfirmationText !== 'DELETE') return;
     setIsDeleting(true);
-    const res = await analytics.deleteAccount(currentUser?.id || currentUser?.email);
-    if (res.success) {
+    setFeedbackMsg('');
+
+    try {
+      if (!supabase) throw new Error('Database connection unavailable.');
+      const { error } = await supabase.functions.invoke('delete-account');
+      if (error) {
+        throw new Error(error.message || 'Failed to delete account');
+      }
+
+      clearLegacyLocalUserData();
+      await analytics.logout();
       if (onLogout) onLogout();
       if (onClose) onClose();
-    } else {
+    } catch (err) {
       setIsDeleting(false);
-      setFeedbackMsg(res.error || 'Failed to delete account.');
+      setFeedbackMsg(`Account deletion error: ${err.message}`);
     }
   };
 
@@ -198,19 +227,43 @@ export default function UserProfileModal({ currentUser, onClose, onLogout }) {
                 onClick={() => setConfirmDelete(true)}
               >
                 <Trash2 size={15} />
-                <span>Delete Account & Purge Data</span>
+                <span>Delete Account &amp; Purge Data</span>
               </button>
             ) : (
               <div className="user-profile__delete-confirm">
                 <div className="user-profile__delete-warning">
                   <AlertTriangle size={16} />
-                  <span>Are you sure? This will permanently delete your account and personal watchlist.</span>
+                  <span>This will permanently delete your account, watchlist, ratings, and reactions from Supabase.</span>
                 </div>
+                <p style={{ fontSize: '12px', color: '#64748b', margin: '8px 0 4px' }}>
+                  Please type <strong>DELETE</strong> to confirm permanent deletion:
+                </p>
+                <input
+                  type="text"
+                  className="user-profile__delete-input"
+                  placeholder="Type DELETE"
+                  value={deleteConfirmationText}
+                  onChange={(e) => setDeleteConfirmationText(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    border: '1px solid #cbd5e1',
+                    marginBottom: '10px',
+                    fontSize: '13px',
+                    boxSizing: 'border-box',
+                    background: '#ffffff',
+                    color: '#0f172a',
+                  }}
+                />
                 <div className="user-profile__delete-actions">
                   <button
                     type="button"
                     className="btn-secondary"
-                    onClick={() => setConfirmDelete(false)}
+                    onClick={() => {
+                      setConfirmDelete(false);
+                      setDeleteConfirmationText('');
+                    }}
                     disabled={isDeleting}
                   >
                     Cancel
@@ -219,9 +272,9 @@ export default function UserProfileModal({ currentUser, onClose, onLogout }) {
                     type="button"
                     className="btn-danger-confirm"
                     onClick={handleDeleteAccount}
-                    disabled={isDeleting}
+                    disabled={isDeleting || deleteConfirmationText !== 'DELETE'}
                   >
-                    {isDeleting ? 'Deleting...' : 'Yes, Delete My Account'}
+                    {isDeleting ? 'Deleting...' : 'Permanently Delete Account'}
                   </button>
                 </div>
               </div>

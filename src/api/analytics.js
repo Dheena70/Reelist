@@ -1,4 +1,5 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabase.js';
+import { clearLegacyLocalUserData } from './userData.js';
 
 const ANALYTICS_STORAGE_KEY = 'reelist_analytics_live_v3';
 const SESSION_VISIT_KEY = 'reelist_session_active';
@@ -220,7 +221,7 @@ export const analytics = {
 
     const cleanName = (name || '').trim().slice(0, 100);
     const cleanEmail = (email || '').toLowerCase().trim();
-    const cleanPassword = (password || '').trim();
+    const cleanPassword = password || '';
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!cleanEmail || !emailRegex.test(cleanEmail) || cleanEmail.length > 254) {
@@ -279,7 +280,7 @@ export const analytics = {
     }
 
     const cleanEmail = (email || '').toLowerCase().trim();
-    const cleanPassword = (password || '').trim();
+    const cleanPassword = password || '';
 
     if (!cleanEmail) {
       return { success: false, error: 'Please enter your email address.' };
@@ -311,6 +312,7 @@ export const analytics = {
 
       const user = mapSupabaseUser(data?.user);
       inMemoryCurrentUser = user;
+      clearLegacyLocalUserData();
       this.recordVisit();
       return { success: true, user };
     } catch {

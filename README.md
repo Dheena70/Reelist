@@ -10,7 +10,7 @@ Browse what's trending, filter by regional languages (Tamil, Telugu, Hindi, Mala
 - **Comprehensive Theaters Directory**: Browse cinema halls across all 38 Tamil Nadu districts with BookMyShow quick-booking links.
 - **Privacy-First YouTube Trailers**: Trailers loaded securely via `youtube-nocookie.com` with `strict-origin-when-cross-origin` referrer policy.
 - **GDPR & Privacy Consent**: Built-in cookie and telemetry banner with default-denied analytics storage until explicit user consent.
-- **Secure Client Architecture**: PBKDF2 credential hashing, allowlisted backup import/export, and zero synthetic metric inflation.
+- **Supabase Cloud Authentication & User Data**: Production-grade authentication with email verification, secure password reset, row-level security (RLS) for personal watchlists, ratings, and reactions, plus public anonymous aggregate stats.
 - **Cinema-Marquee Design**: Custom CSS styling with retro film-sprocket borders, responsive modal sheets, and smooth sliding blade authentication.
 
 ## Tech Stack
@@ -40,22 +40,39 @@ Browse what's trending, filter by regional languages (Tamil, Telugu, Hindi, Mala
    ```
    *(All requests are routed securely through the `/api/tmdb` serverless proxy with 1-hour caching. The token is never exposed to client browsers).*
 
-3. **Development Server**:
+3. **Supabase Setup**:
+   1. Create a free project at [supabase.com](https://supabase.com).
+   2. In **Authentication → Providers → Email**: Ensure Email provider is enabled and **Confirm email** is ON.
+   3. In **Authentication → URL Configuration**:
+      - Set **Site URL** to your production URL.
+      - In **Redirect URLs**, add `http://localhost:5173/**` and your production URL.
+   4. In **SQL Editor**: Run the schema file located at [`supabase/schema.sql`](supabase/schema.sql) to create `watchlist`, `ratings`, `reactions` tables with RLS and the public views `rating_stats` and `reaction_counts`.
+   5. In **Project Settings → API**: Copy your Project URL and anon public key into `.env`:
+      ```env
+      VITE_SUPABASE_URL=https://your-project-id.supabase.co
+      VITE_SUPABASE_ANON_KEY=your_public_anon_key_here
+      ```
+   6. Deploy the account deletion Edge Function:
+      ```bash
+      supabase functions deploy delete-account
+      ```
+
+4. **Development Server**:
    ```bash
    npm run dev
    ```
 
-4. **Run Unit Tests**:
+5. **Run Unit Tests**:
    ```bash
    npm test
    ```
 
-5. **Linting**:
+6. **Linting**:
    ```bash
    npm run lint
    ```
 
-6. **Production Build**:
+7. **Production Build**:
    ```bash
    npm run build
    npm run preview

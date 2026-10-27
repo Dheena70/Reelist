@@ -24,7 +24,18 @@ import {
   tmdb,
   FRANCHISE_COLLECTIONS,
 } from '../api/tmdb.js';
-import { analytics } from '../api/analytics.js';
+import {
+  getWatchlist,
+  addToWatchlist,
+  removeFromWatchlist,
+  getMyRatings,
+  setRating as setUserRatingInDB,
+  removeRating as removeUserRatingInDB,
+  getMyReactions,
+  toggleReaction as toggleUserReactionInDB,
+  getRatingStats,
+  getReactionCounts,
+} from '../api/userData.js';
 
 function determineRoleBadge(member, index, allCast = []) {
   const char = (member.character || '').toLowerCase();
@@ -174,59 +185,82 @@ export default function MovieModal({ movieId, onClose, onSelectMovie, currentUse
     return () => clearInterval(intv);
   }, []);
 
-  // IMDb-style Interactive "YOUR RATING" state
-  const [userRating, setUserRating] = useState(() => {
-    try {
-      const saved = localStorage.getItem(`reelist_rating_${movieId}`);
-      return saved ? Number(saved) : null;
-    } catch {
-      return null;
-    }
-  });
+  // IMDb-style Interactive "YOUR RATING" state & Community Rating Stats
+  const [userRating, setUserRating] = useState(null);
+  const [communityRating, setCommunityRating] = useState({ avg_score: null, votes: 0 });
   const [showRatingPicker, setShowRatingPicker] = useState(false);
   const [hoverRating, setHoverRating] = useState(0);
 
-  // Poster Ribbon Watchlist Bookmark state (with RLS per-user isolation)
-  const [isWatchlisted, setIsWatchlisted] = useState(() => {
-    try {
-      const list = analytics.getUserWatchlist(currentUser?.id || currentUser?.email);
-      return list.includes(movieId);
-    } catch {
-      return false;
-    }
-  });
+  // Poster Ribbon Watchlist Bookmark state (with Supabase RLS)
+  const [isWatchlisted, setIsWatchlisted] = useState(false);
 
-  // Trailer Reactions Bar State
-  const [reactions, setReactions] = useState(() => {
-    try {
-      const saved = localStorage.getItem(`reelist_reactions_${movieId}`);
-      if (saved) return JSON.parse(saved);
-    } catch {
-      // fallback
+  // Trailer Reactions Bar State (from reaction_counts view, real numbers only)
+  const [reactions, setReactions] = useState({
+    thumbsUp: 0,
+    heart: 0,
+    clap: 0,
+    lightbulb: 0,
+    smile: 0,
+    starFace: 0,
+  });
+  const [userReactions, setUserReactions] = useState({});
+  const [toastError, setToastError] = useState('');
+
+  const showToast = (msg) => {
+    setToastError(msg);
+    setTimeout(() => setToastError(''), 4000);
+  };
+
+  // Sync activeId if parent movieId prop changes
+  useEffect(() => {
+    setActiveId(movieId);
+  }, [movieId]);
+
+  // Sync ratings, community rating stats, reactions, and watchlist from Supabase
+  useEffect(() => {
+    let mounted = true;
+    const mediaType = isTv ? 'tv' : 'movie';
+
+    // 1. Public Community Rating Stats & Reaction Counts
+    getRatingStats(mediaType, activeId).then(({ data }) => {
+      if (mounted && data) setCommunityRating(data);
+    });
+
+    getReactionCounts(mediaType, activeId).then(({ data }) => {
+      if (mounted && data) setReactions(data);
+    });
+
+    // 2. User specific state
+    if (currentUser) {
+      getMyRatings().then(({ data }) => {
+        if (mounted && Array.isArray(data)) {
+          const match = data.find((r) => r.tmdb_id === activeId);
+          setUserRating(match ? match.score : null);
+        }
+      });
+
+      getWatchlist().then(({ data }) => {
+        if (mounted && Array.isArray(data)) {
+          const match = data.some((w) => w.tmdb_id === activeId);
+          setIsWatchlisted(match);
+        }
+      });
+
+      getMyReactions(mediaType, activeId).then(({ data }) => {
+        if (mounted && data) setUserReactions(data);
+      });
+    } else {
+      setUserRating(null);
+      setIsWatchlisted(false);
+      setUserReactions({});
     }
-    return {
-      thumbsUp: 0,
-      heart: 0,
-      clap: 0,
-      lightbulb: 0,
-      smile: 0,
-      starFace: 0,
+
+    return () => {
+      mounted = false;
     };
-  });
+  }, [activeId, currentUser, isTv]);
 
-  const [userReactions, setUserReactions] = useState(() => {
-    try {
-      const userKey = currentUser?.id || currentUser?.email;
-      const saved =
-        (userKey ? localStorage.getItem(`reelist_my_reactions_${userKey}_${movieId}`) : null) ||
-        localStorage.getItem(`reelist_my_reactions_${movieId}`);
-      return saved ? JSON.parse(saved) : {};
-    } catch {
-      return {};
-    }
-  });
-
-  const handleRateMovie = (score) => {
+  const handleRateMovie = async (score) => {
     if (!currentUser && onRequireAuth) {
       setShowRatingPicker(false);
       onRequireAuth('Sign in to rate this title', {
@@ -236,35 +270,39 @@ export default function MovieModal({ movieId, onClose, onSelectMovie, currentUse
       });
       return;
     }
+    const prevRating = userRating;
     setUserRating(score);
     setShowRatingPicker(false);
-    try {
-      const userKey = currentUser?.id || currentUser?.email;
-      if (userKey) {
-        localStorage.setItem(`reelist_rating_${userKey}_${activeId}`, String(score));
-      }
-      localStorage.setItem(`reelist_rating_${activeId}`, String(score));
-    } catch {
-      // ignore
+
+    const mediaType = isTv ? 'tv' : 'movie';
+    const { error } = await setUserRatingInDB(mediaType, activeId, score);
+    if (error) {
+      setUserRating(prevRating);
+      showToast(error || 'Failed to save rating.');
+    } else {
+      const stats = await getRatingStats(mediaType, activeId);
+      if (stats.data) setCommunityRating(stats.data);
     }
   };
 
-  const handleClearRating = () => {
+  const handleClearRating = async () => {
+    const prevRating = userRating;
     setUserRating(null);
     setShowRatingPicker(false);
-    try {
-      const userKey = currentUser?.id || currentUser?.email;
-      if (userKey) {
-        localStorage.removeItem(`reelist_rating_${userKey}_${activeId}`);
-      }
-      localStorage.removeItem(`reelist_rating_${activeId}`);
-    } catch {
-      // ignore
+
+    const mediaType = isTv ? 'tv' : 'movie';
+    const { error } = await removeUserRatingInDB(mediaType, activeId);
+    if (error) {
+      setUserRating(prevRating);
+      showToast(error || 'Failed to remove rating.');
+    } else {
+      const stats = await getRatingStats(mediaType, activeId);
+      if (stats.data) setCommunityRating(stats.data);
     }
   };
 
-  const toggleWatchlist = (e) => {
-    e.stopPropagation();
+  const toggleWatchlist = async (e) => {
+    if (e && e.stopPropagation) e.stopPropagation();
     if (!currentUser && onRequireAuth) {
       onRequireAuth('Sign in to save movies to your personal Watchlist', {
         type: 'watchlist',
@@ -272,24 +310,21 @@ export default function MovieModal({ movieId, onClose, onSelectMovie, currentUse
       });
       return;
     }
-    try {
-      const userKey = currentUser?.id || currentUser?.email;
-      const list = analytics.getUserWatchlist(userKey);
-      let next;
-      if (list.includes(activeId)) {
-        next = list.filter((id) => id !== activeId);
-        setIsWatchlisted(false);
-      } else {
-        next = [...list, activeId];
-        setIsWatchlisted(true);
-      }
-      analytics.setUserWatchlist(userKey, next);
-    } catch {
-      // ignore
+    const prevState = isWatchlisted;
+    setIsWatchlisted(!prevState);
+
+    const mediaType = isTv ? 'tv' : 'movie';
+    const res = prevState
+      ? await removeFromWatchlist(mediaType, activeId)
+      : await addToWatchlist(mediaType, activeId);
+
+    if (res.error) {
+      setIsWatchlisted(prevState);
+      showToast(res.error || 'Failed to update watchlist.');
     }
   };
 
-  const toggleReaction = (type) => {
+  const toggleReaction = async (type) => {
     if (!currentUser && onRequireAuth) {
       onRequireAuth('Sign in to react to movie trailers', {
         type: 'reaction',
@@ -298,68 +333,27 @@ export default function MovieModal({ movieId, onClose, onSelectMovie, currentUse
       });
       return;
     }
-    const isReacted = !!userReactions[type];
-    const newReactions = {
-      ...reactions,
-      [type]: isReacted ? Math.max(0, reactions[type] - 1) : reactions[type] + 1,
-    };
-    const newMy = {
-      ...userReactions,
-      [type]: !isReacted,
-    };
-    setReactions(newReactions);
-    setUserReactions(newMy);
-    try {
-      const userKey = currentUser?.id || currentUser?.email;
-      localStorage.setItem(`reelist_reactions_${activeId}`, JSON.stringify(newReactions));
-      if (userKey) {
-        localStorage.setItem(`reelist_my_reactions_${userKey}_${activeId}`, JSON.stringify(newMy));
-      }
-      localStorage.setItem(`reelist_my_reactions_${activeId}`, JSON.stringify(newMy));
-    } catch {
-      // ignore
+    const wasReacted = !!userReactions[type];
+    const prevUserReactions = userReactions;
+    const prevReactions = reactions;
+
+    setUserReactions((prev) => ({ ...prev, [type]: !wasReacted }));
+    setReactions((prev) => ({
+      ...prev,
+      [type]: wasReacted ? Math.max(0, (prev[type] || 0) - 1) : (prev[type] || 0) + 1,
+    }));
+
+    const mediaType = isTv ? 'tv' : 'movie';
+    const res = await toggleUserReactionInDB(mediaType, activeId, type);
+    if (res.error) {
+      setUserReactions(prevUserReactions);
+      setReactions(prevReactions);
+      showToast(res.error || 'Failed to update reaction.');
+    } else {
+      const freshCounts = await getReactionCounts(mediaType, activeId);
+      if (freshCounts.data) setReactions(freshCounts.data);
     }
   };
-
-  // Sync activeId if parent movieId prop changes
-  useEffect(() => {
-    setActiveId(movieId);
-  }, [movieId]);
-
-  // Sync ratings and reactions when activeId switches
-  useEffect(() => {
-    try {
-      const userKey = currentUser?.id || currentUser?.email;
-      const savedRating =
-        (userKey ? localStorage.getItem(`reelist_rating_${userKey}_${activeId}`) : null) ||
-        localStorage.getItem(`reelist_rating_${activeId}`);
-      setUserRating(savedRating ? Number(savedRating) : null);
-
-      const list = analytics.getUserWatchlist(userKey);
-      setIsWatchlisted(list.includes(activeId));
-
-      const savedReacts = localStorage.getItem(`reelist_reactions_${activeId}`);
-      if (savedReacts) {
-        setReactions(JSON.parse(savedReacts));
-      } else {
-        setReactions({
-          thumbsUp: 0,
-          heart: 0,
-          clap: 0,
-          lightbulb: 0,
-          smile: 0,
-          starFace: 0,
-        });
-      }
-
-      const savedMyReacts =
-        (userKey ? localStorage.getItem(`reelist_my_reactions_${userKey}_${activeId}`) : null) ||
-        localStorage.getItem(`reelist_my_reactions_${activeId}`);
-      setUserReactions(savedMyReacts ? JSON.parse(savedMyReacts) : {});
-    } catch {
-      // ignore
-    }
-  }, [activeId, currentUser?.id, currentUser?.email]);
 
   // Lock body scroll while modal is active
   useEffect(() => {
@@ -1031,6 +1025,32 @@ export default function MovieModal({ movieId, onClose, onSelectMovie, currentUse
                     </div>
                     <span className="imdb-pop-sub">Trending</span>
                   </div>
+                </div>
+
+                {/* Real Community Audience Rating from Supabase rating_stats */}
+                <div
+                  className="community-rating-pill"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '6px 14px',
+                    background: 'rgba(255,255,255,0.06)',
+                    borderRadius: '20px',
+                    fontSize: '13px',
+                    margin: '10px 0 16px',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                  }}
+                >
+                  <span style={{ color: '#f5c518', fontWeight: 700 }}>REELIST AUDIENCE</span>
+                  <span style={{ color: 'rgba(255,255,255,0.3)' }}>•</span>
+                  {communityRating && communityRating.votes > 0 ? (
+                    <span style={{ color: '#f8fafc', fontWeight: 600 }}>
+                      ⭐ {communityRating.avg_score}/10 ({communityRating.votes} {communityRating.votes === 1 ? 'vote' : 'votes'})
+                    </span>
+                  ) : (
+                    <span style={{ color: '#94a3b8' }}>No ratings yet</span>
+                  )}
                 </div>
               </div>
 
@@ -1734,6 +1754,29 @@ export default function MovieModal({ movieId, onClose, onSelectMovie, currentUse
           </>
         )}
       </div>
+
+      {toastError && (
+        <div
+          className="movie-modal__toast-error"
+          role="alert"
+          style={{
+            position: 'fixed',
+            bottom: '24px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: '#ef4444',
+            color: '#ffffff',
+            padding: '10px 20px',
+            borderRadius: '10px',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+            zIndex: 9999,
+            fontSize: '14px',
+            fontWeight: 600,
+          }}
+        >
+          <span>{toastError}</span>
+        </div>
+      )}
     </div>
   );
 }

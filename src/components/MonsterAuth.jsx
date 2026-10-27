@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
-import { User, Mail, Eye, EyeOff, AlertCircle, CheckCircle2, ArrowLeft, Loader2 } from "lucide-react";
+import { User, Mail, Eye, EyeOff, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { analytics } from "../api/analytics.js";
 
 export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false, reason = "" }) {
-  // mode: 'login' | 'signup' | 'forgot'
+  // mode: 'login' | 'signup'
   const [mode, setMode] = useState("login");
   const [animClass, setAnimClass] = useState(""); // 'anim-sweep-left' | 'anim-sweep-right' | ''
   const [displayedContentMode, setDisplayedContentMode] = useState("login");
@@ -12,25 +12,12 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showSignupPassword, setShowSignupPassword] = useState(false);
 
   const animTimerRef = useRef(null);
   const midPointTimerRef = useRef(null);
-
-  // SafeHire-style 3-Step OTP Password Reset States
-  const [forgotStep, setForgotStep] = useState("email"); // 'email' | 'otp' | 'newpw'
-  const [otpEmail, setOtpEmail] = useState("");
-  const [generatedOtp, setGeneratedOtp] = useState("");
-  const [enteredOtp, setEnteredOtp] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmNewPassword, setConfirmNewPassword] = useState("");
-  const [showNewPw, setShowNewPw] = useState(false);
-  const [showConfirmNewPw, setShowConfirmNewPw] = useState(false);
-  const [otpBannerMsg, setOtpBannerMsg] = useState("");
-  const [resendTimer, setResendTimer] = useState(0);
 
   // Feedback, Loading & Rate Limiting States
   const [error, setError] = useState("");
@@ -47,15 +34,6 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
     }, 1000);
     return () => clearInterval(interval);
   }, [lockoutTimer]);
-
-  // Resend OTP Countdown (Item 2)
-  useEffect(() => {
-    if (resendTimer <= 0) return;
-    const interval = setInterval(() => {
-      setResendTimer((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [resendTimer]);
 
   // Close on Escape Key
   useEffect(() => {
@@ -98,11 +76,6 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
       animTimerRef.current = setTimeout(() => {
         setAnimClass("");
       }, 1350);
-    } else if (targetMode === "forgot") {
-      setMode("forgot");
-      setForgotStep("email");
-    } else if (targetMode === "login" && mode === "forgot") {
-      setMode("login");
     }
   };
 
@@ -118,83 +91,6 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
     upper: /[A-Z]/.test(password || ""),
     number: /[0-9]/.test(password || ""),
     special: /[!@#$%^&*(),.?":{}|<>_~+=-]/.test(password || ""),
-  };
-
-  const newPwRules = {
-    length: (newPassword || "").length >= 8,
-    upper: /[A-Z]/.test(newPassword || ""),
-    number: /[0-9]/.test(newPassword || ""),
-    special: /[!@#$%^&*(),.?":{}|<>_~+=-]/.test(newPassword || ""),
-  };
-
-  // SafeHire OTP Flow: Step 1 - Send 6-digit OTP code to email
-  const handleSendOtp = (targetEmail) => {
-    const cleanEmail = (targetEmail || email || "").toLowerCase().trim();
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!cleanEmail || !emailRegex.test(cleanEmail)) {
-      setError("Please enter a valid email address to receive your OTP verification code.");
-      return;
-    }
-    setError("");
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    setGeneratedOtp(code);
-    setOtpEmail(cleanEmail);
-    setEnteredOtp("");
-    setOtpBannerMsg(`📧 Verification email sent to ${cleanEmail}! SafeHire Security OTP: [ ${code} ]`);
-    setForgotStep("otp");
-    setResendTimer(30);
-  };
-
-  // SafeHire OTP Flow: Step 2 - Verify entered 6-digit code
-  const handleVerifyOtp = (e) => {
-    e?.preventDefault?.();
-    setError("");
-    const cleaned = (enteredOtp || "").trim();
-    if (!cleaned) {
-      setError("Please enter the 6-digit verification code sent to your email.");
-      return;
-    }
-    if (cleaned === generatedOtp) {
-      setError("");
-      setForgotStep("newpw");
-    } else {
-      setError("Invalid OTP code. Please enter the correct 6-digit verification code.");
-    }
-  };
-
-  // SafeHire OTP Flow: Step 3 - Set and confirm new password
-  const handleResetPassword = async (e) => {
-    e?.preventDefault?.();
-    setError("");
-    if (newPassword !== confirmNewPassword) {
-      setError("Passwords do not match. Please verify and re-enter.");
-      return;
-    }
-    if (!newPwRules.length || !newPwRules.upper || !newPwRules.number || !newPwRules.special) {
-      setError("Password must contain at least 8 characters, 1 uppercase letter (A-Z), 1 number (0-9), and 1 special symbol (!@#$).");
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      const res = await analytics.resetPassword(otpEmail, newPassword);
-      if (res.success) {
-        setError("");
-        setSuccessMsg("✓ Password reset successfully! Please sign in with your new password.");
-        setMode("login");
-        setEmail(otpEmail);
-        setPassword("");
-        setConfirmPassword("");
-        setNewPassword("");
-        setConfirmNewPassword("");
-        setForgotStep("email");
-        setOtpBannerMsg("");
-      } else {
-        setError(res.error || "Failed to update password. Please try again.");
-      }
-    } finally {
-      setIsSubmitting(false);
-    }
   };
 
   // Handle Form Submission (Sign In or Sign Up)
@@ -222,10 +118,6 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
         }
         if (password.length < 8) {
           setError("Password must be at least 8 characters long.");
-          return;
-        }
-        if (confirmPassword && password !== confirmPassword) {
-          setError("Passwords do not match.");
           return;
         }
 
@@ -482,6 +374,8 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
           display: flex;
           align-items: center;
           justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 8px;
           margin: 8px 0 20px;
           font-size: 13.5px;
           color: #475569;
@@ -513,6 +407,15 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
         }
         .verso-forgot-btn:hover {
           color: #17382c;
+        }
+        .verso-forgot-btn:disabled {
+          opacity: 0.65;
+          cursor: not-allowed;
+          text-decoration: none;
+          color: #718096;
+        }
+        .verso-forgot-btn:disabled:hover {
+          color: #718096;
         }
 
         /* Password Strength Bar & Dots */
@@ -618,23 +521,6 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
           background: #f0fdf4;
           border: 1px solid #bbf7d0;
           color: #166534;
-        }
-        .verso-otp-banner {
-          background: #f0fdf4;
-          border: 1.5px solid #22c55e;
-          color: #15803d;
-          padding: 10px 12px;
-          border-radius: 8px;
-          font-size: 12.5px;
-          margin-bottom: 16px;
-          font-weight: 500;
-        }
-        .verso-otp-input input {
-          letter-spacing: 6px !important;
-          font-family: monospace !important;
-          font-size: 22px !important;
-          font-weight: 800 !important;
-          text-align: center;
         }
 
         /* ==========================================================================
@@ -1062,238 +948,96 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
               </div>
             )}
 
-            {otpBannerMsg && (
-              <div className="verso-otp-banner" role="status">
-                {otpBannerMsg}
-              </div>
-            )}
-
             {/* --- SIGN IN FORM --- */}
-            {mode !== "forgot" && (
-              <form onSubmit={handleSubmit} noValidate autoComplete="off">
-                <h2 className="verso-heading">Sign in</h2>
-                <div className="verso-accent-bar" />
+            <form onSubmit={handleSubmit} noValidate autoComplete="off">
+              <h2 className="verso-heading">Sign in</h2>
+              <div className="verso-accent-bar" />
 
-                <div className="verso-field">
-                  <div className="verso-input-wrap">
-                    <input
-                      type="email"
-                      id="signin-email"
-                      className="verso-input"
-                      placeholder="Username or email"
-                      value={email}
-                      onChange={(e) => handleEmailInput(e.target.value)}
-                      required
-                    />
-                    <User size={18} className="verso-input-icon" aria-hidden="true" />
-                  </div>
+              <div className="verso-field">
+                <div className="verso-input-wrap">
+                  <input
+                    type="email"
+                    id="signin-email"
+                    className="verso-input"
+                    placeholder="Username or email"
+                    value={email}
+                    onChange={(e) => handleEmailInput(e.target.value)}
+                    required
+                  />
+                  <User size={18} className="verso-input-icon" aria-hidden="true" />
                 </div>
+              </div>
 
-                <div className="verso-field">
-                  <div className="verso-input-wrap">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      id="signin-password"
-                      className="verso-input"
-                      placeholder="Password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                    />
-                    <button
-                      type="button"
-                      className="verso-toggle-pw-btn"
-                      onClick={() => setShowPassword(!showPassword)}
-                      aria-label={showPassword ? "Hide password" : "Show password"}
-                    >
-                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="verso-options-row">
-                  <label className="verso-checkbox-label">
-                    <input
-                      type="checkbox"
-                      className="verso-checkbox"
-                      checked={rememberMe}
-                      onChange={(e) => setRememberMe(e.target.checked)}
-                    />
-                    <span>Keep me signed in</span>
-                  </label>
-
+              <div className="verso-field">
+                <div className="verso-input-wrap">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    id="signin-password"
+                    className="verso-input"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
                   <button
                     type="button"
-                    className="verso-forgot-btn"
-                    onClick={() => {
-                      setError("");
-                      setSuccessMsg("");
-                      setMode("forgot");
-                      setForgotStep("email");
-                    }}
+                    className="verso-toggle-pw-btn"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
                   >
-                    Forgot password?
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
+              </div>
+
+              <div className="verso-options-row">
+                <label className="verso-checkbox-label">
+                  <input
+                    type="checkbox"
+                    className="verso-checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                  />
+                  <span>Keep me signed in</span>
+                </label>
 
                 <button
-                  type="submit"
-                  className="verso-submit-btn"
-                  disabled={isSubmitting || lockoutTimer > 0}
+                  type="button"
+                  className="verso-forgot-btn"
+                  disabled
                 >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 size={16} className="animate-spin" />
-                      <span>Signing in...</span>
-                    </>
-                  ) : lockoutTimer > 0 ? (
-                    `Locked (${lockoutTimer}s)`
-                  ) : (
-                    "Sign in"
-                  )}
+                  Password reset arrives with the upcoming account system.
                 </button>
-
-                <div className="verso-switch-footer">
-                  <span>New to REELIST? </span>
-                  <button
-                    type="button"
-                    className="verso-switch-trigger"
-                    onClick={() => triggerSlide("signup")}
-                  >
-                    Create an account
-                  </button>
-                </div>
-              </form>
-            )}
-
-            {/* --- FORGOT PASSWORD 3-STEP FLOW --- */}
-            {mode === "forgot" && (
-              <div>
-                <h2 className="verso-heading">
-                  {forgotStep === "email" && "Reset Password"}
-                  {forgotStep === "otp" && "Enter OTP"}
-                  {forgotStep === "newpw" && "Set Password"}
-                </h2>
-                <div className="verso-accent-bar" />
-
-                {forgotStep === "email" && (
-                  <form onSubmit={(e) => { e.preventDefault(); handleSendOtp(); }}>
-                    <div className="verso-field">
-                      <div className="verso-input-wrap">
-                        <input
-                          type="email"
-                          className="verso-input"
-                          placeholder="Registered email address"
-                          value={email}
-                          onChange={(e) => handleEmailInput(e.target.value)}
-                          required
-                          autoFocus
-                        />
-                        <Mail size={18} className="verso-input-icon" />
-                      </div>
-                    </div>
-                    <button type="submit" className="verso-submit-btn">
-                      Send 6-Digit Code
-                    </button>
-                  </form>
-                )}
-
-                {forgotStep === "otp" && (
-                  <form onSubmit={handleVerifyOtp}>
-                    <div className="verso-field verso-otp-input">
-                      <div className="verso-input-wrap">
-                        <input
-                          type="text"
-                          className="verso-input"
-                          placeholder="••••••"
-                          maxLength={6}
-                          value={enteredOtp}
-                          onChange={(e) => setEnteredOtp(e.target.value)}
-                          required
-                          autoFocus
-                        />
-                      </div>
-                    </div>
-                    <button type="submit" className="verso-submit-btn">
-                      Verify Code
-                    </button>
-                    <div style={{ marginTop: "12px", textAlign: "center" }}>
-                      <button
-                        type="button"
-                        className="verso-forgot-btn"
-                        disabled={resendTimer > 0}
-                        onClick={() => handleSendOtp(otpEmail)}
-                      >
-                        {resendTimer > 0 ? `Resend code in ${resendTimer}s` : "Resend OTP code"}
-                      </button>
-                    </div>
-                  </form>
-                )}
-
-                {forgotStep === "newpw" && (
-                  <form onSubmit={handleResetPassword}>
-                    <div className="verso-field">
-                      <div className="verso-input-wrap">
-                        <input
-                          type={showNewPw ? "text" : "password"}
-                          className="verso-input"
-                          placeholder="New password (min 8 chars)"
-                          value={newPassword}
-                          onChange={(e) => setNewPassword(e.target.value)}
-                          required
-                        />
-                        <button
-                          type="button"
-                          className="verso-toggle-pw-btn"
-                          onClick={() => setShowNewPw(!showNewPw)}
-                        >
-                          {showNewPw ? <EyeOff size={18} /> : <Eye size={18} />}
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="verso-field">
-                      <div className="verso-input-wrap">
-                        <input
-                          type={showConfirmNewPw ? "text" : "password"}
-                          className="verso-input"
-                          placeholder="Confirm new password"
-                          value={confirmNewPassword}
-                          onChange={(e) => setConfirmNewPassword(e.target.value)}
-                          required
-                        />
-                        <button
-                          type="button"
-                          className="verso-toggle-pw-btn"
-                          onClick={() => setShowConfirmNewPw(!showConfirmNewPw)}
-                        >
-                          {showConfirmNewPw ? <EyeOff size={18} /> : <Eye size={18} />}
-                        </button>
-                      </div>
-                    </div>
-
-                    <button type="submit" className="verso-submit-btn" disabled={isSubmitting}>
-                      {isSubmitting ? "Updating..." : "Save New Password"}
-                    </button>
-                  </form>
-                )}
-
-                <div style={{ marginTop: "16px" }}>
-                  <button
-                    type="button"
-                    className="verso-forgot-btn"
-                    style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}
-                    onClick={() => {
-                      setError("");
-                      setSuccessMsg("");
-                      setMode("login");
-                    }}
-                  >
-                    <ArrowLeft size={14} /> Back to Sign In
-                  </button>
-                </div>
               </div>
-            )}
+
+              <button
+                type="submit"
+                className="verso-submit-btn"
+                disabled={isSubmitting || lockoutTimer > 0}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    <span>Signing in...</span>
+                  </>
+                ) : lockoutTimer > 0 ? (
+                  `Locked (${lockoutTimer}s)`
+                ) : (
+                  "Sign in"
+                )}
+              </button>
+
+              <div className="verso-switch-footer">
+                <span>New to REELIST? </span>
+                <button
+                  type="button"
+                  className="verso-switch-trigger"
+                  onClick={() => triggerSlide("signup")}
+                >
+                  Create an account
+                </button>
+              </div>
+            </form>
           </div>
         </div>
 
@@ -1346,7 +1090,7 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
               <div className="verso-field">
                 <div className="verso-input-wrap">
                   <input
-                    type={showConfirmPassword ? "text" : "password"}
+                    type={showSignupPassword ? "text" : "password"}
                     id="signup-password"
                     className="verso-input"
                     placeholder="Password"
@@ -1357,10 +1101,10 @@ export default function MonsterAuth({ onClose, onLoginSuccess, _isModal = false,
                   <button
                     type="button"
                     className="verso-toggle-pw-btn"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                    onClick={() => setShowSignupPassword(!showSignupPassword)}
+                    aria-label={showSignupPassword ? "Hide password" : "Show password"}
                   >
-                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    {showSignupPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
 

@@ -27,6 +27,17 @@ import {
   isValidUsername,
   sanitizeUsername,
 } from '../api/profiles.js';
+import {
+  getUserLists,
+  createList,
+  deleteList,
+} from '../api/lists.js';
+import {
+  ListPlus,
+  Lock,
+  Globe,
+  List as ListIcon,
+} from 'lucide-react';
 
 export default function UserProfileModal({ currentUser, onClose, onLogout }) {
   const [watchlistCount, setWatchlistCount] = useState(0);
@@ -43,6 +54,15 @@ export default function UserProfileModal({ currentUser, onClose, onLogout }) {
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileError, setProfileError] = useState('');
 
+  // Custom Lists states
+  const [userLists, setUserLists] = useState([]);
+  const [showCreateList, setShowCreateList] = useState(false);
+  const [newListTitle, setNewListTitle] = useState('');
+  const [newListDesc, setNewListDesc] = useState('');
+  const [newListPrivate, setNewListPrivate] = useState(false);
+  const [listCreating, setListCreating] = useState(false);
+  const [listError, setListError] = useState('');
+
   useEffect(() => {
     let mounted = true;
     getWatchlist().then(({ data }) => {
@@ -57,10 +77,54 @@ export default function UserProfileModal({ currentUser, onClose, onLogout }) {
         setBioInput(data.bio || '');
       }
     });
+    getUserLists().then(({ data }) => {
+      if (mounted && Array.isArray(data)) {
+        setUserLists(data);
+      }
+    });
     return () => {
       mounted = false;
     };
   }, []);
+
+  const handleCreateList = async (e) => {
+    e.preventDefault();
+    setListError('');
+    if (!newListTitle.trim()) {
+      setListError('List title is required.');
+      return;
+    }
+    setListCreating(true);
+    const { data, error } = await createList({
+      title: newListTitle.trim(),
+      description: newListDesc.trim(),
+      isPrivate: newListPrivate,
+    });
+    setListCreating(false);
+    if (error) {
+      setListError(error);
+    } else {
+      setUserLists((prev) => [data, ...prev]);
+      setShowCreateList(false);
+      setNewListTitle('');
+      setNewListDesc('');
+      setNewListPrivate(false);
+      setFeedbackMsg('Custom list created successfully!');
+      setTimeout(() => setFeedbackMsg(''), 4000);
+    }
+  };
+
+  const handleDeleteList = async (listId) => {
+    if (!window.confirm('Are you sure you want to delete this list?')) return;
+    const { success, error } = await deleteList(listId);
+    if (success) {
+      setUserLists((prev) => prev.filter((l) => l.id !== listId));
+      setFeedbackMsg('List deleted.');
+      setTimeout(() => setFeedbackMsg(''), 3000);
+    } else {
+      setFeedbackMsg(error || 'Failed to delete list.');
+    }
+  };
 
   const handleSaveProfile = async (e) => {
     e.preventDefault();
@@ -340,7 +404,7 @@ export default function UserProfileModal({ currentUser, onClose, onLogout }) {
           )}
 
           {/* Data & Watchlist Metrics */}
-          <section className="user-profile__stats-grid">
+          <section className="user-profile__stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
             <div className="user-profile__stat-card">
               <div className="user-profile__stat-icon">
                 <Bookmark size={18} />
@@ -349,6 +413,186 @@ export default function UserProfileModal({ currentUser, onClose, onLogout }) {
                 <span className="user-profile__stat-val">{watchlistCount}</span>
                 <span className="user-profile__stat-lbl">Titles in Watchlist</span>
               </div>
+            </div>
+
+            <div className="user-profile__stat-card">
+              <div className="user-profile__stat-icon" style={{ background: 'rgba(59, 130, 246, 0.12)', color: '#60a5fa' }}>
+                <ListIcon size={18} />
+              </div>
+              <div>
+                <span className="user-profile__stat-val">{userLists.length}</span>
+                <span className="user-profile__stat-lbl">Custom Collections</span>
+              </div>
+            </div>
+          </section>
+
+          {/* Custom Lists Manager */}
+          <section className="user-profile__section">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <div>
+                <h4 className="user-profile__section-title" style={{ margin: 0 }}>My Custom Lists</h4>
+                <p className="user-profile__section-desc" style={{ margin: '2px 0 0' }}>
+                  Create themed movie collections (e.g. &ldquo;Best Interval Bangs&rdquo;, &ldquo;Sci-Fi Masterpieces&rdquo;).
+                </p>
+              </div>
+              {!showCreateList && (
+                <button
+                  type="button"
+                  className="btn-outline"
+                  onClick={() => setShowCreateList(true)}
+                  style={{ padding: '4px 10px', fontSize: '12px', display: 'inline-flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}
+                >
+                  <ListPlus size={13} />
+                  <span>New List</span>
+                </button>
+              )}
+            </div>
+
+            {/* Create List Form */}
+            {showCreateList && (
+              <form onSubmit={handleCreateList} style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '8px', padding: '12px', margin: '10px 0 14px' }}>
+                <h5 style={{ margin: '0 0 8px', fontSize: '13px', fontWeight: 700, color: '#f5c518' }}>Create New List</h5>
+
+                {listError && (
+                  <div style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#f87171', padding: '6px 10px', borderRadius: '6px', fontSize: '12px', marginBottom: '8px' }}>
+                    {listError}
+                  </div>
+                )}
+
+                <div style={{ marginBottom: '8px' }}>
+                  <input
+                    type="text"
+                    value={newListTitle}
+                    onChange={(e) => setNewListTitle(e.target.value)}
+                    placeholder="List Title (e.g. Kamal Haasan Classics)"
+                    maxLength={100}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      borderRadius: '6px',
+                      border: '1px solid #475569',
+                      background: '#0f172a',
+                      color: '#ffffff',
+                      fontSize: '13px',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                </div>
+
+                <div style={{ marginBottom: '10px' }}>
+                  <input
+                    type="text"
+                    value={newListDesc}
+                    onChange={(e) => setNewListDesc(e.target.value)}
+                    placeholder="Description (optional)"
+                    maxLength={250}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      borderRadius: '6px',
+                      border: '1px solid #475569',
+                      background: '#0f172a',
+                      color: '#ffffff',
+                      fontSize: '13px',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', marginBottom: '10px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#cbd5e1', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={newListPrivate}
+                      onChange={(e) => setNewListPrivate(e.target.checked)}
+                      style={{ cursor: 'pointer' }}
+                    />
+                    {newListPrivate ? <Lock size={12} color="#f87171" /> : <Globe size={12} color="#34d399" />}
+                    <span>{newListPrivate ? 'Private list (Only visible to you)' : 'Public list (Discoverable by cinephiles)'}</span>
+                  </label>
+
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button
+                      type="button"
+                      className="btn-secondary"
+                      onClick={() => {
+                        setShowCreateList(false);
+                        setListError('');
+                      }}
+                      disabled={listCreating}
+                      style={{ padding: '5px 12px', fontSize: '12px' }}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="btn-primary"
+                      disabled={listCreating}
+                      style={{ padding: '5px 14px', fontSize: '12px', fontWeight: 700 }}
+                    >
+                      {listCreating ? 'Creating...' : 'Create List'}
+                    </button>
+                  </div>
+                </div>
+              </form>
+            )}
+
+            {/* Existing Lists */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
+              {userLists.length === 0 ? (
+                <div style={{ padding: '12px', textAlign: 'center', background: 'rgba(255, 255, 255, 0.02)', borderRadius: '6px', border: '1px dashed rgba(255, 255, 255, 0.08)', fontSize: '12px', color: '#94a3b8' }}>
+                  No custom lists created yet. Click &ldquo;New List&rdquo; to build your first collection.
+                </div>
+              ) : (
+                userLists.map((lst) => (
+                  <div
+                    key={lst.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '10px 12px',
+                      background: 'rgba(255, 255, 255, 0.02)',
+                      border: '1px solid rgba(255, 255, 255, 0.06)',
+                      borderRadius: '8px',
+                    }}
+                  >
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontSize: '13px', fontWeight: 700, color: '#f8fafc' }}>{lst.title}</span>
+                        {lst.is_private ? (
+                          <span style={{ fontSize: '10px', background: 'rgba(239, 68, 68, 0.15)', color: '#f87171', padding: '1px 5px', borderRadius: '4px', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                            <Lock size={10} />
+                            <span>Private</span>
+                          </span>
+                        ) : (
+                          <span style={{ fontSize: '10px', background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', padding: '1px 5px', borderRadius: '4px', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                            <Globe size={10} />
+                            <span>Public</span>
+                          </span>
+                        )}
+                      </div>
+                      {lst.description && (
+                        <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#94a3b8' }}>{lst.description}</p>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteList(lst.id)}
+                      title="Delete list"
+                      style={{
+                        background: 'transparent',
+                        border: 'none',
+                        color: '#64748b',
+                        cursor: 'pointer',
+                        padding: '4px',
+                      }}
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                ))
+              )}
             </div>
           </section>
 

@@ -159,15 +159,19 @@ export async function createReview({ mediaType = 'movie', tmdbId, rating, headli
     }
 
     // Single source of truth write-through: Sync rating to public.ratings so rating_stats updates
+    let syncWarning = null;
     if (cleanRating !== null) {
       try {
-        await setUserRatingInDB(cleanType, cleanId, cleanRating);
+        const syncRes = await setUserRatingInDB(cleanType, cleanId, cleanRating);
+        if (syncRes?.error) {
+          syncWarning = 'Review saved, but your rating could not be synced. Try rating the title again.';
+        }
       } catch {
-        // non-blocking for review submission
+        syncWarning = 'Review saved, but your rating could not be synced. Try rating the title again.';
       }
     }
 
-    return { data, error: null };
+    return { data, warning: syncWarning, error: null };
   } catch (err) {
     return { data: null, error: err?.message || 'Failed to submit review' };
   }
@@ -212,15 +216,19 @@ export async function updateReview({ reviewId, rating, headline, content, isSpoi
     if (error) return { data: null, error: error.message };
 
     // Single source of truth write-through: Sync rating to public.ratings
+    let syncWarning = null;
     if (data && cleanRating !== null) {
       try {
-        await setUserRatingInDB(data.media_type, data.tmdb_id, cleanRating);
+        const syncRes = await setUserRatingInDB(data.media_type, data.tmdb_id, cleanRating);
+        if (syncRes?.error) {
+          syncWarning = 'Review saved, but your rating could not be synced. Try rating the title again.';
+        }
       } catch {
-        // non-blocking
+        syncWarning = 'Review saved, but your rating could not be synced. Try rating the title again.';
       }
     }
 
-    return { data, error: null };
+    return { data, warning: syncWarning, error: null };
   } catch (err) {
     return { data: null, error: err?.message || 'Failed to update review' };
   }

@@ -43,6 +43,7 @@ export default function MovieReviewsSection({
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
   const [successToast, setSuccessToast] = useState('');
+  const [warningToast, setWarningToast] = useState('');
 
   // Spoiler reveal state: map of reviewId -> boolean
   const [revealedSpoilers, setRevealedSpoilers] = useState({});
@@ -97,6 +98,8 @@ export default function MovieReviewsSection({
   const handleSubmitReview = async (e) => {
     e.preventDefault();
     setFormError('');
+    setSuccessToast('');
+    setWarningToast('');
 
     if (!headlineInput.trim()) {
       setFormError('Please enter a review headline.');
@@ -110,7 +113,7 @@ export default function MovieReviewsSection({
     setSubmitting(true);
     try {
       if (editingReviewId) {
-        const { error } = await updateReview({
+        const { error, warning } = await updateReview({
           reviewId: editingReviewId,
           rating: ratingInput,
           headline: headlineInput,
@@ -118,9 +121,15 @@ export default function MovieReviewsSection({
           isSpoiler: isSpoilerInput,
         });
         if (error) throw new Error(error);
-        setSuccessToast('Your review was successfully updated!');
+        if (warning) {
+          setWarningToast(warning);
+          setTimeout(() => setWarningToast(''), 6000);
+        } else {
+          setSuccessToast('Your review was successfully updated!');
+          setTimeout(() => setSuccessToast(''), 4000);
+        }
       } else {
-        const { error } = await createReview({
+        const { error, warning } = await createReview({
           mediaType,
           tmdbId,
           rating: ratingInput,
@@ -129,13 +138,18 @@ export default function MovieReviewsSection({
           isSpoiler: isSpoilerInput,
         });
         if (error) throw new Error(error);
-        setSuccessToast('Your review was published!');
+        if (warning) {
+          setWarningToast(warning);
+          setTimeout(() => setWarningToast(''), 6000);
+        } else {
+          setSuccessToast('Your review was published!');
+          setTimeout(() => setSuccessToast(''), 4000);
+        }
       }
 
       setIsFormOpen(false);
       setEditingReviewId(null);
       await loadReviews();
-      setTimeout(() => setSuccessToast(''), 4000);
     } catch (err) {
       setFormError(err.message);
     } finally {
@@ -305,6 +319,27 @@ export default function MovieReviewsSection({
         >
           <CheckCircle2 size={16} />
           <span>{successToast}</span>
+        </div>
+      )}
+
+      {warningToast && (
+        <div
+          role="alert"
+          style={{
+            margin: '1rem 0',
+            background: 'rgba(245, 158, 11, 0.15)',
+            border: '1px solid rgba(245, 158, 11, 0.4)',
+            color: '#fbbf24',
+            padding: '10px 14px',
+            borderRadius: '8px',
+            fontSize: '13px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}
+        >
+          <AlertTriangle size={16} color="#fbbf24" />
+          <span>{warningToast}</span>
         </div>
       )}
 

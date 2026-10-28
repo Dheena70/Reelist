@@ -33,6 +33,7 @@ import {
   sanitizeContent,
   getMovieReviews,
   createReview,
+  updateReview,
   voteReview,
   reportReview,
   getUserReviews,
@@ -200,6 +201,51 @@ describe('Reviews Data Layer', () => {
       });
 
       expect(mockFrom).toHaveBeenCalledWith('ratings');
+      const res = await createReview({
+        mediaType: 'movie',
+        tmdbId: 550,
+        rating: 10,
+        headline: 'Masterpiece',
+        content: 'Unbelievable classic film.',
+        isSpoiler: false,
+      });
+      expect(res.warning).toBeNull();
+    });
+
+    it('returns warning when write-through fails but saves the review', async () => {
+      const maybeSingleReview = vi.fn().mockResolvedValue({
+        data: { id: 'new-rev-3', headline: 'Good Movie', rating: 8 },
+        error: null,
+      });
+      const selectReview = vi.fn().mockReturnValue({ maybeSingle: maybeSingleReview });
+      const insert = vi.fn().mockReturnValue({ select: selectReview });
+
+      const maybeSingleRating = vi.fn().mockResolvedValue({
+        data: null,
+        error: { message: 'Database ratings lock timeout' },
+      });
+      const selectRating = vi.fn().mockReturnValue({ maybeSingle: maybeSingleRating });
+      const upsert = vi.fn().mockReturnValue({ select: selectRating });
+
+      mockFrom.mockImplementation((table) => {
+        if (table === 'reviews') return { insert };
+        if (table === 'ratings') return { upsert };
+        return {};
+      });
+
+      const res = await createReview({
+        mediaType: 'movie',
+        tmdbId: 550,
+        rating: 8,
+        headline: 'Good Movie',
+        content: 'Solid performances all around.',
+      });
+
+      expect(res.data.id).toBe('new-rev-3');
+      expect(res.error).toBeNull();
+      expect(res.warning).toBe(
+        'Review saved, but your rating could not be synced. Try rating the title again.'
+      );
     });
 
     it('returns friendly message when daily review limit is reached', async () => {
@@ -221,6 +267,90 @@ describe('Reviews Data Layer', () => {
 
       expect(res.data).toBeNull();
       expect(res.error).toContain('Daily review limit reached');
+    });
+  });
+
+  describe('updateReview', () => {
+    it('validates headline and content', async () => {
+      const res1 = await updateReview({ reviewId: 'rev-1', headline: '', content: 'Some text' });
+      expect(res1.error).toContain('Headline is required');
+
+      const res2 = await updateReview({ reviewId: 'rev-1', headline: 'Title', content: '' });
+      expect(res2.error).toContain('Review content cannot be empty');
+    });
+
+    it('updates review and writes through updated rating', async () => {
+      const maybeSingleReview = vi.fn().mockResolvedValue({
+        data: { id: 'rev-1', media_type: 'movie', tmdb_id: 550, rating: 9, headline: 'Updated Headline' },
+        error: null,
+      });
+      const selectReview = vi.fn().mockReturnValue({ maybeSingle: maybeSingleReview });
+      const eqUser = vi.fn().mockReturnValue({ select: selectReview });
+      const eqId = vi.fn().mockReturnValue({ eq: eqUser });
+      const update = vi.fn().mockReturnValue({ eq: eqId });
+
+      const maybeSingleRating = vi.fn().mockResolvedValue({
+        data: { tmdb_id: 550, score: 9 },
+        error: null,
+      });
+      const selectRating = vi.fn().mockReturnValue({ maybeSingle: maybeSingleRating });
+      const upsert = vi.fn().mockReturnValue({ select: selectRating });
+
+      mockFrom.mockImplementation((table) => {
+        if (table === 'reviews') return { update };
+        if (table === 'ratings') return { upsert };
+        return {};
+      });
+
+      const res = await updateReview({
+        reviewId: 'rev-1',
+        rating: 9,
+        headline: 'Updated Headline',
+        content: 'Even better on rewatch.',
+        isSpoiler: false,
+      });
+
+      expect(mockFrom).toHaveBeenCalledWith('reviews');
+      expect(mockFrom).toHaveBeenCalledWith('ratings');
+      expect(res.data.id).toBe('rev-1');
+      expect(res.warning).toBeNull();
+    });
+
+    it('returns warning when rating write-through fails in updateReview', async () => {
+      const maybeSingleReview = vi.fn().mockResolvedValue({
+        data: { id: 'rev-1', media_type: 'movie', tmdb_id: 550, rating: 7, headline: 'Updated Headline' },
+        error: null,
+      });
+      const selectReview = vi.fn().mockReturnValue({ maybeSingle: maybeSingleReview });
+      const eqUser = vi.fn().mockReturnValue({ select: selectReview });
+      const eqId = vi.fn().mockReturnValue({ eq: eqUser });
+      const update = vi.fn().mockReturnValue({ eq: eqId });
+
+      const maybeSingleRating = vi.fn().mockResolvedValue({
+        data: null,
+        error: { message: 'Write lock failure' },
+      });
+      const selectRating = vi.fn().mockReturnValue({ maybeSingle: maybeSingleRating });
+      const upsert = vi.fn().mockReturnValue({ select: selectRating });
+
+      mockFrom.mockImplementation((table) => {
+        if (table === 'reviews') return { update };
+        if (table === 'ratings') return { upsert };
+        return {};
+      });
+
+      const res = await updateReview({
+        reviewId: 'rev-1',
+        rating: 7,
+        headline: 'Updated Headline',
+        content: 'Changed my mind on rewatch.',
+      });
+
+      expect(res.data.id).toBe('rev-1');
+      expect(res.error).toBeNull();
+      expect(res.warning).toBe(
+        'Review saved, but your rating could not be synced. Try rating the title again.'
+      );
     });
   });
 

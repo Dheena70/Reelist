@@ -1,5 +1,5 @@
 import { getSupabase } from '../lib/supabase.js';
-import { sanitizeId, sanitizeMediaType, sanitizeScore } from './userData.js';
+import { sanitizeId, sanitizeMediaType, sanitizeScore, setRating as setUserRatingInDB } from './userData.js';
 import { getProfilesByIds } from './profiles.js';
 
 export function sanitizeHeadline(raw) {
@@ -152,7 +152,19 @@ export async function createReview({ mediaType = 'movie', tmdbId, rating, headli
       if (error.code === '23505' || error.message?.includes('duplicate key')) {
         return { data: null, error: 'You have already reviewed this title. You can edit your existing review.' };
       }
+      if (error.message?.includes('Daily review limit reached')) {
+        return { data: null, error: 'Daily review limit reached (maximum 20 reviews per 24 hours).' };
+      }
       return { data: null, error: error.message };
+    }
+
+    // Single source of truth write-through: Sync rating to public.ratings so rating_stats updates
+    if (cleanRating !== null) {
+      try {
+        await setUserRatingInDB(cleanType, cleanId, cleanRating);
+      } catch {
+        // non-blocking for review submission
+      }
     }
 
     return { data, error: null };
@@ -198,6 +210,16 @@ export async function updateReview({ reviewId, rating, headline, content, isSpoi
       .maybeSingle();
 
     if (error) return { data: null, error: error.message };
+
+    // Single source of truth write-through: Sync rating to public.ratings
+    if (data && cleanRating !== null) {
+      try {
+        await setUserRatingInDB(data.media_type, data.tmdb_id, cleanRating);
+      } catch {
+        // non-blocking
+      }
+    }
+
     return { data, error: null };
   } catch (err) {
     return { data: null, error: err?.message || 'Failed to update review' };

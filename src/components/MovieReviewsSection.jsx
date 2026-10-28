@@ -527,9 +527,19 @@ export default function MovieReviewsSection({
                     </div>
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ fontSize: '13px', fontWeight: 700, color: '#f1f5f9' }}>
+                        <a
+                          href={`#/user/${rev.username}`}
+                          style={{
+                            fontSize: '13px',
+                            fontWeight: 700,
+                            color: '#f1f5f9',
+                            textDecoration: 'none',
+                            borderBottom: '1px dotted rgba(245, 197, 24, 0.5)',
+                          }}
+                          title={`View @${rev.username}'s public profile`}
+                        >
                           @{rev.username}
-                        </span>
+                        </a>
                         {rev.is_own_review && (
                           <span style={{ fontSize: '10px', background: 'rgba(245, 197, 24, 0.2)', color: '#f5c518', padding: '2px 6px', borderRadius: '4px', fontWeight: 700 }}>
                             YOU
@@ -554,9 +564,10 @@ export default function MovieReviewsSection({
                           alignItems: 'center',
                           gap: '3px',
                         }}
+                        title="Author's individual rating (Community score derived from rating_stats view)"
                       >
                         <Star size={12} fill="currentColor" />
-                        <span>{rev.rating}/10</span>
+                        <span>Author: {rev.rating}/10</span>
                       </span>
                     )}
 

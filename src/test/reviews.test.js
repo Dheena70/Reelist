@@ -173,6 +173,54 @@ describe('Reviews Data Layer', () => {
       );
       expect(res.data.id).toBe('new-rev-1');
     });
+
+    it('writes through rating to ratings table for single source of truth', async () => {
+      const maybeSingle = vi.fn().mockResolvedValue({
+        data: { id: 'new-rev-2', headline: 'Masterpiece', rating: 10 },
+        error: null,
+      });
+      const select = vi.fn().mockReturnValue({ maybeSingle });
+      const insert = vi.fn().mockReturnValue({ select });
+      const upsert = vi.fn().mockReturnValue({ select });
+
+      mockFrom.mockImplementation((table) => {
+        if (table === 'reviews') return { insert };
+        if (table === 'ratings') return { upsert };
+        return { select };
+      });
+
+      await createReview({
+        mediaType: 'movie',
+        tmdbId: 550,
+        rating: 10,
+        headline: 'Masterpiece',
+        content: 'Unbelievable classic film.',
+        isSpoiler: false,
+      });
+
+      expect(mockFrom).toHaveBeenCalledWith('ratings');
+    });
+
+    it('returns friendly message when daily review limit is reached', async () => {
+      const maybeSingle = vi.fn().mockResolvedValue({
+        data: null,
+        error: { message: 'Daily review limit reached (20)' },
+      });
+      const select = vi.fn().mockReturnValue({ maybeSingle });
+      const insert = vi.fn().mockReturnValue({ select });
+      mockFrom.mockReturnValue({ insert });
+
+      const res = await createReview({
+        mediaType: 'movie',
+        tmdbId: 550,
+        rating: 9,
+        headline: 'Too many reviews',
+        content: 'Testing throttle trigger error.',
+      });
+
+      expect(res.data).toBeNull();
+      expect(res.error).toContain('Daily review limit reached');
+    });
   });
 
   describe('voteReview', () => {

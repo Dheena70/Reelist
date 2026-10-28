@@ -2,10 +2,11 @@
  * Dynamic SEO and Open Graph metadata manager for Reelist SPA.
  */
 
+import { SITE_URL } from '../config/site.js';
+
 const DEFAULT_TITLE = 'Reelist — Trending & Now Playing Movies in India';
 const DEFAULT_DESC = 'Discover trending and now playing theatrical blockbusters across Tamil, Telugu, Hindi, Malayalam, Kannada & Global cinema with official 4K trailers.';
-const SITE_URL = 'https://dheena70.github.io/Reelist/';
-const DEFAULT_OG_IMAGE = 'https://dheena70.github.io/Reelist/og-image.png';
+const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png`;
 
 function setMetaTag(selector, attribute, value) {
   if (typeof document === 'undefined' || !value) return;
@@ -37,7 +38,7 @@ export function updatePageMeta({
   setMetaTag('meta[property="og:title"]', 'content', fullTitle);
   setMetaTag('meta[property="og:description"]', 'content', description);
   setMetaTag('meta[property="og:image"]', 'content', ogImage);
-  setMetaTag('meta[property="og:url"]', 'content', `${SITE_URL}${path ? '#' + path.replace(/^#/, '') : ''}`);
+  setMetaTag('meta[property="og:url"]', 'content', `${SITE_URL}${path ? '/#' + path.replace(/^[/#]+/, '') : '/'}`);
 
   // Twitter
   setMetaTag('meta[name="twitter:title"]', 'content', fullTitle);

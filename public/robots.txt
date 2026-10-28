@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin
 Disallow: /api/
 
-Sitemap: https://dheena70.github.io/Reelist/sitemap.xml
+Sitemap: https://reelist.vercel.app/sitemap.xml

@@ -4,7 +4,7 @@ import { validateTmdbPath, filterTmdbQueryParams } from './src/utils/tmdbValidat
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const token = (env.TMDB_TOKEN || env.VITE_TMDB_API_KEY || process.env.TMDB_TOKEN || process.env.VITE_TMDB_API_KEY || '').trim();
+  const token = (env.TMDB_TOKEN || process.env.TMDB_TOKEN || '').trim();
   const isBearer = token.startsWith('eyJ');
 
   return {

@@ -29,14 +29,15 @@ Browse what's trending, filter by regional languages (Tamil, Telugu, Hindi, Mala
    npm install
    ```
 
-2. **Configure TMDB Read Access Token**:
-   Get an **API Read Access Token** (v4) at [themoviedb.org](https://www.themoviedb.org/settings/api).
+2. **Configure TMDB Credentials**:
+   Get an **API Read Access Token** (v4) or **API Key** (v3) at [themoviedb.org](https://www.themoviedb.org/settings/api).
    Copy `.env.example` to `.env` and set your token:
    ```bash
    cp .env.example .env
    ```
    ```env
-   TMDB_TOKEN=your_read_access_token_here
+   # Supports both v4 JWT tokens (starts with "eyJ...") and v3 32-char hex API keys
+   TMDB_TOKEN=your_token_or_key_here
    ```
    *(All requests are routed securely through the `/api/tmdb` serverless proxy with 1-hour caching. The token is never exposed to client browsers).*
 

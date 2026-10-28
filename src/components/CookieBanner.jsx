@@ -2,21 +2,11 @@ import React, { useState } from 'react';
 
 const KEY = 'reelist_cookie_consent';
 
-function applyConsent(level) {
-  if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
-    window.gtag('consent', 'update', {
-      analytics_storage: level === 'all' ? 'granted' : 'denied',
-    });
-  }
-}
-
 export default function CookieBanner() {
   const [saved, setSaved] = useState(() => {
     try {
       const raw = localStorage.getItem(KEY);
-      const level = raw ? JSON.parse(raw).level : null;
-      if (level) applyConsent(level);
-      return !!level;
+      return Boolean(raw && JSON.parse(raw).level);
     } catch {
       return false;
     }
@@ -28,16 +18,15 @@ export default function CookieBanner() {
     try {
       localStorage.setItem(KEY, JSON.stringify({ level, at: Date.now() }));
     } catch {
-      // ignore
+      // ignore storage errors
     }
-    applyConsent(level);
     setSaved(true);
   };
 
   return (
     <div
       role="dialog"
-      aria-label="Cookie consent"
+      aria-label="Cookie and storage notice"
       style={{
         position: 'fixed',
         bottom: 16,
@@ -59,7 +48,7 @@ export default function CookieBanner() {
       }}
     >
       <p style={{ margin: 0, fontSize: '13.5px', lineHeight: 1.5, color: '#cbd5e1' }}>
-        We value your privacy. We use anonymous cookies to analyze traffic and understand which premiere titles resonate with cinephiles.
+        We value your privacy. Reelist stores your authentication session and viewing preferences locally on your device to ensure a seamless cinema browsing experience.
       </p>
       <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
         <button

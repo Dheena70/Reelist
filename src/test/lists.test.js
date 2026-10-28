@@ -36,6 +36,7 @@ import {
   createList,
   addToList,
   deleteList,
+  getUserListsWithMembership,
 } from '../api/lists.js';
 
 describe('Custom Lists Data Layer', () => {
@@ -92,6 +93,20 @@ describe('Custom Lists Data Layer', () => {
         })
       );
       expect(res.data.id).toBe('list-1');
+    });
+
+    it('returns friendly error when maximum list quota is reached', async () => {
+      const maybeSingle = vi.fn().mockResolvedValue({
+        data: null,
+        error: { message: 'List limit reached (50)' },
+      });
+      const select = vi.fn().mockReturnValue({ maybeSingle });
+      const insert = vi.fn().mockReturnValue({ select });
+      mockFrom.mockReturnValue({ insert });
+
+      const res = await createList({ title: '51st List' });
+      expect(res.data).toBeNull();
+      expect(res.error).toContain('List limit reached (maximum 50 lists per account)');
     });
   });
 
@@ -161,6 +176,62 @@ describe('Custom Lists Data Layer', () => {
         { onConflict: 'list_id,media_type,tmdb_id' }
       );
       expect(res.data.id).toBe('item-1');
+    });
+
+    it('returns friendly error when list item quota is reached', async () => {
+      const maybeSingle = vi.fn().mockResolvedValue({
+        data: null,
+        error: { message: 'List item limit reached (500)' },
+      });
+      const select = vi.fn().mockReturnValue({ maybeSingle });
+      const upsert = vi.fn().mockReturnValue({ select });
+      mockFrom.mockReturnValue({ upsert });
+
+      const res = await addToList({ listId: 'list-1', tmdbId: 999 });
+      expect(res.data).toBeNull();
+      expect(res.error).toContain('List item limit reached (maximum 500 items per list)');
+    });
+  });
+
+  describe('getUserListsWithMembership', () => {
+    it('returns lists with membership flag', async () => {
+      mockFrom.mockImplementation((table) => {
+        if (table === 'lists') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                order: vi.fn().mockResolvedValue({
+                  data: [
+                    { id: 'l1', title: 'Action Movies', is_private: false },
+                    { id: 'l2', title: 'Comedies', is_private: true },
+                  ],
+                  error: null,
+                }),
+              }),
+            }),
+          };
+        }
+        if (table === 'list_items') {
+          return {
+            select: vi.fn().mockReturnValue({
+              in: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  eq: vi.fn().mockResolvedValue({
+                    data: [{ list_id: 'l1' }],
+                    error: null,
+                  }),
+                }),
+              }),
+            }),
+          };
+        }
+        return { select: vi.fn() };
+      });
+
+      const res = await getUserListsWithMembership('movie', 550);
+      expect(res.data.length).toBe(2);
+      expect(res.data[0].containsMovie).toBe(true);
+      expect(res.data[1].containsMovie).toBe(false);
     });
   });
 

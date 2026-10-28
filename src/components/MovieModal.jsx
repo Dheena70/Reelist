@@ -15,6 +15,7 @@ import {
   Minimize2,
   Clapperboard,
   Globe2,
+  ListPlus,
 } from 'lucide-react';
 import {
   backdropUrl,
@@ -38,6 +39,7 @@ import {
 } from '../api/userData.js';
 import { getSupabase } from '../lib/supabase.js';
 import MovieReviewsSection from './MovieReviewsSection.jsx';
+import AddToListModal from './AddToListModal.jsx';
 
 function determineRoleBadge(member, index, allCast = []) {
   const char = (member.character || '').toLowerCase();
@@ -202,6 +204,7 @@ export default function MovieModal({
 
   // Poster Ribbon Watchlist Bookmark state (with Supabase RLS)
   const [isWatchlisted, setIsWatchlisted] = useState(false);
+  const [showAddToListModal, setShowAddToListModal] = useState(false);
 
   // Trailer Reactions Bar State (from reaction_counts view, real numbers only)
   const [reactions, setReactions] = useState({
@@ -1100,6 +1103,39 @@ export default function MovieModal({
                       </svg>
                       <span className="ribbon-symbol">{isWatchlisted ? '✓' : '+'}</span>
                     </button>
+
+                    {/* Add to Custom List Button */}
+                    <button
+                      type="button"
+                      className="btn-outline"
+                      onClick={() => {
+                        if (!currentUser && onRequireAuth) {
+                          onRequireAuth('Sign in to add movies to your custom lists');
+                          return;
+                        }
+                        setShowAddToListModal(true);
+                      }}
+                      style={{
+                        width: '100%',
+                        marginTop: '8px',
+                        padding: '6px 8px',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '4px',
+                        borderRadius: '6px',
+                        border: '1px solid rgba(245, 197, 24, 0.4)',
+                        color: '#f5c518',
+                        background: 'rgba(245, 197, 24, 0.05)',
+                        cursor: 'pointer',
+                      }}
+                      title="Add to custom list or collection"
+                    >
+                      <ListPlus size={13} />
+                      <span>Add to List</span>
+                    </button>
                   </div>
                 </div>
 
@@ -1791,6 +1827,16 @@ export default function MovieModal({
           </>
         )}
       </div>
+
+      {showAddToListModal && (
+        <AddToListModal
+          mediaType={isTv ? 'tv' : 'movie'}
+          tmdbId={activeId}
+          movieTitle={details?.title || 'this title'}
+          onClose={() => setShowAddToListModal(false)}
+          onRequireAuth={onRequireAuth}
+        />
+      )}
 
       {toastError && (
         <div

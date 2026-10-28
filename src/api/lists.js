@@ -150,7 +150,12 @@ export async function createList({ title, description = '', isPrivate = false })
       .select('id, user_id, title, description, is_private, created_at, updated_at')
       .maybeSingle();
 
-    if (error) return { data: null, error: error.message };
+    if (error) {
+      if (error.message?.includes('List limit reached')) {
+        return { data: null, error: 'List limit reached (maximum 50 lists per account).' };
+      }
+      return { data: null, error: error.message };
+    }
     return { data, error: null };
   } catch (err) {
     return { data: null, error: err?.message || 'Failed to create list' };
@@ -254,10 +259,63 @@ export async function addToList({ listId, mediaType = 'movie', tmdbId, notes = '
       .select('id, list_id, media_type, tmdb_id, notes, added_at')
       .maybeSingle();
 
-    if (error) return { data: null, error: error.message };
+    if (error) {
+      if (error.message?.includes('List item limit reached')) {
+        return { data: null, error: 'List item limit reached (maximum 500 items per list).' };
+      }
+      return { data: null, error: error.message };
+    }
     return { data, error: null };
   } catch (err) {
     return { data: null, error: err?.message || 'Failed to add item to list' };
+  }
+}
+
+/**
+ * Fetch all user lists indicating whether this specific title is already added
+ */
+export async function getUserListsWithMembership(mediaType = 'movie', tmdbId) {
+  const cleanId = sanitizeId(tmdbId);
+  if (!cleanId) return { data: [], error: 'Invalid movie ID' };
+  const cleanType = sanitizeMediaType(mediaType);
+
+  const supabase = await getSupabase();
+  if (!supabase) return { data: [], error: null };
+
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user?.id) return { data: [], error: null };
+
+    const { data: lists, error: listErr } = await supabase
+      .from('lists')
+      .select('id, user_id, title, description, is_private, created_at, updated_at')
+      .eq('user_id', session.user.id)
+      .order('created_at', { ascending: false });
+
+    if (listErr) return { data: [], error: listErr.message };
+    if (!lists || lists.length === 0) return { data: [], error: null };
+
+    const listIds = lists.map((l) => l.id);
+    const { data: items, error: itemsErr } = await supabase
+      .from('list_items')
+      .select('list_id')
+      .in('list_id', listIds)
+      .eq('media_type', cleanType)
+      .eq('tmdb_id', cleanId);
+
+    if (itemsErr) {
+      return { data: lists.map((l) => ({ ...l, containsMovie: false })), error: null };
+    }
+
+    const containingSet = new Set((items || []).map((i) => i.list_id));
+    const result = lists.map((l) => ({
+      ...l,
+      containsMovie: containingSet.has(l.id),
+    }));
+
+    return { data: result, error: null };
+  } catch (err) {
+    return { data: [], error: err?.message || 'Failed to fetch user lists' };
   }
 }
 

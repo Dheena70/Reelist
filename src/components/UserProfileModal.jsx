@@ -37,9 +37,11 @@ import {
   Lock,
   Globe,
   List as ListIcon,
+  ChevronRight,
 } from 'lucide-react';
+import ListDetailModal from './ListDetailModal.jsx';
 
-export default function UserProfileModal({ currentUser, onClose, onLogout }) {
+export default function UserProfileModal({ currentUser, onClose, onLogout, onSelectMovie }) {
   const [watchlistCount, setWatchlistCount] = useState(0);
   const [feedbackMsg, setFeedbackMsg] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
@@ -62,6 +64,7 @@ export default function UserProfileModal({ currentUser, onClose, onLogout }) {
   const [newListPrivate, setNewListPrivate] = useState(false);
   const [listCreating, setListCreating] = useState(false);
   const [listError, setListError] = useState('');
+  const [activeListId, setActiveListId] = useState(null);
 
   useEffect(() => {
     let mounted = true;
@@ -557,7 +560,11 @@ export default function UserProfileModal({ currentUser, onClose, onLogout }) {
                       borderRadius: '8px',
                     }}
                   >
-                    <div>
+                    <div
+                      onClick={() => setActiveListId(lst.id)}
+                      style={{ cursor: 'pointer', flex: 1, paddingRight: '12px' }}
+                      title="Open collection details"
+                    >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <span style={{ fontSize: '13px', fontWeight: 700, color: '#f8fafc' }}>{lst.title}</span>
                         {lst.is_private ? (
@@ -571,6 +578,7 @@ export default function UserProfileModal({ currentUser, onClose, onLogout }) {
                             <span>Public</span>
                           </span>
                         )}
+                        <ChevronRight size={13} color="#64748b" />
                       </div>
                       {lst.description && (
                         <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#94a3b8' }}>{lst.description}</p>
@@ -712,6 +720,15 @@ export default function UserProfileModal({ currentUser, onClose, onLogout }) {
           </button>
         </footer>
       </div>
+
+      {activeListId && (
+        <ListDetailModal
+          listId={activeListId}
+          currentUserId={currentUser?.id}
+          onClose={() => setActiveListId(null)}
+          onSelectMovie={onSelectMovie}
+        />
+      )}
     </div>
   );
 }

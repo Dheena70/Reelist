@@ -816,6 +816,10 @@ export default function App() {
             currentUser={currentUser}
             onClose={() => setShowProfileModal(false)}
             onLogout={handleLogout}
+            onSelectMovie={(movie) => {
+              setShowProfileModal(false);
+              setSelectedId(movie.id);
+            }}
           />
         </Suspense>
       )}

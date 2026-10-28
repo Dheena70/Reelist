@@ -111,6 +111,31 @@ src/
     tmdbCache.test.js     Cache TTL and expiration unit tests
 ```
 
+## Moderation & Community Safety
+
+Reelist empowers cinephiles to write public reviews, vote on helpfulness, and curate custom lists. To safeguard the community against abuse, defamation, hate speech, and spam, moderation is managed through Supabase:
+
+1. **Reviewing User Reports**:
+   - Community flags submitted via the **Report** button are stored in `public.review_reports` (`review_id`, `reporter_user_id`, `reason`, `created_at`).
+   - Open your **Supabase Dashboard → Table Editor → review_reports** to inspect pending reports.
+
+2. **Removing Infringing Reviews**:
+   - If a review violates community standards, query or delete it directly from `public.reviews` in the Table Editor or SQL Editor:
+     ```sql
+     delete from public.reviews where id = '<reported_review_id>';
+     ```
+   - All associated votes (`review_votes`) and reports (`review_reports`) cascade and delete automatically.
+
+3. **Handling Repeat Violators / Banning Users**:
+   - If an account repeatedly engages in harassment or malicious spam, delete or ban the account in **Supabase Dashboard → Authentication → Users**.
+   - Deleting a user in Auth cascades and permanently wipes their profile, reviews, votes, custom lists, and watchlist entries under PostgreSQL foreign-key cascades.
+
+4. **Automated Anti-Abuse Quotas**:
+   - Database trigger `enforce_user_limits()` strictly caps:
+     - **Lists**: Maximum 50 custom lists per user.
+     - **List Items**: Maximum 500 titles per list.
+     - **Reviews**: Maximum 20 reviews per user within any rolling 24-hour window.
+
 ## Security & Disclosures
 
 - **Showtimes & Ticketing**: Live seat maps, dynamic pricing, and seat allocation are powered by BookMyShow. Reelist indexes theater directories and provides direct booking shortcuts.

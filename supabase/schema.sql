@@ -309,3 +309,59 @@ grant select on public.lists to anon;
 
 grant select, insert, update, delete on public.list_items to authenticated;
 grant select on public.list_items to anon;
+
+-- ============================================================================
+-- Phase 1.1 DB Hardening & Anti-Abuse Limits Patch
+-- ============================================================================
+
+-- Username case safety & reserved usernames
+alter table public.profiles drop constraint if exists profiles_username_lower;
+alter table public.profiles add constraint profiles_username_lower check (username = lower(username));
+
+alter table public.profiles drop constraint if exists profiles_username_reserved;
+alter table public.profiles add constraint profiles_username_reserved
+  check (username not in ('admin','administrator','reelist','support','moderator','mod','help','root','system'));
+
+-- Length constraints
+alter table public.profiles drop constraint if exists profiles_bio_len;
+alter table public.profiles add constraint profiles_bio_len check (char_length(bio) <= 300);
+
+alter table public.profiles drop constraint if exists profiles_avatar_len;
+alter table public.profiles add constraint profiles_avatar_len check (char_length(avatar_url) <= 500);
+
+alter table public.lists drop constraint if exists lists_desc_len;
+alter table public.lists add constraint lists_desc_len check (char_length(description) <= 500);
+
+alter table public.list_items drop constraint if exists list_items_notes_len;
+alter table public.list_items add constraint list_items_notes_len check (char_length(notes) <= 500);
+
+-- Enforce quotas and spam rate limits:
+-- 50 lists per user, 500 items per list, 20 reviews daily per user
+create or replace function public.enforce_user_limits() returns trigger
+language plpgsql set search_path = public as $$
+begin
+  if tg_table_name = 'lists' then
+    if (select count(*) from public.lists where user_id = new.user_id) >= 50 then
+      raise exception 'List limit reached (50)';
+    end if;
+  elsif tg_table_name = 'list_items' then
+    if (select count(*) from public.list_items where list_id = new.list_id) >= 500 then
+      raise exception 'List item limit reached (500)';
+    end if;
+  elsif tg_table_name = 'reviews' then
+    if (select count(*) from public.reviews
+        where user_id = new.user_id and created_at > now() - interval '1 day') >= 20 then
+      raise exception 'Daily review limit reached (20)';
+    end if;
+  end if;
+  return new;
+end $$;
+
+drop trigger if exists lists_limit on public.lists;
+create trigger lists_limit before insert on public.lists for each row execute function public.enforce_user_limits();
+
+drop trigger if exists list_items_limit on public.list_items;
+create trigger list_items_limit before insert on public.list_items for each row execute function public.enforce_user_limits();
+
+drop trigger if exists reviews_limit on public.reviews;
+create trigger reviews_limit before insert on public.reviews for each row execute function public.enforce_user_limits();

@@ -2,14 +2,58 @@ import { getSupabase } from '../lib/supabase.js';
 
 export const USERNAME_REGEX = /^[a-zA-Z0-9_]{3,20}$/;
 
+export const RESERVED_USERNAMES = [
+  'admin',
+  'administrator',
+  'reelist',
+  'support',
+  'moderator',
+  'mod',
+  'help',
+  'root',
+  'system',
+];
+
+export function isReservedUsername(username) {
+  if (typeof username !== 'string') return false;
+  return RESERVED_USERNAMES.includes(username.trim().toLowerCase());
+}
+
 export function isValidUsername(username) {
   if (typeof username !== 'string') return false;
-  return USERNAME_REGEX.test(username.trim());
+  const clean = username.trim().toLowerCase();
+  return USERNAME_REGEX.test(clean) && !RESERVED_USERNAMES.includes(clean);
 }
 
 export function sanitizeUsername(username) {
   if (typeof username !== 'string') return '';
   return username.trim().toLowerCase();
+}
+
+/**
+ * Fetch a public profile by username
+ */
+export async function getProfileByUsername(rawUsername) {
+  const cleanUsername = sanitizeUsername(rawUsername);
+  if (!cleanUsername) return { data: null, error: 'Invalid username' };
+
+  const supabase = await getSupabase();
+  if (!supabase) return { data: null, error: 'Database unavailable' };
+
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id, username, avatar_url, bio, created_at')
+      .eq('username', cleanUsername)
+      .maybeSingle();
+
+    if (error) return { data: null, error: error.message };
+    if (!data) return { data: null, error: 'Profile not found' };
+
+    return { data, error: null };
+  } catch (err) {
+    return { data: null, error: err?.message || 'Failed to fetch profile' };
+  }
 }
 
 /**
@@ -54,21 +98,24 @@ export async function upsertMyProfile({ username, avatar_url, bio }) {
 
     if (username !== undefined) {
       const cleanUsername = sanitizeUsername(username);
+      if (isReservedUsername(cleanUsername)) {
+        return { data: null, error: 'This username is reserved. Please choose a different one.' };
+      }
       if (!isValidUsername(cleanUsername)) {
         return {
           data: null,
-          error: 'Username must be 3-20 characters long and contain only letters, numbers, and underscores.',
+          error: 'Username must be 3-20 lowercase alphanumeric characters or underscores.',
         };
       }
       payload.username = cleanUsername;
     }
 
     if (avatar_url !== undefined) {
-      payload.avatar_url = typeof avatar_url === 'string' ? avatar_url.trim() : null;
+      payload.avatar_url = typeof avatar_url === 'string' ? avatar_url.trim().slice(0, 500) : null;
     }
 
     if (bio !== undefined) {
-      payload.bio = typeof bio === 'string' ? bio.slice(0, 500) : '';
+      payload.bio = typeof bio === 'string' ? bio.trim().slice(0, 300) : '';
     }
 
     const { data, error } = await supabase

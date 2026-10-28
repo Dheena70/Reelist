@@ -20,10 +20,12 @@ vi.mock('../lib/supabase.js', () => ({
 
 import {
   isValidUsername,
+  isReservedUsername,
   sanitizeUsername,
   getMyProfile,
   upsertMyProfile,
   getProfilesByIds,
+  getProfileByUsername,
 } from '../api/profiles.js';
 
 describe('Profiles Data Layer', () => {
@@ -48,6 +50,15 @@ describe('Profiles Data Layer', () => {
       expect(isValidUsername('user@domain')).toBe(false); // special char
       expect(isValidUsername(null)).toBe(false);
       expect(isValidUsername('')).toBe(false);
+    });
+
+    it('identifies and rejects reserved administrative usernames', () => {
+      expect(isReservedUsername('admin')).toBe(true);
+      expect(isReservedUsername('moderator')).toBe(true);
+      expect(isReservedUsername('reelist')).toBe(true);
+      expect(isReservedUsername('support')).toBe(true);
+      expect(isValidUsername('admin')).toBe(false);
+      expect(isValidUsername('support')).toBe(false);
     });
 
     it('sanitizes usernames to lowercase and trimmed', () => {
@@ -85,7 +96,13 @@ describe('Profiles Data Layer', () => {
   describe('upsertMyProfile', () => {
     it('rejects invalid username before making db query', async () => {
       const res = await upsertMyProfile({ username: 'bad!' });
-      expect(res.error).toContain('Username must be 3-20 characters long');
+      expect(res.error).toContain('Username must be 3-20 lowercase alphanumeric characters');
+      expect(mockFrom).not.toHaveBeenCalled();
+    });
+
+    it('rejects reserved administrative username in upsertMyProfile', async () => {
+      const res = await upsertMyProfile({ username: 'admin' });
+      expect(res.error).toContain('This username is reserved');
       expect(mockFrom).not.toHaveBeenCalled();
     });
 
@@ -151,6 +168,37 @@ describe('Profiles Data Layer', () => {
       expect(res.data['user-1'].username).toBe('rajini_fan');
       expect(res.data['user-2'].username).toBe('kamal_fan');
       expect(res.data['user-2'].avatar_url).toBe('https://example.com/avatar.jpg');
+    });
+  });
+
+  describe('getProfileByUsername', () => {
+    it('queries profiles by lowercase username', async () => {
+      const maybeSingle = vi.fn().mockResolvedValue({
+        data: { id: 'u-99', username: 'cinephile_99', bio: 'Movie lover' },
+        error: null,
+      });
+      const eq = vi.fn().mockReturnValue({ maybeSingle });
+      const select = vi.fn().mockReturnValue({ eq });
+      mockFrom.mockReturnValue({ select });
+
+      const res = await getProfileByUsername('Cinephile_99');
+      expect(mockFrom).toHaveBeenCalledWith('profiles');
+      expect(eq).toHaveBeenCalledWith('username', 'cinephile_99');
+      expect(res.data.id).toBe('u-99');
+    });
+
+    it('returns error when profile is not found', async () => {
+      const maybeSingle = vi.fn().mockResolvedValue({
+        data: null,
+        error: null,
+      });
+      const eq = vi.fn().mockReturnValue({ maybeSingle });
+      const select = vi.fn().mockReturnValue({ eq });
+      mockFrom.mockReturnValue({ select });
+
+      const res = await getProfileByUsername('nonexistent_user');
+      expect(res.data).toBeNull();
+      expect(res.error).toBe('Profile not found');
     });
   });
 });

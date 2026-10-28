@@ -43,8 +43,8 @@ export default function PrivacyPolicyModal({ onClose }) {
             <h3>2. Information We Collect</h3>
             <ul>
               <li><strong>Account Credentials:</strong> Authentication (email, password verification, and session tokens) is handled securely by Supabase Auth. Passwords are never stored on Reelist servers or written to your browser&apos;s local storage.</li>
-              <li><strong>Watchlist, Ratings &amp; Reactions:</strong> Stored in your personal account in Supabase. Ratings and reaction counts are displayed publicly only as anonymous aggregates (average score and total counts, without revealing user identities).</li>
-              <li><strong>Account Deletion:</strong> Permanently deleting your account through your profile invokes our secure server deletion function, which permanently cascades and erases your user record, watchlist entries, ratings, and reactions.</li>
+              <li><strong>Profiles, Watchlist &amp; Community Content:</strong> Watchlists, reviews, custom lists, and reactions are stored in your personal account in Supabase. Your public handle, reviews, and public lists are visible to fellow cinephiles. Rating stats and reaction totals are aggregated without exposing your user ID. Private lists remain exclusively accessible to you via PostgreSQL Row Level Security (RLS).</li>
+              <li><strong>Account Deletion:</strong> Permanently deleting your account through your profile invokes our secure server deletion function, which permanently cascades and erases your profile, reviews, custom lists, watchlist entries, ratings, and votes.</li>
               <li><strong>Anonymized Telemetry:</strong> Aggregated visitor counters, movie view tallies, and search queries strictly without linking personally identifiable information.</li>
             </ul>
           </section>

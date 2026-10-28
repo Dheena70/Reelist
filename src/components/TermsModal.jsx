@@ -63,7 +63,20 @@ export default function TermsModal({ onClose }) {
           </section>
 
           <section className="legal-section">
-            <h3>5. Limitation of Liability & Jurisdiction</h3>
+            <h3>5. User Reviews, Custom Lists & Community Standards</h3>
+            <p>
+              Users may post written reviews, rate cinematic titles, and curate custom lists. You retain ownership of your submissions and grant Reelist a non-exclusive license to display them publicly.
+            </p>
+            <p>
+              <strong>Community Guidelines:</strong> Abusive language, hate speech, harassment, defamation, copyright infringement, and unsolicited advertising are strictly prohibited. Unmarked plot spoilers must be flagged using the spoiler tag.
+            </p>
+            <p>
+              <strong>Notice and Takedown:</strong> Community members can flag objectionable content via the in-app &ldquo;Report&rdquo; button. Reported reviews are reviewed by our moderation team and removed if found in violation of applicable intermediary guidelines and ethical standards.
+            </p>
+          </section>
+
+          <section className="legal-section">
+            <h3>6. Limitation of Liability & Jurisdiction</h3>
             <p>
               To the fullest extent permitted by applicable law, Reelist shall not be liable for any indirect, incidental, or consequential damages resulting from platform downtime or third-party trailer streaming disruptions. These terms are governed by the laws of Tamil Nadu, India.
             </p>

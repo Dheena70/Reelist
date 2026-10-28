@@ -37,6 +37,7 @@ import {
   getReactionCounts,
 } from '../api/userData.js';
 import { getSupabase } from '../lib/supabase.js';
+import MovieReviewsSection from './MovieReviewsSection.jsx';
 
 function determineRoleBadge(member, index, allCast = []) {
   const char = (member.character || '').toLowerCase();
@@ -1756,6 +1757,14 @@ export default function MovieModal({ movieId, onClose, onSelectMovie, currentUse
                     </div>
                   </div>
                 )}
+
+                {/* Cinephile Community Reviews & Helpful Voting */}
+                <MovieReviewsSection
+                  mediaType="movie"
+                  tmdbId={activeId}
+                  movieTitle={details?.title || 'this title'}
+                  onRequireAuth={onRequireAuth}
+                />
 
               </div>
             </div>

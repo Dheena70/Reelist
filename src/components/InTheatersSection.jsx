@@ -50,33 +50,12 @@ export default function InTheatersSection({ onSelectMovie, onOpenShowtimes }) {
   const [nowPlayingMovies, setNowPlayingMovies] = useState([]);
   const [upcomingMovies, setUpcomingMovies] = useState([]);
   const [_loading, setLoading] = useState(false);
-  const [userLocation, setUserLocation] = useState({ city: 'Chennai', country: 'IN', regionName: 'Tamil Nadu' });
   const [selectedCityId, setSelectedCityId] = useState(() => getSavedCity());
   const currentCity = useMemo(() => getCityDetails(selectedCityId), [selectedCityId]);
   const cityTheaters = useMemo(() => getTheatersForCity(selectedCityId), [selectedCityId]);
   const scrollRef = useRef(null);
 
-  // 1. Live Free IP-based Geolocation Lookup (100% Free, zero cost)
-  useEffect(() => {
-    let cancelled = false;
-    fetch('https://ipapi.co/json/')
-      .then((res) => res.json())
-      .then((data) => {
-        if (!cancelled && data?.city && data?.country_code) {
-          setUserLocation({
-            city: data.city,
-            country: data.country_code,
-            regionName: data.region || 'India',
-          });
-        }
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  // 2. Fetch live now playing and upcoming from TMDB on mount
+  // 1. Fetch live now playing and upcoming from TMDB on mount
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
@@ -149,7 +128,7 @@ export default function InTheatersSection({ onSelectMovie, onOpenShowtimes }) {
     let cancelled = false;
 
     tmdb.discoverTheatrical({
-      region: userLocation.country || 'IN',
+      region: 'IN',
       language: selectedLang,
     })
       .then((res) => {
@@ -174,7 +153,7 @@ export default function InTheatersSection({ onSelectMovie, onOpenShowtimes }) {
     return () => {
       cancelled = true;
     };
-  }, [selectedLang, userLocation.country]);
+  }, [selectedLang]);
 
   const currentList = useMemo(() => {
     const base = activeTab === 'now_playing' ? nowPlayingMovies : upcomingMovies;

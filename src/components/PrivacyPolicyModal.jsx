@@ -50,16 +50,25 @@ export default function PrivacyPolicyModal({ onClose }) {
           </section>
 
           <section className="legal-section">
-            <h3>3. Third-Party Integrations</h3>
+            <h3>3. Third-Party Requests & External Services</h3>
             <p>
-              Reelist sources metadata, posters, and backdrop assets via The Movie Database (TMDB) API. When streaming video trailers, embeds are served securely through YouTube (Google LLC) under their respective privacy terms.
+              To deliver the cinema discovery experience, your browser connects only to the following trusted services:
+            </p>
+            <ul>
+              <li><strong>The Movie Database (TMDB):</strong> High-resolution posters and backdrops are fetched directly from <code>image.tmdb.org</code>. Movie catalog metadata is routed through our serverless proxy without passing client credentials.</li>
+              <li><strong>YouTube:</strong> Official movie trailers are displayed using YouTube&apos;s privacy-enhanced mode (<code>youtube-nocookie.com</code>), preventing cookies until you interact with the player.</li>
+              <li><strong>Supabase:</strong> For registered users, account authentication, watchlists, ratings, and reactions connect securely to <code>*.supabase.co</code> with PostgreSQL Row Level Security (RLS). Guests browsing the catalog download zero Supabase resources.</li>
+              <li><strong>Google Fonts:</strong> Clean typography is loaded via <code>fonts.googleapis.com</code> and <code>fonts.gstatic.com</code>.</li>
+            </ul>
+            <p>
+              Reelist does <em>not</em> perform automatic third-party IP geolocation or deploy third-party advertising trackers. Your theater location preference is selected manually and retained strictly on your device.
             </p>
           </section>
 
           <section className="legal-section">
             <h3>4. Cookies & Local Storage</h3>
             <p>
-              We utilize essential local browser keys (<code>reelist_autoplay</code>, <code>reelist_cookie_consent</code>) to remember your preferences. You can clear these at any time via your browser settings or our Cookie Banner.
+              We utilize essential local storage keys (<code>reelist_autoplay</code>, <code>reelist_cookie_consent</code>, <code>reelist_user_city</code>) to remember your volume, consent, and district preferences. You can clear these at any time via your browser settings or our Cookie Banner.
             </p>
           </section>
 

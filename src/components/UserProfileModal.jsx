@@ -10,6 +10,8 @@ import {
   Bookmark,
   CheckCircle2,
   AlertTriangle,
+  AtSign,
+  Edit2,
 } from 'lucide-react';
 import { analytics } from '../api/analytics.js';
 import { getSupabase } from '../lib/supabase.js';
@@ -19,6 +21,12 @@ import {
   importUserDataToDB,
   clearLegacyLocalUserData,
 } from '../api/userData.js';
+import {
+  getMyProfile,
+  upsertMyProfile,
+  isValidUsername,
+  sanitizeUsername,
+} from '../api/profiles.js';
 
 export default function UserProfileModal({ currentUser, onClose, onLogout }) {
   const [watchlistCount, setWatchlistCount] = useState(0);
@@ -27,6 +35,14 @@ export default function UserProfileModal({ currentUser, onClose, onLogout }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleteConfirmationText, setDeleteConfirmationText] = useState('');
 
+  // Profile states
+  const [profile, setProfile] = useState(null);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [usernameInput, setUsernameInput] = useState('');
+  const [bioInput, setBioInput] = useState('');
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileError, setProfileError] = useState('');
+
   useEffect(() => {
     let mounted = true;
     getWatchlist().then(({ data }) => {
@@ -34,10 +50,42 @@ export default function UserProfileModal({ currentUser, onClose, onLogout }) {
         setWatchlistCount(data.length);
       }
     });
+    getMyProfile().then(({ data }) => {
+      if (mounted && data) {
+        setProfile(data);
+        setUsernameInput(data.username || '');
+        setBioInput(data.bio || '');
+      }
+    });
     return () => {
       mounted = false;
     };
   }, []);
+
+  const handleSaveProfile = async (e) => {
+    e.preventDefault();
+    setProfileError('');
+    setProfileSaving(true);
+    const clean = sanitizeUsername(usernameInput);
+    if (!isValidUsername(clean)) {
+      setProfileError('Username must be 3-20 characters: letters, numbers, and underscores only.');
+      setProfileSaving(false);
+      return;
+    }
+    const { data, error } = await upsertMyProfile({
+      username: clean,
+      bio: bioInput.trim(),
+    });
+    setProfileSaving(false);
+    if (error) {
+      setProfileError(error);
+    } else {
+      setProfile(data);
+      setIsEditingProfile(false);
+      setFeedbackMsg('Profile updated successfully!');
+      setTimeout(() => setFeedbackMsg(''), 4000);
+    }
+  };
 
   const handleExportBackup = async () => {
     try {
@@ -157,8 +205,35 @@ export default function UserProfileModal({ currentUser, onClose, onLogout }) {
               <span>{(currentUser?.name || currentUser?.email || 'U').charAt(0).toUpperCase()}</span>
             </div>
             <div className="user-profile__info">
-              <h3 className="user-profile__name">{currentUser?.name || 'Reelist Member'}</h3>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                <h3 className="user-profile__name">{currentUser?.name || 'Reelist Member'}</h3>
+                {!isEditingProfile && (
+                  <button
+                    type="button"
+                    className="btn-outline"
+                    onClick={() => setIsEditingProfile(true)}
+                    style={{ padding: '4px 10px', fontSize: '12px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                    title="Edit profile & username"
+                  >
+                    <Edit2 size={12} />
+                    <span>{profile?.username ? 'Edit Handle' : 'Set Handle'}</span>
+                  </button>
+                )}
+              </div>
               <p className="user-profile__email">{currentUser?.email}</p>
+              
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '4px 0 8px' }}>
+                <span style={{ fontSize: '13px', color: '#f5c518', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                  <AtSign size={13} />
+                  <span>{profile?.username ? profile.username : 'no_handle_set'}</span>
+                </span>
+                {profile?.bio && (
+                  <span style={{ fontSize: '12px', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+                    • &ldquo;{profile.bio}&rdquo;
+                  </span>
+                )}
+              </div>
+
               <div className="user-profile__badges">
                 <span className="badge badge--verified" title="Email format verified">
                   <ShieldCheck size={13} />
@@ -170,6 +245,99 @@ export default function UserProfileModal({ currentUser, onClose, onLogout }) {
               </div>
             </div>
           </section>
+
+          {/* Edit Profile Form */}
+          {isEditingProfile && (
+            <form onSubmit={handleSaveProfile} className="user-profile__section" style={{ background: 'rgba(245, 197, 24, 0.05)', border: '1px solid rgba(245, 197, 24, 0.25)', borderRadius: '8px', padding: '14px' }}>
+              <h4 className="user-profile__section-title" style={{ color: '#f5c518', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <AtSign size={16} />
+                <span>Choose Public Cinephile Handle</span>
+              </h4>
+              <p className="user-profile__section-desc" style={{ marginBottom: '10px' }}>
+                Your username is displayed on your movie reviews, helpful votes, and shared custom lists. 3-20 characters (letters, numbers, underscores).
+              </p>
+
+              {profileError && (
+                <div style={{ background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.4)', color: '#f87171', padding: '6px 10px', borderRadius: '6px', fontSize: '12px', marginBottom: '10px' }}>
+                  {profileError}
+                </div>
+              )}
+
+              <div style={{ marginBottom: '10px' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '4px', color: '#cbd5e1' }}>
+                  Username
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#64748b', fontSize: '13px' }}>@</span>
+                  <input
+                    type="text"
+                    value={usernameInput}
+                    onChange={(e) => setUsernameInput(e.target.value)}
+                    placeholder="e.g. cinema_lover"
+                    maxLength={20}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px 8px 28px',
+                      borderRadius: '6px',
+                      border: '1px solid #475569',
+                      background: '#0f172a',
+                      color: '#f8fafc',
+                      fontSize: '13px',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '12px' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '4px', color: '#cbd5e1' }}>
+                  Bio (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={bioInput}
+                  onChange={(e) => setBioInput(e.target.value)}
+                  placeholder="e.g. Kollywood enthusiast & Nolan admirer"
+                  maxLength={160}
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    borderRadius: '6px',
+                    border: '1px solid #475569',
+                    background: '#0f172a',
+                    color: '#f8fafc',
+                    fontSize: '13px',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => {
+                    setIsEditingProfile(false);
+                    setProfileError('');
+                    setUsernameInput(profile?.username || '');
+                    setBioInput(profile?.bio || '');
+                  }}
+                  disabled={profileSaving}
+                  style={{ padding: '6px 14px', fontSize: '12px' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn-primary"
+                  disabled={profileSaving}
+                  style={{ padding: '6px 14px', fontSize: '12px' }}
+                >
+                  {profileSaving ? 'Saving...' : 'Save Handle'}
+                </button>
+              </div>
+            </form>
+          )}
 
           {/* Data & Watchlist Metrics */}
           <section className="user-profile__stats-grid">
@@ -188,7 +356,7 @@ export default function UserProfileModal({ currentUser, onClose, onLogout }) {
           <section className="user-profile__section">
             <h4 className="user-profile__section-title">Data Backup & Restore</h4>
             <p className="user-profile__section-desc">
-              Your watchlist and preferences are currently stored locally in your browser. You can export a JSON backup or restore a previous backup anytime.
+              Your watchlist, reviews, and preferences are synchronized to your account in Supabase with RLS isolation. You can export a JSON backup or restore a previous backup anytime.
             </p>
             <div className="user-profile__btn-row">
               <button

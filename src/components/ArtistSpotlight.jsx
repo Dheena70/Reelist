@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { profileUrl } from '../api/tmdb.js';
 import MovieCard from './MovieCard.jsx';
+import ArtistFilmographyChart from './ArtistFilmographyChart.jsx';
 
 function ArtistSpotlightInner({
   artist,
@@ -251,6 +252,12 @@ function ArtistSpotlightInner({
           </div>
         </div>
       </div>
+
+      {/* Career Filmography Rating & Analytics Chart */}
+      <ArtistFilmographyChart
+        filmography={artist.filmography || []}
+        onSelectMovie={onSelectMovie}
+      />
 
       {/* 2. Multilingual Language Filter Chips */}
       <div className="artist-lang-selector-section" aria-label="Filter films by language">

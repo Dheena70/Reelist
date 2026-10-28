@@ -150,7 +150,14 @@ function formatVotes(count) {
   return String(count);
 }
 
-export default function MovieModal({ movieId, onClose, onSelectMovie, currentUser, onRequireAuth }) {
+export default function MovieModal({
+  movieId,
+  onClose,
+  onSelectMovie,
+  onSelectArtist,
+  currentUser,
+  onRequireAuth,
+}) {
   const [activeId, setActiveId] = useState(movieId);
   const [details, setDetails] = useState(null);
   const [collectionInfo, setCollectionInfo] = useState(null);
@@ -1513,7 +1520,20 @@ export default function MovieModal({ movieId, onClose, onSelectMovie, currentUse
                       {keyCast.map((actor, idx) => {
                         const role = determineRoleBadge(actor, idx, keyCast);
                         return (
-                          <div key={actor.id || idx} className="cast-card">
+                          <div
+                            key={actor.id || idx}
+                            className="cast-card"
+                            onClick={() => onSelectArtist && onSelectArtist(actor)}
+                            role={onSelectArtist ? 'button' : undefined}
+                            tabIndex={onSelectArtist ? 0 : undefined}
+                            style={{ cursor: onSelectArtist ? 'pointer' : 'default' }}
+                            title={onSelectArtist ? `View career filmography and charts for ${actor.name}` : actor.name}
+                            onKeyDown={(e) => {
+                              if (onSelectArtist && (e.key === 'Enter' || e.key === ' ')) {
+                                onSelectArtist(actor);
+                              }
+                            }}
+                          >
                             <div className="cast-card__avatar">
                               {actor.profile_path ? (
                                 <img

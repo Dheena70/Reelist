@@ -826,6 +826,10 @@ export default function App() {
             movieId={selectedId}
             onClose={() => setSelectedId(null)}
             onSelectMovie={(movie) => setSelectedId(movie.id)}
+            onSelectArtist={(artist) => {
+              setSelectedId(null);
+              handleSelectArtist(artist);
+            }}
             currentUser={currentUser}
             onRequireAuth={requireAuth}
           />

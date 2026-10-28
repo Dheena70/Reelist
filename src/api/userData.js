@@ -324,6 +324,38 @@ export async function getRatingStats(mediaType = 'movie', tmdbId) {
   }
 }
 
+/**
+ * Fetch top rated titles from Reelist community rating_stats view
+ * Strictly requires at least minVotes (default 25) to prevent rating manipulation
+ */
+export async function getReelistTopRated(limit = 20, minVotes = 25) {
+  const supabase = await getSupabase();
+  if (!supabase) return { data: [], error: null };
+
+  try {
+    const { data, error } = await supabase
+      .from('rating_stats')
+      .select('media_type, tmdb_id, avg_score, votes')
+      .gte('votes', minVotes)
+      .order('avg_score', { ascending: false })
+      .order('votes', { ascending: false })
+      .limit(limit);
+
+    if (error) return { data: [], error: error.message };
+    return {
+      data: (data || []).map((d) => ({
+        ...d,
+        avg_score: d.avg_score != null ? Number(d.avg_score) : null,
+        votes: Number(d.votes) || 0,
+      })),
+      error: null,
+    };
+  } catch (err) {
+    return { data: [], error: err?.message || 'Failed to fetch community top rated' };
+  }
+}
+
+
 export async function getReactionCounts(mediaType = 'movie', tmdbId) {
   const baseCounts = {
     thumbsUp: 0,

@@ -308,6 +308,23 @@ export const tmdb = {
     return tmdbGet('/movie/upcoming', { page, region }, signal);
   },
 
+  topRatedMovies: async (page = 1, region = 'IN', signal) => {
+    return tmdbGet('/movie/top_rated', { page, region }, signal);
+  },
+
+  topRatedTv: async (page = 1, signal) => {
+    const data = await tmdbGet('/tv/top_rated', { page }, signal);
+    if (data?.results) {
+      data.results = data.results.map((item) => ({
+        ...item,
+        media_type: 'tv',
+        title: item.title || item.name,
+        release_date: item.release_date || item.first_air_date,
+      }));
+    }
+    return data;
+  },
+
   regional: async (langCode, page = 1, signal) => {
     const { gte, lte } = getRollingDateRange(30, 30);
     return tmdbGet('/discover/movie', {

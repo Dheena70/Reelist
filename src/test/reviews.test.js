@@ -35,6 +35,7 @@ import {
   createReview,
   voteReview,
   reportReview,
+  getUserReviews,
 } from '../api/reviews.js';
 
 describe('Reviews Data Layer', () => {
@@ -300,4 +301,33 @@ describe('Reviews Data Layer', () => {
       expect(res.success).toBe(true);
     });
   });
+
+  describe('getUserReviews', () => {
+    it('returns error if userId is missing', async () => {
+      const res = await getUserReviews(null);
+      expect(res.error).toBe('User ID required');
+      expect(res.data).toEqual([]);
+    });
+
+    it('fetches reviews authored by a specific user with exact count', async () => {
+      const mockQuery = {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockResolvedValue({
+          data: [{ id: 'rev-1', headline: 'Top Tier' }],
+          count: 1,
+          error: null,
+        }),
+      };
+      mockFrom.mockReturnValue(mockQuery);
+
+      const res = await getUserReviews('user-123', 10);
+      expect(mockFrom).toHaveBeenCalledWith('reviews');
+      expect(mockQuery.eq).toHaveBeenCalledWith('user_id', 'user-123');
+      expect(res.data).toHaveLength(1);
+      expect(res.count).toBe(1);
+    });
+  });
 });
+

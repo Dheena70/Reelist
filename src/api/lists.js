@@ -345,3 +345,27 @@ export async function removeFromList({ listId, mediaType = 'movie', tmdbId }) {
     return { success: false, error: err?.message || 'Failed to remove from list' };
   }
 }
+
+/**
+ * Fetch public lists created by a specific user
+ */
+export async function getUserPublicLists(userId) {
+  if (!userId) return { data: [], error: 'User ID required' };
+  const supabase = await getSupabase();
+  if (!supabase) return { data: [], error: null };
+
+  try {
+    const { data, error } = await supabase
+      .from('lists')
+      .select('id, user_id, title, description, is_private, created_at, updated_at')
+      .eq('user_id', userId)
+      .eq('is_private', false)
+      .order('created_at', { ascending: false });
+
+    if (error) return { data: [], error: error.message };
+    return { data: data || [], error: null };
+  } catch (err) {
+    return { data: [], error: err?.message || 'Failed to fetch public lists' };
+  }
+}
+

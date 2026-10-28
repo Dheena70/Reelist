@@ -346,3 +346,27 @@ export async function reportReview({ reviewId, reason }) {
     return { success: false, error: err?.message || 'Failed to report review' };
   }
 }
+
+/**
+ * Fetch reviews authored by a specific user for public profile view
+ */
+export async function getUserReviews(userId, limit = 20) {
+  if (!userId) return { data: [], count: 0, error: 'User ID required' };
+  const supabase = await getSupabase();
+  if (!supabase) return { data: [], count: 0, error: null };
+
+  try {
+    const { data, count, error } = await supabase
+      .from('reviews')
+      .select('id, user_id, media_type, tmdb_id, rating, headline, content, is_spoiler, created_at, updated_at', { count: 'exact' })
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) return { data: [], count: 0, error: error.message };
+    return { data: data || [], count: count || (data ? data.length : 0), error: null };
+  } catch (err) {
+    return { data: [], count: 0, error: err?.message || 'Failed to fetch user reviews' };
+  }
+}
+

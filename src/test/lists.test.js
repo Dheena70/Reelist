@@ -37,6 +37,7 @@ import {
   addToList,
   deleteList,
   getUserListsWithMembership,
+  getUserPublicLists,
 } from '../api/lists.js';
 
 describe('Custom Lists Data Layer', () => {
@@ -249,4 +250,32 @@ describe('Custom Lists Data Layer', () => {
       expect(res.success).toBe(true);
     });
   });
+
+  describe('getUserPublicLists', () => {
+    it('returns error if userId is missing', async () => {
+      const res = await getUserPublicLists(null);
+      expect(res.error).toBe('User ID required');
+      expect(res.data).toEqual([]);
+    });
+
+    it('fetches only public lists for target user', async () => {
+      const mockQuery = {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        order: vi.fn().mockResolvedValue({
+          data: [{ id: 'list-pub-1', title: 'Top 10 Nolan', is_private: false }],
+          error: null,
+        }),
+      };
+      mockFrom.mockReturnValue(mockQuery);
+
+      const res = await getUserPublicLists('target-user-123');
+      expect(mockFrom).toHaveBeenCalledWith('lists');
+      expect(mockQuery.eq).toHaveBeenCalledWith('user_id', 'target-user-123');
+      expect(mockQuery.eq).toHaveBeenCalledWith('is_private', false);
+      expect(res.data).toHaveLength(1);
+      expect(res.data[0].title).toBe('Top 10 Nolan');
+    });
+  });
 });
+

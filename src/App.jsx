@@ -9,6 +9,7 @@ import {
   Search,
   Mail,
   Calendar,
+  Star,
 } from 'lucide-react';
 import { tmdb, getLanguageLabel } from './api/tmdb.js';
 import { analytics } from './api/analytics.js';
@@ -26,6 +27,7 @@ import {
   addToWatchlist,
   setRating,
   toggleReaction,
+  getReelistTopRated,
 } from './api/userData.js';
 
 const MovieModal = lazy(() => import('./components/MovieModal.jsx'));
@@ -37,6 +39,7 @@ const TermsModal = lazy(() => import('./components/TermsModal.jsx'));
 const ContactModal = lazy(() => import('./components/ContactModal.jsx'));
 const ThankYouModal = lazy(() => import('./components/ThankYouModal.jsx'));
 const UserProfileModal = lazy(() => import('./components/UserProfileModal.jsx'));
+const PublicProfileModal = lazy(() => import('./components/PublicProfileModal.jsx'));
 
 function getUserInitials(user) {
   if (!user) return 'U';
@@ -66,7 +69,8 @@ export default function App() {
   const [matchedArtist, setMatchedArtist] = useState(null);
   const [similarArtists, setSimilarArtists] = useState([]);
   const [reloadTrigger, setReloadTrigger] = useState(0);
-  const [activeSection, setActiveSection] = useState('trending'); // 'trending' | 'now_playing' | 'upcoming'
+  const [activeSection, setActiveSection] = useState('trending'); // 'trending' | 'now_playing' | 'upcoming' | 'top_rated'
+  const [topRatedSource, setTopRatedSource] = useState('tmdb'); // 'tmdb' | 'reelist'
   const [mediaType, setMediaType] = useState('movie'); // 'movie' | 'tv'
   const [catalogLanguage, setCatalogLanguage] = useState('all');
   const [movies, setMovies] = useState([]);
@@ -80,6 +84,7 @@ export default function App() {
   });
   const [activeLegalModal, setActiveLegalModal] = useState(null); // 'privacy' | 'terms' | 'contact' | 'thank-you'
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [publicProfileUsername, setPublicProfileUsername] = useState(null);
   const [showOnboarding, setShowOnboarding] = useState(() => {
     try {
       return !localStorage.getItem('reelist_onboarded_dismissed');
@@ -105,11 +110,26 @@ export default function App() {
         setActiveLegalModal('terms');
       } else if (hash === '#/contact' || hash === '#contact') {
         setActiveLegalModal('contact');
+      } else if (hash.startsWith('#/user/')) {
+        const u = decodeURIComponent(hash.slice('#/user/'.length).trim());
+        if (u) setPublicProfileUsername(u);
+      } else if (hash.startsWith('#user/')) {
+        const u = decodeURIComponent(hash.slice('#user/'.length).trim());
+        if (u) setPublicProfileUsername(u);
+      } else {
+        setPublicProfileUsername(null);
       }
     };
     handleHash();
     window.addEventListener('hashchange', handleHash);
     return () => window.removeEventListener('hashchange', handleHash);
+  }, []);
+
+  const handleClosePublicProfile = useCallback(() => {
+    setPublicProfileUsername(null);
+    if (window.location.hash.startsWith('#/user/') || window.location.hash.startsWith('#user/')) {
+      window.history.pushState(null, '', window.location.pathname + window.location.search);
+    }
   }, []);
 
   // Synchronize dynamic meta tags and titles per view / modal
@@ -119,6 +139,12 @@ export default function App() {
         title: '404 — Scene Not Found',
         description: 'The requested scene or page was cut from the marquee. Return to trending movies and now playing blockbusters.',
         path: '404',
+      });
+    } else if (publicProfileUsername) {
+      updatePageMeta({
+        title: `@${publicProfileUsername} — Reelist Cinephile Profile`,
+        description: `Explore @${publicProfileUsername}'s cinema reviews, ratings, and curated movie lists on Reelist.`,
+        path: `#/user/${publicProfileUsername}`,
       });
     } else if (activeLegalModal === 'privacy') {
       updatePageMeta({
@@ -166,7 +192,7 @@ export default function App() {
         path: '',
       });
     }
-  }, [show404Page, activeLegalModal, selectedId, activeQuery, movies]);
+  }, [show404Page, activeLegalModal, selectedId, activeQuery, movies, publicProfileUsername]);
 
   const displayedCatalogMovies = useMemo(() => {
     return movies;
@@ -380,6 +406,46 @@ export default function App() {
           data = await tmdb.nowPlaying(1, 'IN', signal);
         } else if (activeSection === 'upcoming') {
           data = await tmdb.upcoming(1, 'IN', signal);
+        } else if (activeSection === 'top_rated') {
+          if (topRatedSource === 'reelist') {
+            const { data: ratedItems } = await getReelistTopRated(20, 25);
+            if (!ratedItems || ratedItems.length === 0) {
+              setMovies([]);
+              setMatchedArtist(null);
+              setSimilarArtists([]);
+              return;
+            }
+            const hydrated = await Promise.all(
+              ratedItems.map(async (item) => {
+                try {
+                  const detail = await tmdb.details(item.tmdb_id, item.media_type, signal);
+                  return {
+                    ...detail,
+                    id: item.tmdb_id,
+                    media_type: item.media_type,
+                    community_avg_score: item.avg_score,
+                    community_votes: item.votes,
+                  };
+                } catch {
+                  return {
+                    id: item.tmdb_id,
+                    media_type: item.media_type,
+                    title: `Title #${item.tmdb_id}`,
+                    community_avg_score: item.avg_score,
+                    community_votes: item.votes,
+                  };
+                }
+              })
+            );
+            setMovies(hydrated);
+            setMatchedArtist(null);
+            setSimilarArtists([]);
+            return;
+          } else {
+            data = mediaType === 'tv'
+              ? await tmdb.topRatedTv(1, signal)
+              : await tmdb.topRatedMovies(1, 'IN', signal);
+          }
         } else {
           data = mediaType === 'tv'
             ? await tmdb.trendingTv('week', signal)
@@ -404,7 +470,7 @@ export default function App() {
     return () => {
       controller.abort();
     };
-  }, [activeQuery, activeSection, mediaType, catalogLanguage, reloadTrigger]);
+  }, [activeQuery, activeSection, topRatedSource, mediaType, catalogLanguage, reloadTrigger]);
 
   return (
     <div className="app">
@@ -588,6 +654,8 @@ export default function App() {
                           ? 'In Theatres Now'
                           : activeSection === 'upcoming'
                           ? 'Coming Soon to Theatres'
+                          : activeSection === 'top_rated'
+                          ? (topRatedSource === 'reelist' ? 'Reelist Community Top Rated (≥25 votes)' : (mediaType === 'tv' ? 'Top Rated TV Shows & Series' : 'Top Rated Movies in India'))
                           : mediaType === 'tv'
                           ? 'Trending TV Shows & Series'
                           : 'Trending Movies This Week'}
@@ -599,6 +667,8 @@ export default function App() {
                           ? 'Now Showing in Theatres across India & Tamil Nadu'
                           : activeSection === 'upcoming'
                           ? 'Upcoming Theatrical Releases & Advance Premieres'
+                          : activeSection === 'top_rated'
+                          ? (topRatedSource === 'reelist' ? 'Titles with highest community acclaim (strictly requiring 25+ verified cinephile ratings)' : 'Critically acclaimed blockbusters and all-time highest audience rated titles')
                           : mediaType === 'tv'
                           ? 'Binge-worthy web series, critically acclaimed dramas & fan favorites'
                           : 'Popular & Trending Blockbusters This Week'}
@@ -645,7 +715,20 @@ export default function App() {
                         <Calendar size={14} />
                         <span>Coming Soon</span>
                       </button>
-                      {activeSection === 'trending' && (
+                      <button
+                        type="button"
+                        role="tab"
+                        aria-selected={activeSection === 'top_rated'}
+                        className={`format-switch-btn ${activeSection === 'top_rated' ? 'is-active' : ''}`}
+                        onClick={() => {
+                          setActiveSection('top_rated');
+                          setCatalogLanguage('all');
+                        }}
+                      >
+                        <Star size={14} />
+                        <span>Top Rated</span>
+                      </button>
+                      {(activeSection === 'trending' || (activeSection === 'top_rated' && topRatedSource === 'tmdb')) && (
                         <button
                           type="button"
                           role="tab"
@@ -660,37 +743,69 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div className="catalog-language-bar-wrap">
-                    <div className="catalog-language-bar" role="tablist" aria-label="Filter by language">
-                      {[
-                        { code: 'all', label: 'All Releases', isAll: true },
-                        { code: 'ta', label: 'Tamil (தமிழ்)' },
-                        { code: 'te', label: 'Telugu (తెలుగు)' },
-                        { code: 'hi', label: 'Hindi (हिंदी)' },
-                        { code: 'ml', label: 'Malayalam (മലയാളം)' },
-                        { code: 'kn', label: 'Kannada (ಕನ್ನಡ)' },
-                        { code: 'en', label: 'English / Global' },
-                      ].map((lang) => (
-                        <button
-                          key={lang.code}
-                          type="button"
-                          role="tab"
-                          aria-selected={catalogLanguage === lang.code}
-                          className={`catalog-lang-chip ${catalogLanguage === lang.code ? 'is-active' : ''}`}
-                          onClick={() => setCatalogLanguage(lang.code)}
-                        >
-                          {lang.isAll && <Globe size={13} className="catalog-lang-icon" />}
-                          <span>{lang.label}</span>
-                        </button>
-                      ))}
+                  {activeSection === 'top_rated' && (
+                    <div style={{ display: 'flex', gap: '8px', padding: '0.75rem 0 0', flexWrap: 'wrap' }} role="tablist" aria-label="Top rated source">
+                      <button
+                        type="button"
+                        role="tab"
+                        aria-selected={topRatedSource === 'tmdb'}
+                        className={`format-switch-btn ${topRatedSource === 'tmdb' ? 'is-active' : ''}`}
+                        onClick={() => setTopRatedSource('tmdb')}
+                        style={{ fontSize: '12px', padding: '5px 12px' }}
+                      >
+                        <span>TMDB Top Rated</span>
+                      </button>
+                      <button
+                        type="button"
+                        role="tab"
+                        aria-selected={topRatedSource === 'reelist'}
+                        className={`format-switch-btn ${topRatedSource === 'reelist' ? 'is-active' : ''}`}
+                        onClick={() => setTopRatedSource('reelist')}
+                        style={{ fontSize: '12px', padding: '5px 12px' }}
+                      >
+                        <Star size={12} fill="currentColor" />
+                        <span>Reelist Community (≥25 votes)</span>
+                      </button>
                     </div>
-                  </div>
+                  )}
+
+                  {activeSection !== 'top_rated' && (
+                    <div className="catalog-language-bar-wrap">
+                      <div className="catalog-language-bar" role="tablist" aria-label="Filter by language">
+                        {[
+                          { code: 'all', label: 'All Releases', isAll: true },
+                          { code: 'ta', label: 'Tamil (தமிழ்)' },
+                          { code: 'te', label: 'Telugu (తెలుగు)' },
+                          { code: 'hi', label: 'Hindi (हिंदी)' },
+                          { code: 'ml', label: 'Malayalam (മലയാളം)' },
+                          { code: 'kn', label: 'Kannada (ಕನ್ನಡ)' },
+                          { code: 'en', label: 'English / Global' },
+                        ].map((lang) => (
+                          <button
+                            key={lang.code}
+                            type="button"
+                            role="tab"
+                            aria-selected={catalogLanguage === lang.code}
+                            className={`catalog-lang-chip ${catalogLanguage === lang.code ? 'is-active' : ''}`}
+                            onClick={() => setCatalogLanguage(lang.code)}
+                          >
+                            {lang.isAll && <Globe size={13} className="catalog-lang-icon" />}
+                            <span>{lang.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   <MovieGrid
                     movies={displayedCatalogMovies}
                     loading={loading}
                     error={error}
-                    emptyLabel="No titles found in this language. Try another filter."
+                    emptyLabel={
+                      activeSection === 'top_rated' && topRatedSource === 'reelist'
+                        ? 'Not enough votes yet. Reelist Community Top Rated requires a minimum of 25 ratings per title to ensure fair scoring.'
+                        : 'No titles found in this language. Try another filter.'
+                    }
                     onSelect={handleSelectMovie}
                     onRetry={handleRetry}
                   />
@@ -819,6 +934,25 @@ export default function App() {
             onSelectMovie={(movie) => {
               setShowProfileModal(false);
               setSelectedId(movie.id);
+            }}
+          />
+        </Suspense>
+      )}
+
+      {/* Public Cinephile Profile Modal */}
+      {publicProfileUsername && (
+        <Suspense fallback={null}>
+          <PublicProfileModal
+            username={publicProfileUsername}
+            onClose={handleClosePublicProfile}
+            onSelectMovie={(movie) => {
+              handleClosePublicProfile();
+              setSelectedId(movie.id);
+            }}
+            currentUser={currentUser}
+            onOpenMyProfile={() => {
+              handleClosePublicProfile();
+              setShowProfileModal(true);
             }}
           />
         </Suspense>
